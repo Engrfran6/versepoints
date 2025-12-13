@@ -7,10 +7,9 @@ export function SplashScreen() {
   const [isVisible, setIsVisible] = useState(true)
 
   useEffect(() => {
-    // Hide splash screen after video ends (approximately 3 seconds)
     const timer = setTimeout(() => {
       setIsVisible(false)
-    }, 3000)
+    }, 2500)
 
     return () => clearTimeout(timer)
   }, [])
@@ -30,24 +29,31 @@ export function SplashScreen() {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 1.2, opacity: 0 }}
           transition={{ duration: 0.6 }}
-          className="relative w-full max-w-2xl aspect-video px-8"
+          className="relative text-center px-8"
         >
-          {/* Animated Logo Video */}
-          <video
-            autoPlay
-            muted
-            playsInline
-            className="w-full h-full object-contain"
-            onEnded={() => setIsVisible(false)}
+          <motion.div
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+            className="mb-8"
           >
-            <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/4fd0bdf7-14fb-4c01-83af-80d255b947de-kbnoUhLhSqIMTSQ81pMXbw7894Upwm.MP4" type="video/mp4" />
-          </video>
+            <img src="/logo.jpg" alt="VerseEstate Logo" className="w-48 h-48 mx-auto object-contain animate-pulse" />
+          </motion.div>
+
+          <motion.h1
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary animate-gradient"
+          >
+            Welcome to Verse Estate Ecosystem
+          </motion.h1>
 
           {/* Animated glow effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 animate-pulse blur-3xl -z-10" />
         </motion.div>
 
-        {/* Loading text */}
+        {/* Loading dots */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
