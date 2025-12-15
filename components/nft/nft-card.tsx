@@ -154,7 +154,7 @@ export function NFTCard({
           )}
         >
           {nft.image_url ? (
-            <img src={nft.image_url || "/placeholder.svg"} alt={nft.name} className="w-full h-full object-cover" />
+            <img src={nft.image_url || "/basic-pickaxe.jpeg"} alt={nft.name} className="w-full h-full object-cover" />
           ) : (
             <div
               className={cn(

@@ -1,11 +1,19 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, useRef, Suspense } from "react"
+import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Pickaxe, Loader2, CheckCircle2, AlertCircle, Sparkles, Flame, Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { MINING_CONSTANTS } from "@/lib/constants"
+
+const MiningCrystals3D = dynamic(
+  () => import("@/components/3d/mining-crystals-3d").then((mod) => mod.MiningCrystals3D),
+  {
+    ssr: false,
+  },
+)
 
 interface MiningButtonProps {
   lastMiningAt: string | null
@@ -238,8 +246,20 @@ export function MiningButton({ lastMiningAt, currentStreak = 0, onMine, onSucces
         </div>
       )}
 
-      {/* Mining Button with Canvas */}
+      {/* Mining Button with 3D Crystals */}
       <div className="relative bg-gradient-to-br from-card/80 via-card/60 to-muted/40 p-8 rounded-3xl border border-border/50 backdrop-blur-sm">
+        <div className="absolute -left-24 top-1/2 -translate-y-1/2 w-20 h-40 hidden lg:block">
+          <Suspense fallback={null}>
+            <MiningCrystals3D />
+          </Suspense>
+        </div>
+
+        <div className="absolute -right-24 top-1/2 -translate-y-1/2 w-20 h-40 hidden lg:block">
+          <Suspense fallback={null}>
+            <MiningCrystals3D />
+          </Suspense>
+        </div>
+
         <canvas
           ref={canvasRef}
           width={200}

@@ -1,10 +1,13 @@
 "use client"
 
-import { Suspense } from "react"
+import { Suspense, useState } from "react"
 import dynamic from "next/dynamic"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Wallet, Lock, Rocket, Bell, Coins } from "lucide-react"
+import { toast } from "sonner"
 
 const FloatingParticles = dynamic(
   () => import("@/components/3d/floating-particles").then((mod) => mod.FloatingParticles),
@@ -17,6 +20,38 @@ interface WithdrawContentProps {
 }
 
 export function WithdrawContent({ pointsBalance }: WithdrawContentProps) {
+  const [email, setEmail] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleNotifyMe = async () => {
+    if (!email || !email.includes("@")) {
+      toast.error("Please enter a valid email address")
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const response = await fetch("/api/withdrawal/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to subscribe")
+      }
+
+      toast.success("You'll be notified when withdrawals are available!")
+      setEmail("")
+    } catch (error: any) {
+      toast.error(error.message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <div className="relative p-4 md:p-8 min-h-screen">
       {/* 3D Background */}
@@ -138,17 +173,38 @@ export function WithdrawContent({ pointsBalance }: WithdrawContentProps) {
       {/* Notification Signup */}
       <Card className="relative z-10 bg-card/90 backdrop-blur-sm border-border mt-8">
         <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-primary/10">
-                <Bell className="w-6 h-6 text-primary" />
+          <div className="flex flex-col md:flex-row items-end justify-between gap-4">
+            <div className="flex-1 space-y-4 w-full">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-lg bg-primary/10">
+                  <Bell className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Get Notified</h3>
+                  <p className="text-sm text-muted-foreground">We&apos;ll email you when withdrawals are available</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-foreground">Get Notified</h3>
-                <p className="text-sm text-muted-foreground">We&apos;ll email you when withdrawals are available</p>
+              <div className="space-y-2">
+                <Label htmlFor="notify-email" className="text-sm text-muted-foreground">
+                  Email Address
+                </Label>
+                <Input
+                  id="notify-email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-background border-border"
+                />
               </div>
             </div>
-            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">Notify Me</Button>
+            <Button
+              onClick={handleNotifyMe}
+              disabled={isSubmitting || !email}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground w-full md:w-auto"
+            >
+              {isSubmitting ? "Subscribing..." : "Notify Me"}
+            </Button>
           </div>
         </CardContent>
       </Card>

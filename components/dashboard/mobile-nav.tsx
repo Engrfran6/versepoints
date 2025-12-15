@@ -3,12 +3,24 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Crown, Trophy, Store, Settings, LogOut } from "lucide-react"
+import {
+  LayoutDashboard,
+  Crown,
+  Trophy,
+  Store,
+  Settings,
+  LogOut,
+  Menu,
+  CheckSquare,
+  Users,
+  FileText,
+  DollarSign,
+  Rocket,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { useState } from "react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu } from "lucide-react"
 
 export function MobileNav() {
   const pathname = usePathname()
@@ -20,6 +32,14 @@ export function MobileNav() {
     { href: "/dashboard/rank", icon: Crown, label: "Rank" },
     { href: "/dashboard/leaderboard", icon: Trophy, label: "Leaders" },
     { href: "/dashboard/nfts", icon: Store, label: "NFTs" },
+  ]
+
+  const moreNavItems = [
+    { href: "/dashboard/tasks", icon: CheckSquare, label: "Tasks" },
+    { href: "/dashboard/referrals", icon: Users, label: "Referrals" },
+    { href: "/dashboard/whitepaper", icon: FileText, label: "Whitepaper" },
+    { href: "/dashboard/withdraw", icon: DollarSign, label: "Withdraw" },
+    { href: "/dashboard/phases", icon: Rocket, label: "Roadmap" },
   ]
 
   const handleLogout = async () => {
@@ -39,6 +59,38 @@ export function MobileNav() {
           </SheetTrigger>
           <SheetContent side="right" className="w-64">
             <div className="flex flex-col gap-4 mt-8">
+              {mainNavItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                    pathname === item.href ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent",
+                  )}
+                  onClick={() => setOpen(false)}
+                >
+                  <item.icon className="h-5 w-5" />
+                  {item.label}
+                </Link>
+              ))}
+
+              {moreNavItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                    pathname === item.href ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent",
+                  )}
+                  onClick={() => setOpen(false)}
+                >
+                  <item.icon className="h-5 w-5" />
+                  {item.label}
+                </Link>
+              ))}
+
+              <div className="border-t border-border my-2" />
+
               <Link
                 href="/dashboard/settings"
                 className={cn(

@@ -51,7 +51,19 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
   const completedTaskIds = new Set(userTasks?.map((ut) => ut.task_id) || [])
 
   const handleStartTask = (task: Task) => {
-    // Open the task URL if available
+    if (task.task_type === "referral") {
+      router.push("/dashboard/referrals")
+      toast.info("Share your referral link to complete this task")
+      return
+    }
+
+    if (task.title.toLowerCase().includes("profile") || task.title.toLowerCase().includes("complete")) {
+      router.push("/dashboard/settings")
+      toast.info("Complete your profile to earn points")
+      return
+    }
+
+    // For other tasks, open URL and show submission modal
     if (task.action_url) {
       window.open(task.action_url, "_blank")
     }
@@ -169,11 +181,19 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
         {tasks?.map((task) => {
           const status = getTaskStatus(task.id)
           const isCompleted = status === "verified" || status === "completed"
+          const isPending = status === "pending"
+          const isSpecialTask =
+            task.task_type === "referral" ||
+            task.title.toLowerCase().includes("profile") ||
+            task.title.toLowerCase().includes("complete")
 
           return (
             <Card
               key={task.id}
-              className={cn("bg-card/90 backdrop-blur-sm border-border transition-all", isCompleted && "opacity-60")}
+              className={cn(
+                "bg-card/90 backdrop-blur-sm border-border transition-all",
+                isCompleted && "opacity-60 bg-green-500/5 border-green-500/20",
+              )}
             >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between gap-4">
@@ -195,13 +215,13 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
                   </div>
                   <div>
                     {isCompleted ? (
-                      <Button disabled variant="outline" className="gap-2 bg-transparent">
-                        <CheckCircle2 className="w-4 h-4" />
-                        Done
+                      <Button disabled variant="outline" className="gap-2 bg-green-500/10 border-green-500/30">
+                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                        Completed
                       </Button>
-                    ) : status === "pending" ? (
-                      <Button disabled variant="outline" className="gap-2 bg-transparent">
-                        <Clock className="w-4 h-4" />
+                    ) : isPending ? (
+                      <Button disabled variant="outline" className="gap-2 bg-yellow-500/10 border-yellow-500/30">
+                        <Clock className="w-4 h-4 text-yellow-500" />
                         Pending
                       </Button>
                     ) : (
@@ -209,7 +229,7 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
                         onClick={() => handleStartTask(task)}
                         className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
                       >
-                        Start
+                        {isSpecialTask ? "Go" : "Start"}
                         <ExternalLink className="w-4 h-4" />
                       </Button>
                     )}

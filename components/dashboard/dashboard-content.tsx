@@ -22,6 +22,12 @@ const FloatingParticles = dynamic(
 const MiningRigScene = dynamic(() => import("@/components/3d/mining-rig-scene").then((mod) => mod.MiningRigScene), {
   ssr: false,
 })
+const MiningCrystals3D = dynamic(
+  () => import("@/components/3d/mining-crystals-3d").then((mod) => mod.MiningCrystals3D),
+  {
+    ssr: false,
+  },
+)
 
 interface DashboardContentProps {
   user: User
@@ -145,8 +151,19 @@ export function DashboardContent({ user: initialUser, referralCount, rank }: Das
       <div className="relative z-10 grid gap-6 lg:grid-cols-3">
         {/* Left Column - Mining */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="bg-gradient-to-br from-card via-card/90 to-background/20 border-border shadow-2xl overflow-hidden">
-            <CardContent className="p-6">
+          <Card className="bg-gradient-to-br from-card via-card/90 to-background/20 border-border shadow-2xl overflow-hidden relative">
+            <div className="absolute left-0 top-0 bottom-0 w-32 hidden lg:block">
+              <Suspense fallback={null}>
+                <MiningCrystals3D />
+              </Suspense>
+            </div>
+            <div className="absolute right-0 top-0 bottom-0 w-32 hidden lg:block">
+              <Suspense fallback={null}>
+                <MiningCrystals3D />
+              </Suspense>
+            </div>
+
+            <CardContent className="p-6 relative z-10">
               <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex-1 flex flex-col md:flex-row items-center gap-6">
                   <Suspense fallback={<div className="w-32 h-32 bg-muted/20 rounded-lg animate-pulse" />}>

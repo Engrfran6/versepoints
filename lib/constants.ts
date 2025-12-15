@@ -1,5 +1,5 @@
 export const MINING_CONSTANTS = {
-  POINTS_PER_MINE: 100,
+  POINTS_PER_MINE: 10000,
   MINING_COOLDOWN_HOURS: 24,
   WELCOME_BONUS: 1000,
   REFERRAL_SIGNUP_BONUS: 50,
@@ -29,11 +29,19 @@ export const APP_CONFIG = {
 }
 
 export const RANK_THRESHOLDS = {
-  rookie: 0,
-  silver: 10000,
-  gold: 50000,
-  diamond: 200000,
-  citizen: 1000000,
+  rookie: 1000,
+  silver: 50000,
+  gold: 250000,
+  diamond: 1000000,
+  citizen: 5000000,
+} as const
+
+export const RANK_REFERRAL_REQUIREMENTS = {
+  rookie: 3,
+  silver: 10,
+  gold: 25,
+  diamond: 50,
+  citizen: 100,
 } as const
 
 export const RANK_COLORS = {
