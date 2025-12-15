@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   description: "Earn VersePoints through daily mining and referrals. Join the future of rewards.",
   generator: "v0.app",
   icons: {
-    icon: "/logo.jpg",
-    apple: "/logo.jpg",
+    icon: "/logo.png",
+    apple: "/logo.png",
   },
 }
 

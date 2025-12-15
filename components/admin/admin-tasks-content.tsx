@@ -65,11 +65,16 @@ export function AdminTasksContent({ tasks, pendingSubmissions }: { tasks: Task[]
   }
 
   const handleCreateTask = async () => {
+    const taskData = { ...formData }
+    if (formData.task_type === "referral" || formData.task_type === "complete_profile") {
+      taskData.action_url = ""
+    }
+
     try {
       const response = await fetch("/api/admin/tasks/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(taskData),
       })
 
       if (!response.ok) throw new Error("Failed to create task")
@@ -294,22 +299,25 @@ export function AdminTasksContent({ tasks, pendingSubmissions }: { tasks: Task[]
                     <SelectItem value="daily">Daily</SelectItem>
                     <SelectItem value="special">Special</SelectItem>
                     <SelectItem value="referral">Referral</SelectItem>
+                    <SelectItem value="complete_profile">Complete Profile</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="url" className="text-foreground">
-                Action URL
-              </Label>
-              <Input
-                id="url"
-                value={formData.action_url}
-                onChange={(e) => setFormData({ ...formData, action_url: e.target.value })}
-                className="bg-background border-border text-foreground"
-                placeholder="https://twitter.com/yourprofile"
-              />
-            </div>
+            {formData.task_type !== "referral" && formData.task_type !== "complete_profile" && (
+              <div className="space-y-2">
+                <Label htmlFor="url" className="text-foreground">
+                  Action URL
+                </Label>
+                <Input
+                  id="url"
+                  value={formData.action_url}
+                  onChange={(e) => setFormData({ ...formData, action_url: e.target.value })}
+                  className="bg-background border-border text-foreground"
+                  placeholder="https://twitter.com/yourprofile"
+                />
+              </div>
+            )}
             <div className="flex gap-2">
               <Button onClick={handleCreateTask} className="flex-1 bg-primary hover:bg-primary/90">
                 Create Task

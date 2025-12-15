@@ -3,6 +3,7 @@
 import type React from "react"
 import { Suspense } from "react"
 import dynamic from "next/dynamic"
+import Image from "next/image"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,7 +13,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { loginSchema } from "@/lib/validations/auth"
-import { Pickaxe, Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff } from "lucide-react"
 
 const LoginTransition = dynamic(() => import("@/components/3d/login-transition").then((mod) => mod.LoginTransition), {
   ssr: false,
@@ -106,9 +107,7 @@ export default function LoginPage() {
           <div className="flex flex-col gap-6">
             {/* Logo */}
             <Link href="/" className="flex items-center justify-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                <Pickaxe className="w-6 h-6 text-primary-foreground" />
-              </div>
+              <Image src="/logo.jpg" width={40} height={40} alt="VerseEstate Logo" className="rounded-lg" />
               <span className="text-2xl font-bold text-foreground">VersePoints</span>
             </Link>
 

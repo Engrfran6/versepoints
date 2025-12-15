@@ -5,6 +5,7 @@ import { Store, Package, TrendingUp, Flame } from "lucide-react"
 import type { NFTCatalog, NFTTier, NFTTransaction } from "@/lib/types/phase2"
 import { NFT_TIER_COLORS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
+import { AdminNFTsContent } from "@/components/admin/admin-nfts-content"
 
 export default async function AdminNFTsPage() {
   const supabase = await createClient()
@@ -209,6 +210,8 @@ export default async function AdminNFTsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <AdminNFTsContent nftCatalog={nftCatalog || []} />
     </div>
   )
 }

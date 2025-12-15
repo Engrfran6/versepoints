@@ -5,6 +5,7 @@ import { Crown, Zap, TrendingUp } from "lucide-react"
 import type { RankName, RankConfig } from "@/lib/types/phase2"
 import { RANK_COLORS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
+import { AdminRanksContent } from "@/components/admin/admin-ranks-content"
 
 export default async function AdminRanksPage() {
   const supabase = await createClient()
@@ -157,6 +158,8 @@ export default async function AdminRanksPage() {
           </CardContent>
         </Card>
       </div>
+
+      <AdminRanksContent rankConfigs={rankConfigs || []} />
     </div>
   )
 }
