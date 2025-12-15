@@ -22,12 +22,9 @@ const FloatingParticles = dynamic(
 const MiningRigScene = dynamic(() => import("@/components/3d/mining-rig-scene").then((mod) => mod.MiningRigScene), {
   ssr: false,
 })
-const MiningCrystals3D = dynamic(
-  () => import("@/components/3d/mining-crystals-3d").then((mod) => mod.MiningCrystals3D),
-  {
-    ssr: false,
-  },
-)
+const MiningCrystals3D = dynamic(() => import("@/components/3d/mining-crystals-3d"), {
+  ssr: false,
+})
 
 interface DashboardContentProps {
   user: User
@@ -166,7 +163,9 @@ export function DashboardContent({ user: initialUser, referralCount, rank }: Das
             <CardContent className="p-6 relative z-10">
               <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex-1 flex flex-col md:flex-row items-center gap-6">
-                  <Suspense fallback={<div className="w-32 h-32 bg-muted/20 rounded-lg animate-pulse" />}>
+                  <Suspense
+                    fallback={<div className="w-32 h-32 bg-muted/20 hidden lg:block rounded-lg animate-pulse" />}
+                  >
                     <div className="w-32 h-32 md:w-40 md:h-40 relative">
                       <MiningRigScene isActive={isMining} />
                       <div

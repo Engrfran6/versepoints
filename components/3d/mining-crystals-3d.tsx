@@ -53,7 +53,7 @@ function ParticleField() {
   )
 }
 
-export function MiningCrystals3D() {
+export default function MiningCrystals3D() {
   return (
     <div className="w-full h-full">
       <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
@@ -82,3 +82,5 @@ export function MiningCrystals3D() {
     </div>
   )
 }
+
+export { MiningCrystals3D }

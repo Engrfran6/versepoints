@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { Suspense } from "react"
+import { Suspense, useEffect } from "react"
 import dynamic from "next/dynamic"
 import Image from "next/image"
 import { createClient } from "@/lib/supabase/client"
@@ -34,6 +34,20 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    const clearInvalidSession = async () => {
+      try {
+        const supabase = createClient()
+        // Sign out silently to clear any invalid session tokens
+        await supabase.auth.signOut()
+      } catch (error) {
+        // Ignore errors during cleanup
+        console.error("[v0] Failed to clear session:", error)
+      }
+    }
+    clearInvalidSession()
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
