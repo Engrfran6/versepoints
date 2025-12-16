@@ -164,9 +164,9 @@ export function DashboardContent({ user: initialUser, referralCount, rank }: Das
               <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex-1 flex flex-col md:flex-row items-center gap-6">
                   <Suspense
-                    fallback={<div className="w-32 h-32 bg-muted/20 hidden lg:block rounded-lg animate-pulse" />}
+                    fallback={<div className="w-32 h-32 bg-muted/20 rounded-lg animate-pulse" />}
                   >
-                    <div className="w-32 h-32 md:w-40 md:h-40 relative">
+                    <div className="w-32 h-32 md:w-40 hidden lg:block md:h-40 relative">
                       <MiningRigScene isActive={isMining} />
                       <div
                         className={cn(

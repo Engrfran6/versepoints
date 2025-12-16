@@ -29,13 +29,13 @@ export function MobileNav() {
 
   const mainNavItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Home" },
+    { href: "/dashboard/tasks", icon: CheckSquare, label: "Tasks" },
     { href: "/dashboard/rank", icon: Crown, label: "Rank" },
-    { href: "/dashboard/leaderboard", icon: Trophy, label: "Leaders" },
     { href: "/dashboard/nfts", icon: Store, label: "NFTs" },
   ]
 
   const moreNavItems = [
-    { href: "/dashboard/tasks", icon: CheckSquare, label: "Tasks" },
+    { href: "/dashboard/leaderboard", icon: Trophy, label: "Leaders" },
     { href: "/dashboard/referrals", icon: Users, label: "Referrals" },
     { href: "/dashboard/whitepaper", icon: FileText, label: "Whitepaper" },
     { href: "/dashboard/withdraw", icon: DollarSign, label: "Withdraw" },
