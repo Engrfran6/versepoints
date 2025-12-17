@@ -98,7 +98,7 @@ export function NFTCard({
           tierColors.text
         )}
       >
-        {nft.tier}
+        {nft.name}
       </Badge>
 
       {/* Owned badge */}
@@ -132,35 +132,7 @@ export function NFTCard({
       </div>
 
       {/* CONTENT */}
-      <CardContent className="relative p-4 pt-0">
-        {/* 🔒 LOCK OVERLAY — hidden when preview is ON */}
-        {isLocked && !showPreview && (
-          <div className="absolute inset-0 z-20 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center">
-            <div className="text-center p-4">
-              <Lock className="mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground mb-1">Requires</p>
-              <p
-                className={cn(
-                  "font-bold uppercase text-lg",
-                  RANK_COLORS[nft.required_rank as RankName]?.text
-                )}
-              >
-                {nft.required_rank} Rank
-              </p>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mt-3 gap-1 text-xs"
-                onClick={() => setShowPreview(true)}
-              >
-                <Eye className="w-3 h-3" />
-                Preview NFT
-              </Button>
-            </div>
-          </div>
-        )}
-
+      <CardContent className="relative px-4 pt-0">
         {/* Name & description */}
         <h3 className="font-bold text-foreground mb-1">{nft.name}</h3>
         <p className="text-xs text-muted-foreground mb-3">
@@ -184,7 +156,7 @@ export function NFTCard({
         </div>
 
         {/* Price */}
-        <div className="mb-3">
+        <div className="">
           <p className="text-xs text-muted-foreground">Price</p>
           <p className="text-lg font-bold text-primary">
             {nft.vp_cost.toLocaleString()} VP
@@ -193,18 +165,45 @@ export function NFTCard({
       </CardContent>
 
       {/* BUY — only when actually purchasable */}
-      {canAfford && !isLocked && (
-        <div className="px-4 pb-4">
-          <Button
-            onClick={handlePurchase}
-            disabled={!canPurchase || isPurchasing}
-            size="sm"
-            className="w-full gap-2"
-          >
-            <ShoppingCart className="w-4 h-4" />
-            {isPurchasing ? "Buying..." : "Buy"}
-          </Button>
+      {isLocked ? (
+        <div className="flex items-center gap-4 rounded-xl bg-muted/60 px-5 py-4 border border-border/50 shadow-sm mx-4 hover:cursor-not-allowed">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-background/80 border">
+            <Lock className="h-6 w-6 text-muted-foreground" />
+          </div>
+
+          <div className="flex flex-col leading-tight">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              Requires
+            </p>
+
+            <p
+              className={cn(
+                "text-lg font-extrabold uppercase leading-none",
+                RANK_COLORS[nft.required_rank as RankName]?.text
+              )}
+            >
+              {nft.required_rank} Rank
+            </p>
+
+            <p className="text-xs italic text-muted-foreground">
+              to unlock this NFT
+            </p>
+          </div>
         </div>
+      ) : (
+        canAfford && (
+          <div className="px-4 pb-4">
+            <Button
+              onClick={handlePurchase}
+              disabled={!canPurchase || isPurchasing}
+              size="sm"
+              className="w-full gap-2"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              {isPurchasing ? "Buying..." : "Buy"}
+            </Button>
+          </div>
+        )
       )}
     </Card>
   );
