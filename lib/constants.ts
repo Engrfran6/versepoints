@@ -6,35 +6,35 @@ export const MINING_CONSTANTS = {
   REFERRAL_FIRST_MINING_BONUS: 100,
   REFERRAL_ONGOING_BONUS: 20,
   STREAK_BONUS_MULTIPLIERS: {
-    3: 1.1, // 3 day streak = 10% bonus
-    7: 1.25, // 7 day streak = 25% bonus
-    14: 1.5, // 14 day streak = 50% bonus
-    30: 2.0, // 30 day streak = 100% bonus (2x)
-    60: 2.5, // 60 day streak = 150% bonus
-    100: 3.0, // 100 day streak = 200% bonus (3x)
+    3: 200.1, // 3 day streak = 10% bonus
+    7: 245.25, // 7 day streak = 25% bonus
+    14: 285.5, // 14 day streak = 50% bonus
+    30: 300.0, // 30 day streak = 100% bonus (2x)
+    60: 360.5, // 60 day streak = 150% bonus
+    100: 400.0, // 100 day streak = 200% bonus (3x)
   } as Record<number, number>,
   STREAK_GRACE_HOURS: 36, // Hours before streak resets (gives 12hr grace period)
-}
+};
 
 export const RATE_LIMITS = {
   MINING_PER_IP_HOURS: 24,
   REGISTRATIONS_PER_IP_HOUR: 5,
   API_REQUESTS_PER_MINUTE: 60,
-}
+};
 
 export const APP_CONFIG = {
   APP_NAME: "VersePoints",
   APP_DESCRIPTION: "Mine VersePoints daily and earn rewards",
   SUPPORT_EMAIL: "support@versepoints.com",
-}
+};
 
 export const RANK_THRESHOLDS = {
-  rookie: 1000,
-  silver: 50000,
-  gold: 250000,
-  diamond: 1000000,
-  citizen: 5000000,
-} as const
+  rookie: 100000,
+  silver: 200000,
+  gold: 400000,
+  diamond: 500000,
+  citizen: 700000,
+} as const;
 
 export const RANK_REFERRAL_REQUIREMENTS = {
   rookie: 3,
@@ -42,7 +42,7 @@ export const RANK_REFERRAL_REQUIREMENTS = {
   gold: 25,
   diamond: 50,
   citizen: 100,
-} as const
+} as const;
 
 export const RANK_COLORS = {
   rookie: {
@@ -80,7 +80,7 @@ export const RANK_COLORS = {
     glow: "shadow-purple-500/20",
     hex: "#8B5CF6",
   },
-} as const
+} as const;
 
 export const NFT_TIER_COLORS = {
   basic: {
@@ -108,7 +108,7 @@ export const NFT_TIER_COLORS = {
     text: "text-purple-400",
     border: "border-purple-500/30",
   },
-} as const
+} as const;
 
 export const PHASE_FEATURES = {
   1: ["free_mining", "basic_dashboard", "referral_link"],
@@ -123,4 +123,4 @@ export const PHASE_FEATURES = {
   10: ["land_plots", "virtual_mining", "3d_avatars"],
   11: ["dao_governance", "treasury_voting", "protocol_upgrades"],
   12: ["full_ecosystem", "cross_chain", "enterprise_api"],
-} as const
+} as const;
