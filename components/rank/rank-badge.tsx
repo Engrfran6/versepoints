@@ -1,17 +1,16 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Shield, ShieldPlus, Award, Gem } from "lucide-react";
 import Image from "next/image";
 import type { RankName } from "@/lib/types/phase2";
 import { RANK_COLORS } from "@/lib/constants";
 
-const RANK_ICONS: Record<RankName, any> = {
-  rookie: Shield,
-  silver: ShieldPlus,
-  gold: Award,
-  diamond: Gem,
-  citizen: "/logo.png", // can be local path or remote URL
+const RANK_ICONS: Record<RankName, string> = {
+  rookie: "/ranks/rookie.jpg",
+  silver: "/ranks/silver.jpg",
+  gold: "/ranks/gold.jpg",
+  diamond: "/ranks/diamond.jpg",
+  citizen: "/ranks/citizen.jpg",
 };
 
 interface RankBadgeProps {
@@ -24,12 +23,11 @@ interface RankBadgeProps {
 
 export function RankBadge({
   rank,
-  size = "md",
+  size = "xl",
   showLabel = true,
   showGlow = true,
   className,
 }: RankBadgeProps) {
-  const IconOrImage = RANK_ICONS[rank];
   const colors = RANK_COLORS[rank];
 
   const sizeClasses = {
@@ -37,15 +35,15 @@ export function RankBadge({
     sm: "w-8 h-8",
     md: "w-12 h-12",
     lg: "w-16 h-16",
-    xl: "w-24 h-24",
+    xl: "w-32 h-32",
   };
 
-  const iconSizes = {
-    xs: 12,
-    sm: 16,
-    md: 24,
-    lg: 32,
-    xl: 48,
+  const imagePadding = {
+    xs: "p-0.5",
+    sm: "p-1",
+    md: "p-1.5",
+    lg: "p-2",
+    xl: "p-3",
   };
 
   const labelSizes = {
@@ -56,8 +54,6 @@ export function RankBadge({
     xl: "text-lg",
   };
 
-  const isImage = typeof IconOrImage === "string";
-
   return (
     <div className={cn("flex flex-col items-center gap-1", className)}>
       <div
@@ -65,34 +61,33 @@ export function RankBadge({
           sizeClasses[size],
           colors.bg,
           colors.border,
-          "border-2 rounded-xl flex items-center justify-center relative",
+          "border-2 rounded-xl relative overflow-hidden",
           showGlow && `glow-${rank}`,
           "transition-all duration-300 hover:scale-110"
         )}
       >
-        {isImage ? (
+        {/* Rank Image — fills container */}
+        <div className={cn("absolute inset-0", imagePadding[size])}>
           <Image
-            src={IconOrImage}
+            src={RANK_ICONS[rank]}
             alt={rank}
-            width={iconSizes[size]}
-            height={iconSizes[size]}
-            className="rounded-xl"
+            fill
+            priority
+            className="object-cover rounded-lg p-1"
           />
-        ) : (
-          <IconOrImage
-            className={cn(
-              `w-${iconSizes[size]} h-${iconSizes[size]}`,
-              colors.text,
-              "animate-glow-rank"
-            )}
-          />
-        )}
+        </div>
 
+        {/* Shimmer for higher ranks */}
         {(rank === "gold" || rank === "diamond" || rank === "citizen") && (
           <div
-            className="absolute inset-0 rounded-xl opacity-30 animate-shimmer"
+            className="absolute inset-0 rounded-xl opacity-30 animate-shimmer pointer-events-none"
             style={{
-              background: `linear-gradient(90deg, transparent, ${colors.hex}40, transparent)`,
+              background: `linear-gradient(
+                90deg,
+                transparent,
+                ${colors.hex}55,
+                transparent
+              )`,
               backgroundSize: "200% 100%",
             }}
           />

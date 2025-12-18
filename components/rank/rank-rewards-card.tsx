@@ -7,6 +7,7 @@ import { RANK_COLORS, RANK_THRESHOLDS } from "@/lib/constants";
 import { RankBadge } from "./rank-badge";
 import { Zap, Users, Gift, Lock, Check, Star, Sparkles } from "lucide-react";
 import { useState } from "react";
+import { ImageIcon } from "../ui/image-icon";
 
 interface RankRewardsCardProps {
   rank: RankName;
@@ -16,6 +17,7 @@ interface RankRewardsCardProps {
   dailyReward: number;
   features: string[];
   className?: string;
+  referers?: number;
 }
 
 const RANK_ORDER: RankName[] = [
@@ -74,6 +76,7 @@ export function RankRewardsCard({
   dailyReward,
   features,
   className,
+  referers,
 }: RankRewardsCardProps) {
   const colors = RANK_COLORS[rank];
   const isUnlocked =
@@ -129,7 +132,7 @@ export function RankRewardsCard({
           >
             <RankBadge
               rank={rank}
-              size="md"
+              size="xl"
               showLabel={false}
               showGlow={isUnlocked}
             />
@@ -161,6 +164,7 @@ export function RankRewardsCard({
                 isHovered && "animate-pulse"
               )}
             />
+
             <p className="text-lg font-bold text-foreground">+{miningBoost}%</p>
             <p className="text-xs text-muted-foreground">Mining Boost</p>
           </div>
@@ -269,6 +273,7 @@ export function RankRewardsCard({
                     {pointsRequired.toLocaleString()} VP
                   </span>
                 </p>
+                <div> dnbjdb{referers}</div>
               </div>
             </div>
 
