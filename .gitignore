@@ -1,0 +1,86 @@
+# ===============================
+# Node / Package managers
+# ===============================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# ===============================
+# Next.js
+# ===============================
+.next/
+out/
+build/
+dist/
+.vercel/
+
+# ===============================
+# Environment variables
+# ===============================
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Supabase local env
+.supabase/
+supabase/.env
+
+# ===============================
+# Logs
+# ===============================
+logs/
+*.log
+
+# ===============================
+# OS / Editor junk
+# ===============================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+
+# ===============================
+# TypeScript
+# ===============================
+*.tsbuildinfo
+
+# ===============================
+# Testing
+# ===============================
+coverage/
+playwright-report/
+test-results/
+
+# ===============================
+# Cache
+# ===============================
+.cache/
+.tmp/
+.temp/
+
+# ===============================
+# Build tools
+# ===============================
+.eslintcache
+.turbo/
+.swc/
+
+# ===============================
+# Misc
+# ===============================
+*.pem
+*.key
+*.crt
+
+# Ignore uploaded files if stored locally
+uploads/
