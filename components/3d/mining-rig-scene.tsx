@@ -1,22 +1,14 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Box, Cylinder, Sphere, Float, Sparkles } from "@react-three/drei";
+import {useRef, useState, useEffect} from "react";
+import {Canvas, useFrame} from "@react-three/fiber";
+import {Box, Cylinder, Sphere, Float, Sparkles} from "@react-three/drei";
 import type * as THREE from "three";
 
-function DrillRig({
-  isMining,
-  miningBoost,
-}: {
-  isMining: boolean;
-  miningBoost: number;
-}) {
+function DrillRig({isMining, miningBoost}: {isMining: boolean; miningBoost: number}) {
   const rigRef = useRef<THREE.Group>(null);
   const drillRef = useRef<THREE.Mesh>(null);
-  const [rocks, setRocks] = useState<
-    { id: number; position: [number, number, number] }[]
-  >([]);
+  const [rocks, setRocks] = useState<{id: number; position: [number, number, number]}[]>([]);
 
   useFrame((state) => {
     if (rigRef.current) {
@@ -24,8 +16,7 @@ function DrillRig({
     }
 
     if (drillRef.current && isMining) {
-      drillRef.current.rotation.y +=
-        state.clock.getDelta() * (8 + miningBoost / 10);
+      drillRef.current.rotation.y += state.clock.getDelta() * (8 + miningBoost / 10);
     }
   });
 
@@ -37,11 +28,7 @@ function DrillRig({
         ...prev.slice(-30),
         {
           id: Date.now(),
-          position: [
-            (Math.random() - 0.5) * 1.2,
-            0.2,
-            (Math.random() - 0.5) * 1.2,
-          ],
+          position: [(Math.random() - 0.5) * 1.2, 0.2, (Math.random() - 0.5) * 1.2],
         },
       ]);
     }, 120);
@@ -74,11 +61,7 @@ function DrillRig({
       </Box>
 
       {/* Drill bit */}
-      <Cylinder
-        ref={drillRef}
-        args={[0.25, 0.15, 1.2, 12]}
-        position={[0, 0.2, 0]}
-      >
+      <Cylinder ref={drillRef} args={[0.25, 0.15, 1.2, 12]} position={[0, 0.2, 0]}>
         <meshStandardMaterial color="#94a3b8" metalness={0.9} roughness={0.2} />
       </Cylinder>
 
@@ -88,8 +71,7 @@ function DrillRig({
           key={i}
           args={[0.05, 0.05, 1.5]}
           position={[x, 0.6, 0]}
-          rotation={[Math.PI / 2, 0, 0]}
-        >
+          rotation={[Math.PI / 2, 0, 0]}>
           <meshStandardMaterial color="#64748b" metalness={0.6} />
         </Cylinder>
       ))}
@@ -131,7 +113,7 @@ export function MiningRigScene({
 }: MiningRigSceneProps) {
   return (
     <div className={`w-full h-72 ${className}`}>
-      <Canvas camera={{ position: [4, 3, 4], fov: 45 }}>
+      <Canvas camera={{position: [4, 3, 4], fov: 45}}>
         {/* Daylight mine */}
         <ambientLight intensity={0.9} />
         <directionalLight position={[6, 8, 4]} intensity={1.5} castShadow />

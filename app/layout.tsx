@@ -1,18 +1,17 @@
 import type React from "react";
-import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
-import { SplashScreen } from "@/components/splash-screen";
+import type {Metadata, Viewport} from "next";
+import {Geist, Geist_Mono} from "next/font/google";
+import {Analytics} from "@vercel/analytics/next";
+import {SplashScreen} from "@/components/splash-screen";
 import "./globals.css";
-import { Toaster } from "sonner";
+import {Toaster} from "sonner";
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const _geist = Geist({subsets: ["latin"]});
+const _geistMono = Geist_Mono({subsets: ["latin"]});
 
 export const metadata: Metadata = {
   title: "VersePoints - Mine Points Daily",
-  description:
-    "Earn VersePoints through daily mining and referrals. Join the future of rewards.",
+  description: "Earn VersePoints through daily mining and referrals. Join the future of rewards.",
   generator: "v0.app",
   icons: {
     icon: "/logo.png",

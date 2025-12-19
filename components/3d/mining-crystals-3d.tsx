@@ -1,17 +1,11 @@
 "use client";
 
-import { useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, Sphere, MeshDistortMaterial } from "@react-three/drei";
+import {useRef} from "react";
+import {Canvas, useFrame} from "@react-three/fiber";
+import {Float, Sphere, MeshDistortMaterial} from "@react-three/drei";
 import type * as THREE from "three";
 
-function MiningCrystal({
-  position,
-  color,
-}: {
-  position: [number, number, number];
-  color: string;
-}) {
+function MiningCrystal({position, color}: {position: [number, number, number]; color: string}) {
   const meshRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
@@ -66,13 +60,7 @@ function ParticleField() {
           itemSize={3}
         />
       </bufferGeometry>
-      <pointsMaterial
-        size={0.02}
-        color="#22d3ee"
-        transparent
-        opacity={0.6}
-        sizeAttenuation
-      />
+      <pointsMaterial size={0.02} color="#22d3ee" transparent opacity={0.6} sizeAttenuation />
     </points>
   );
 }
@@ -80,14 +68,10 @@ function ParticleField() {
 export default function MiningCrystals3D() {
   return (
     <div className="w-full h-full">
-      <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
+      <Canvas camera={{position: [0, 0, 5], fov: 50}}>
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} intensity={1} />
-        <pointLight
-          position={[-10, -10, -10]}
-          intensity={0.5}
-          color="#06b6d4"
-        />
+        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#06b6d4" />
 
         <ParticleField />
 
@@ -111,4 +95,4 @@ export default function MiningCrystals3D() {
   );
 }
 
-export { MiningCrystals3D };
+export {MiningCrystals3D};

@@ -1,33 +1,21 @@
 "use client";
 
-import { Suspense } from "react";
+import {Suspense} from "react";
 import dynamic from "next/dynamic";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { RankBadge } from "@/components/rank/rank-badge";
-import { RankProgress } from "@/components/rank/rank-progress";
-import { RankRewardsCard } from "@/components/rank/rank-rewards-card";
-import { Trophy, TrendingUp, History } from "lucide-react";
-import type { RankName, RankConfig, RankRewardsLog } from "@/lib/types/phase2";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {RankBadge} from "@/components/rank/rank-badge";
+import {RankProgress} from "@/components/rank/rank-progress";
+import {RankRewardsCard} from "@/components/rank/rank-rewards-card";
+import {Trophy, TrendingUp, History} from "lucide-react";
+import type {RankName, RankConfig, RankRewardsLog} from "@/lib/types/phase2";
 
 const AnimatedRankBadge = dynamic(
-  () =>
-    import("@/components/3d/animated-rank-badge").then(
-      (mod) => mod.AnimatedRankBadge
-    ),
-  { ssr: false }
+  () => import("@/components/3d/animated-rank-badge").then((mod) => mod.AnimatedRankBadge),
+  {ssr: false}
 );
 const FloatingParticles = dynamic(
-  () =>
-    import("@/components/3d/floating-particles").then(
-      (mod) => mod.FloatingParticles
-    ),
-  { ssr: false }
+  () => import("@/components/3d/floating-particles").then((mod) => mod.FloatingParticles),
+  {ssr: false}
 );
 
 interface RankPageContentProps {
@@ -46,11 +34,7 @@ export function RankPageContent({
   return (
     <div className="relative p-4 md:p-8 min-h-screen">
       <Suspense fallback={null}>
-        <FloatingParticles
-          className="opacity-20"
-          color="#a855f7"
-          count={1000}
-        />
+        <FloatingParticles className="opacity-20" color="#a855f7" count={1000} />
       </Suspense>
 
       {/* Header */}
@@ -59,9 +43,7 @@ export function RankPageContent({
           <Trophy className="w-8 h-8 text-primary" />
           Your Rank
         </h1>
-        <p className="text-muted-foreground mt-1">
-          Track your progress and unlock rewards
-        </p>
+        <p className="text-muted-foreground mt-1">Track your progress and unlock rewards</p>
       </div>
 
       {/* Current Rank Card with 3D Badge */}
@@ -74,10 +56,7 @@ export function RankPageContent({
               </div>
             </Suspense>
             <div className="flex-1 w-full">
-              <RankProgress
-                currentRank={currentRank}
-                totalPoints={totalPoints}
-              />
+              <RankProgress currentRank={currentRank} totalPoints={totalPoints} />
             </div>
           </div>
         </CardContent>
@@ -122,18 +101,12 @@ export function RankPageContent({
               {rankHistory.map((log: RankRewardsLog) => (
                 <div
                   key={log.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                >
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                   <div className="flex items-center gap-3">
-                    <RankBadge
-                      rank={log.to_rank as RankName}
-                      size="sm"
-                      showLabel={false}
-                    />
+                    <RankBadge rank={log.to_rank as RankName} size="sm" showLabel={false} />
                     <div>
                       <p className="font-medium text-foreground">
-                        Promoted to{" "}
-                        <span className="uppercase">{log.to_rank}</span>
+                        Promoted to <span className="uppercase">{log.to_rank}</span>
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(log.awarded_at).toLocaleDateString()}
@@ -152,9 +125,7 @@ export function RankPageContent({
             <div className="text-center py-8 text-muted-foreground">
               <History className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p>No rank promotions yet</p>
-              <p className="text-sm">
-                Keep mining to earn your first promotion!
-              </p>
+              <p className="text-sm">Keep mining to earn your first promotion!</p>
             </div>
           )}
         </CardContent>

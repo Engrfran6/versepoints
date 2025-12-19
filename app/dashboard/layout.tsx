@@ -1,18 +1,14 @@
 import type React from "react";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { Sidebar } from "@/components/dashboard/sidebar";
-import { MobileNav } from "@/components/dashboard/mobile-nav";
+import {redirect} from "next/navigation";
+import {createClient} from "@/lib/supabase/server";
+import {Sidebar} from "@/components/dashboard/sidebar";
+import {MobileNav} from "@/components/dashboard/mobile-nav";
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function DashboardLayout({children}: {children: React.ReactNode}) {
   const supabase = await createClient();
 
   const {
-    data: { user },
+    data: {user},
     error,
   } = await supabase.auth.getUser();
 
@@ -21,7 +17,7 @@ export default async function DashboardLayout({
   }
 
   // Get user data to check admin status
-  const { data: userData } = await supabase
+  const {data: userData} = await supabase
     .from("users")
     .select("is_admin")
     .eq("id", user.id)

@@ -1,26 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, Suspense } from "react";
+import {useState, useEffect, useCallback, useRef, Suspense} from "react";
 import dynamic from "next/dynamic";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Pickaxe,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-  Sparkles,
-  Flame,
-  Zap,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { MINING_CONSTANTS } from "@/lib/constants";
+import {Button} from "@/components/ui/button";
+import {Badge} from "@/components/ui/badge";
+import {Pickaxe, Loader2, CheckCircle2, AlertCircle, Sparkles, Flame, Zap} from "lucide-react";
+import {cn} from "@/lib/utils";
+import {MINING_CONSTANTS} from "@/lib/constants";
 
 const MiningCrystals3D = dynamic(
-  () =>
-    import("@/components/3d/mining-crystals-3d").then(
-      (mod) => mod.MiningCrystals3D
-    ),
+  () => import("@/components/3d/mining-crystals-3d").then((mod) => mod.MiningCrystals3D),
   {
     ssr: false,
   }
@@ -60,19 +49,17 @@ export function MiningButton({
 
   const getStreakMultiplier = (streak: number): number => {
     const thresholds = Object.entries(MINING_CONSTANTS.STREAK_BONUS_MULTIPLIERS)
-      .map(([days, mult]) => ({ days: Number.parseInt(days), mult }))
+      .map(([days, mult]) => ({days: Number.parseInt(days), mult}))
       .sort((a, b) => b.days - a.days);
 
-    for (const { days, mult } of thresholds) {
+    for (const {days, mult} of thresholds) {
       if (streak >= days) return mult;
     }
     return 1.0;
   };
 
   const streakMultiplier = getStreakMultiplier(currentStreak);
-  const effectivePoints = Math.floor(
-    MINING_CONSTANTS.POINTS_PER_MINE * streakMultiplier
-  );
+  const effectivePoints = Math.floor(MINING_CONSTANTS.POINTS_PER_MINE * streakMultiplier);
 
   const calculateTimeLeft = useCallback(() => {
     if (!lastMiningAt) {
@@ -167,8 +154,7 @@ export function MiningButton({
       // Draw center glow
       const progress =
         timeLeft > 0
-          ? (MINING_CONSTANTS.MINING_COOLDOWN_HOURS * 60 * 60 * 1000 -
-              timeLeft) /
+          ? (MINING_CONSTANTS.MINING_COOLDOWN_HOURS * 60 * 60 * 1000 - timeLeft) /
             (MINING_CONSTANTS.MINING_COOLDOWN_HOURS * 60 * 60 * 1000)
           : 1;
 
@@ -184,14 +170,8 @@ export function MiningButton({
         canvas.height / 2,
         glowSize
       );
-      gradient.addColorStop(
-        0,
-        `rgba(34, 211, 238, ${canMine ? 0.4 : 0.2 * progress})`
-      );
-      gradient.addColorStop(
-        0.5,
-        `rgba(6, 182, 212, ${canMine ? 0.2 : 0.1 * progress})`
-      );
+      gradient.addColorStop(0, `rgba(34, 211, 238, ${canMine ? 0.4 : 0.2 * progress})`);
+      gradient.addColorStop(0.5, `rgba(6, 182, 212, ${canMine ? 0.2 : 0.1 * progress})`);
       gradient.addColorStop(1, "rgba(6, 182, 212, 0)");
 
       ctx.beginPath();
@@ -215,9 +195,9 @@ export function MiningButton({
     const hours = Math.floor(ms / (1000 * 60 * 60));
     const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((ms % (1000 * 60)) / 1000);
-    return `${hours.toString().padStart(2, "0")}:${minutes
+    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds
       .toString()
-      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+      .padStart(2, "0")}`;
   };
 
   const handleMine = async () => {
@@ -245,7 +225,7 @@ export function MiningButton({
         });
       }
     } catch {
-      setMiningResult({ success: false, message: "An error occurred" });
+      setMiningResult({success: false, message: "An error occurred"});
     } finally {
       setIsMining(false);
       setTimeout(() => setShowParticles(false), 2000);
@@ -254,8 +234,7 @@ export function MiningButton({
 
   // Progress percentage for countdown
   const totalCooldown = MINING_CONSTANTS.MINING_COOLDOWN_HOURS * 60 * 60 * 1000;
-  const progress =
-    timeLeft > 0 ? ((totalCooldown - timeLeft) / totalCooldown) * 100 : 100;
+  const progress = timeLeft > 0 ? ((totalCooldown - timeLeft) / totalCooldown) * 100 : 100;
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -274,8 +253,7 @@ export function MiningButton({
                 : currentStreak >= 3
                 ? "border-yellow-500/50 text-yellow-400 bg-yellow-500/10"
                 : "border-orange-500/50 text-orange-400 bg-orange-500/10"
-            )}
-          >
+            )}>
             <Flame className="w-4 h-4 animate-pulse" />
             <span className="font-bold">{currentStreak} Day Streak</span>
             {streakMultiplier > 1 && (
@@ -346,13 +324,7 @@ export function MiningButton({
             className="transition-all duration-1000 ease-out"
           />
           <defs>
-            <linearGradient
-              id="progressGradient"
-              x1="0%"
-              y1="0%"
-              x2="100%"
-              y2="0%"
-            >
+            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="hsl(var(--primary))" />
               <stop offset="100%" stopColor="hsl(var(--accent))" />
             </linearGradient>
@@ -377,8 +349,7 @@ export function MiningButton({
             canMine && !isMining
               ? "bg-gradient-to-br from-primary via-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground scale-100 hover:scale-105 shadow-lg shadow-primary/50"
               : "bg-gradient-to-br from-muted to-muted/80 text-muted-foreground cursor-not-allowed"
-          )}
-        >
+          )}>
           {canMine && !isMining && (
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-shimmer" />
           )}
@@ -396,20 +367,14 @@ export function MiningButton({
                 <span>Mine Now</span>
                 <span className="text-xs opacity-90 flex items-center gap-1">
                   +{effectivePoints} VP
-                  {streakMultiplier > 1 && (
-                    <Zap className="w-3 h-3 text-yellow-300" />
-                  )}
+                  {streakMultiplier > 1 && <Zap className="w-3 h-3 text-yellow-300" />}
                 </span>
               </>
             ) : (
               <>
                 <Pickaxe className="w-8 h-8 opacity-50" />
-                <span className="font-mono text-lg font-bold">
-                  {formatTime(timeLeft)}
-                </span>
-                <span className="text-xs opacity-60">
-                  {Math.round(progress)}% ready
-                </span>
+                <span className="font-mono text-lg font-bold">{formatTime(timeLeft)}</span>
+                <span className="text-xs opacity-60">{Math.round(progress)}% ready</span>
               </>
             )}
           </div>
@@ -423,15 +388,12 @@ export function MiningButton({
             miningResult.success
               ? "bg-gradient-to-r from-green-500/20 via-emerald-500/20 to-teal-500/20 border border-green-500/30"
               : "bg-destructive/10 text-destructive border border-destructive/30"
-          )}
-        >
+          )}>
           {miningResult.success ? (
             <>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-6 h-6 text-green-400 animate-bounce" />
-                <span className="font-bold text-lg text-green-400">
-                  {miningResult.message}
-                </span>
+                <span className="font-bold text-lg text-green-400">{miningResult.message}</span>
                 <Sparkles className="w-5 h-5 animate-spin text-yellow-400" />
               </div>
               {miningResult.streak && miningResult.streak > 1 && (
@@ -439,10 +401,7 @@ export function MiningButton({
                   <Flame className="w-4 h-4" />
                   <span>{miningResult.streak} day streak!</span>
                   {miningResult.multiplier && miningResult.multiplier > 1 && (
-                    <Badge
-                      variant="outline"
-                      className="text-xs border-orange-500/50"
-                    >
+                    <Badge variant="outline" className="text-xs border-orange-500/50">
                       {miningResult.multiplier}x bonus
                     </Badge>
                   )}
@@ -465,9 +424,7 @@ export function MiningButton({
             <Sparkles className="w-4 h-4 text-primary animate-pulse" />
             Click to mine and earn {effectivePoints} VersePoints!
             {streakMultiplier > 1 && (
-              <span className="text-yellow-400">
-                ({streakMultiplier}x streak bonus)
-              </span>
+              <span className="text-yellow-400">({streakMultiplier}x streak bonus)</span>
             )}
           </span>
         ) : (

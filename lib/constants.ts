@@ -1,17 +1,17 @@
 export const MINING_CONSTANTS = {
-  POINTS_PER_MINE: 1000,
+  POINTS_PER_MINE: 10000,
   MINING_COOLDOWN_HOURS: 24,
   WELCOME_BONUS: 1000,
   REFERRAL_SIGNUP_BONUS: 50,
   REFERRAL_FIRST_MINING_BONUS: 100,
   REFERRAL_ONGOING_BONUS: 20,
   STREAK_BONUS_MULTIPLIERS: {
-    3: 1.1, // 3 day streak = 10% bonus
-    7: 1.25, // 7 day streak = 25% bonus
-    14: 1.5, // 14 day streak = 50% bonus
-    30: 2.0, // 30 day streak = 100% bonus (2x)
-    60: 2.5, // 60 day streak = 150% bonus
-    100: 3.0, // 100 day streak = 200% bonus (3x)
+    3: 200.1, // 3 day streak = 10% bonus
+    7: 245.25, // 7 day streak = 25% bonus
+    14: 285.5, // 14 day streak = 50% bonus
+    30: 300.0, // 30 day streak = 100% bonus (2x)
+    60: 360.5, // 60 day streak = 150% bonus
+    100: 400.0, // 100 day streak = 200% bonus (3x)
   } as Record<number, number>,
   STREAK_GRACE_HOURS: 36, // Hours before streak resets (gives 12hr grace period)
 };
