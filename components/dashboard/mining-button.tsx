@@ -1,12 +1,23 @@
 "use client";
 
-import {useState, useEffect, useCallback, useRef, Suspense} from "react";
+import {useState, useEffect, useCallback, useRef, Suspense, useMemo} from "react";
 import dynamic from "next/dynamic";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
-import {Pickaxe, Loader2, CheckCircle2, AlertCircle, Sparkles, Flame, Zap} from "lucide-react";
+import {
+  Pickaxe,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  Sparkles,
+  Flame,
+  Zap,
+  ArrowBigUpIcon,
+  Hammer,
+} from "lucide-react";
 import {cn} from "@/lib/utils";
 import {MINING_CONSTANTS} from "@/lib/constants";
+import {useMiningProgress} from "@/hooks/useMiningProgress";
 
 const MiningCrystals3D = dynamic(
   () => import("@/components/3d/mining-crystals-3d").then((mod) => mod.MiningCrystals3D),
@@ -26,6 +37,7 @@ interface MiningButtonProps {
     error?: string;
   }>;
   onSuccess?: () => void;
+  isMining: boolean;
 }
 
 export function MiningButton({
@@ -33,10 +45,10 @@ export function MiningButton({
   currentStreak = 0,
   onMine,
   onSuccess,
+  isMining = false,
 }: MiningButtonProps) {
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [canMine, setCanMine] = useState(false);
-  const [isMining, setIsMining] = useState(false);
   const [miningResult, setMiningResult] = useState<{
     success: boolean;
     message: string;
@@ -200,10 +212,12 @@ export function MiningButton({
       .padStart(2, "0")}`;
   };
 
+  const nextMineDate = new Date(Date.now() + timeLeft);
+  const nextMineTime = nextMineDate.toLocaleTimeString();
+
   const handleMine = async () => {
     if (!canMine || isMining) return;
 
-    setIsMining(true);
     setMiningResult(null);
     setShowParticles(true);
 
@@ -227,7 +241,6 @@ export function MiningButton({
     } catch {
       setMiningResult({success: false, message: "An error occurred"});
     } finally {
-      setIsMining(false);
       setTimeout(() => setShowParticles(false), 2000);
     }
   };
@@ -235,11 +248,62 @@ export function MiningButton({
   // Progress percentage for countdown
   const totalCooldown = MINING_CONSTANTS.MINING_COOLDOWN_HOURS * 60 * 60 * 1000;
   const progress = timeLeft > 0 ? ((totalCooldown - timeLeft) / totalCooldown) * 100 : 100;
+  const RADIUS = 78;
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+  // Points mining count per day
+
+  const visualPoints = useMiningProgress(0, MINING_CONSTANTS.POINTS_PER_MINE ?? 0, lastMiningAt);
+
+  const [displayPoints, setDisplayPoints] = useState(visualPoints);
+  const [animate] = useState(false);
+
+  useEffect(() => {
+    if (!animate) {
+      setDisplayPoints(visualPoints);
+      return;
+    }
+
+    const diff = visualPoints - displayPoints;
+    const steps = 30;
+    const increment = diff / steps;
+    let current = displayPoints;
+    let step = 0;
+
+    const interval = setInterval(() => {
+      step++;
+      current += increment;
+
+      if (step >= steps) {
+        setDisplayPoints(visualPoints);
+        clearInterval(interval);
+      } else {
+        setDisplayPoints(current);
+      }
+    }, 25);
+
+    return () => clearInterval(interval);
+  }, [visualPoints]);
+
+  const formatter = useMemo(
+    () =>
+      new Intl.NumberFormat(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+    []
+  );
+  const formatted = formatter.format(displayPoints);
+  const [integerPart, decimalPart] = formatted.split(".");
 
   return (
     <div className="flex flex-col items-center gap-4">
       {currentStreak > 0 && (
-        <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+        <div
+          className={cn(
+            "flex items-center  gap-2 animate-in fade-in slide-in-from-top-2",
+            isMining && "bg-white rounded-full"
+          )}>
           <Badge
             variant="outline"
             className={cn(
@@ -256,7 +320,7 @@ export function MiningButton({
             )}>
             <Flame className="w-4 h-4 animate-pulse" />
             <span className="font-bold">{currentStreak} Day Streak</span>
-            {streakMultiplier > 1 && (
+            {streakMultiplier === 0 && (
               <span className="text-xs opacity-80">({streakMultiplier}x)</span>
             )}
           </Badge>
@@ -302,34 +366,93 @@ export function MiningButton({
           </div>
         )}
 
-        <svg className="absolute -inset-3 w-[calc(100%+24px)] h-[calc(100%+24px)] -rotate-90">
+        {/* <svg
+          className="absolute -inset-3 w-[calc(100%+24px)] h-[calc(100%+24px)] -rotate-90 pointer-events-none"
+          viewBox="0 0 100 100">
+
           <circle
-            cx="50%"
-            cy="50%"
-            r="48%"
+            cx="50"
+            cy="50"
+            r="48"
             fill="none"
             stroke="currentColor"
             strokeWidth="3"
             className="text-muted/30"
           />
+
+
           <circle
-            cx="50%"
-            cy="50%"
-            r="48%"
+            cx="50"
+            cy="50"
+            r="48"
             fill="none"
             stroke="url(#progressGradient)"
             strokeWidth="4"
             strokeLinecap="round"
-            strokeDasharray={`${progress * 3.14} 314`}
-            className="transition-all duration-1000 ease-out"
+            strokeDasharray={2 * Math.PI * 48}
+            strokeDashoffset={(1 - progress / 100) * 2 * Math.PI * 48}
+            className="transition-[stroke-dashoffset] duration-300 ease-linear"
           />
+
           <defs>
             <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="hsl(var(--primary))" />
               <stop offset="100%" stopColor="hsl(var(--accent))" />
             </linearGradient>
           </defs>
+        </svg> */}
+
+        <svg
+          className="absolute -inset-3 w-[calc(100%+24px)] h-[calc(100%+24px)] pointer-events-none"
+          viewBox="0 0 100 100">
+          <circle
+            cx="50"
+            cy="50"
+            r="48"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            className="text-muted/30"
+          />
         </svg>
+
+        {isMining && (
+          <svg
+            className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none drop-shadow-[0_0_12px_rgba(34,211,238,0.8)]"
+            viewBox="0 0 200 200">
+            {/* Background ring */}
+            <circle
+              cx="100"
+              cy="100"
+              r={RADIUS}
+              fill="none"
+              stroke="hsl(var(--muted))"
+              strokeWidth="6"
+              className="opacity-30"
+            />
+
+            {/* Progress ring */}
+            <circle
+              cx="100"
+              cy="100"
+              r={RADIUS}
+              fill="none"
+              stroke="url(#miningGradient)"
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeDasharray={CIRCUMFERENCE}
+              strokeDashoffset={CIRCUMFERENCE * (1 - progress / 100)}
+              className="transition-[stroke-dashoffset] duration-150 ease-linear"
+            />
+
+            <defs>
+              <linearGradient id="miningGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="hsl(var(--primary))" />
+                <stop offset="100%" stopColor="hsl(var(--accent))" />
+              </linearGradient>
+            </defs>
+          </svg>
+        )}
 
         <div
           className={cn(
@@ -345,10 +468,12 @@ export function MiningButton({
           onClick={handleMine}
           disabled={!canMine || isMining}
           className={cn(
-            "relative w-40 h-40 rounded-full text-lg font-bold transition-all duration-300 overflow-hidden",
+            "relative w-40 h-40 rounded-full font-bold transition-all duration-500 overflow-hidden",
             canMine && !isMining
-              ? "bg-gradient-to-br from-primary via-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground scale-100 hover:scale-105 shadow-lg shadow-primary/50"
-              : "bg-gradient-to-br from-muted to-muted/80 text-muted-foreground cursor-not-allowed"
+              ? "bg-gradient-to-br  from-cyan-500 via-cyan-400 to-purple-500 text-black shadow-[0_0_40px_rgba(34,211,238,0.6)]  hover:scale-105"
+              : isMining
+              ? "bg-gradient-to-br from-purple-500 to-cyan-500 text-white animate-pulse"
+              : "bg-muted/80 text-muted-foreground cursor-not-allowed shadow-inner shadow-cyan-500/20 ring-1 ring-cyan-400/30 bg-gradient-to-br from-cyan-500/10 via-muted/80 to-purple-500/10"
           )}>
           {canMine && !isMining && (
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-shimmer" />
@@ -357,25 +482,29 @@ export function MiningButton({
           <div className="flex flex-col items-center gap-1 relative z-10">
             {isMining ? (
               <>
-                <Loader2 className="w-10 h-10 animate-spin" />
-                <span className="text-sm">Mining...</span>
-                <Sparkles className="w-4 h-4 absolute -top-2 -right-2 animate-pulse text-yellow-400" />
-              </>
-            ) : canMine ? (
-              <>
-                <Pickaxe className="w-10 h-10 animate-bounce" />
-                <span>Mine Now</span>
-                <span className="text-xs opacity-90 flex items-center gap-1">
-                  +{effectivePoints} VP
-                  {streakMultiplier > 1 && <Zap className="w-3 h-3 text-yellow-300" />}
-                </span>
+                <Loader2 className="size-8 animate-spin text-white" />
+                <span className="text-2xl tracking-wide">Mining</span>
+
+                <div className="flex items-center font-extrabold">
+                  <span className="font-mono text-2xl">{integerPart}</span>
+                  <span
+                    className={cn(
+                      "align-super text-lg ml-0.5 transition-opacity",
+                      isMining ? "opacity-100" : "opacity-60"
+                    )}>
+                    <span className="flex items-center">.{decimalPart}</span>
+                  </span>
+                </div>
               </>
             ) : (
-              <>
-                <Pickaxe className="w-8 h-8 opacity-50" />
-                <span className="font-mono text-lg font-bold">{formatTime(timeLeft)}</span>
-                <span className="text-xs opacity-60">{Math.round(progress)}% ready</span>
-              </>
+              !canMine && (
+                <>
+                  <Hammer className="w-10 h-10 animate-bounce" />
+                  <p className="mb-2 text-xl"> 00.00 </p>
+                  <span className="text-2xl text-green-900 font-extrabold">Mine Now</span>
+                  <span className="text-xs opacity-80"> To earn more +VP</span>
+                </>
+              )
             )}
           </div>
         </Button>
@@ -418,17 +547,24 @@ export function MiningButton({
       )}
 
       {/* Info Text */}
-      <p className="text-sm text-muted-foreground text-center">
+      <p
+        className={cn(
+          "text-sm text-center rounded-2xl border-2 p-4 w-full",
+          isMining ? "text-white" : "bg-muted-foreground"
+        )}>
         {canMine ? (
           <span className="flex items-center gap-1">
             <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-            Click to mine and earn {effectivePoints} VersePoints!
+            Click to mine and earn VersePoints!
             {streakMultiplier > 1 && (
               <span className="text-yellow-400">({streakMultiplier}x streak bonus)</span>
             )}
           </span>
         ) : (
-          "Come back when the timer reaches zero"
+          <p>
+            Your next mine is at {nextMineTime} tomorrow
+            <br />({formatTime(timeLeft)} from now)
+          </p>
         )}
       </p>
     </div>

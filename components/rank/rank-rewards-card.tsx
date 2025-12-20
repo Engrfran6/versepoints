@@ -1,13 +1,13 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import type { RankName } from "@/lib/types/phase2";
-import { RANK_COLORS, RANK_THRESHOLDS } from "@/lib/constants";
-import { RankBadge } from "./rank-badge";
-import { Zap, Users, Gift, Lock, Check, Star, Sparkles } from "lucide-react";
-import { useState } from "react";
-import { ImageIcon } from "../ui/image-icon";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {cn, formatNumberShort} from "@/lib/utils";
+import type {RankName} from "@/lib/types/phase2";
+import {RANK_COLORS, RANK_THRESHOLDS} from "@/lib/constants";
+import {RankBadge} from "./rank-badge";
+import {Zap, Users, Gift, Lock, Check, Star, Sparkles} from "lucide-react";
+import {useState} from "react";
+import {ImageIcon} from "../ui/image-icon";
 
 interface RankRewardsCardProps {
   rank: RankName;
@@ -17,16 +17,12 @@ interface RankRewardsCardProps {
   dailyReward: number;
   features: string[];
   className?: string;
-  referers?: number;
+  referrals_required?: number;
+  userPoints: number;
+  userReferrals: number;
 }
 
-const RANK_ORDER: RankName[] = [
-  "rookie",
-  "silver",
-  "gold",
-  "diamond",
-  "citizen",
-];
+const RANK_ORDER: RankName[] = ["rookie", "silver", "gold", "diamond", "citizen"];
 
 const RANK_BENEFITS = {
   rookie: {
@@ -35,36 +31,19 @@ const RANK_BENEFITS = {
   },
   silver: {
     perks: ["10% mining boost", "Priority support", "Silver badge"],
-    exclusiveFeatures: [
-      "Task bonuses",
-      "Leaderboard highlight",
-      "Silver NFT access",
-    ],
+    exclusiveFeatures: ["Task bonuses", "Leaderboard highlight", "Silver NFT access"],
   },
   gold: {
     perks: ["25% mining boost", "2x referral bonus", "Gold badge"],
-    exclusiveFeatures: [
-      "Exclusive tasks",
-      "Gold NFT access",
-      "Early feature access",
-    ],
+    exclusiveFeatures: ["Exclusive tasks", "Gold NFT access", "Early feature access"],
   },
   diamond: {
     perks: ["50% mining boost", "3x referral bonus", "Diamond badge"],
-    exclusiveFeatures: [
-      "Diamond NFT access",
-      "VIP support",
-      "Governance voting",
-    ],
+    exclusiveFeatures: ["Diamond NFT access", "VIP support", "Governance voting"],
   },
   citizen: {
     perks: ["100% mining boost", "5x referral bonus", "Citizen badge"],
-    exclusiveFeatures: [
-      "All NFT access",
-      "Admin features",
-      "Revenue sharing",
-      "DAO membership",
-    ],
+    exclusiveFeatures: ["All NFT access", "Admin features", "Revenue sharing", "DAO membership"],
   },
 };
 
@@ -76,15 +55,22 @@ export function RankRewardsCard({
   dailyReward,
   features,
   className,
-  referers,
+  referrals_required,
+  userPoints,
+  userReferrals,
 }: RankRewardsCardProps) {
   const colors = RANK_COLORS[rank];
-  const isUnlocked =
-    RANK_ORDER.indexOf(currentRank) >= RANK_ORDER.indexOf(rank);
-  const isCurrent = currentRank === rank;
+
   const [isHovered, setIsHovered] = useState(false);
   const benefits = RANK_BENEFITS[rank];
   const pointsRequired = RANK_THRESHOLDS[rank];
+
+  const rankOrder = RANK_ORDER.indexOf(currentRank) >= RANK_ORDER.indexOf(rank);
+  const isPoints = userPoints >= pointsRequired;
+  const isReferral = userReferrals >= referrals_required!;
+
+  const isUnlocked = rankOrder && isPoints && isReferral;
+  const isCurrent = isUnlocked;
 
   return (
     <Card
@@ -97,8 +83,7 @@ export function RankRewardsCard({
         className
       )}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+      onMouseLeave={() => setIsHovered(false)}>
       <div
         className={cn(
           "absolute inset-0 opacity-0 transition-opacity duration-500",
@@ -116,33 +101,20 @@ export function RankRewardsCard({
             "absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-bold animate-pulse",
             colors.bg,
             colors.text
-          )}
-        >
+          )}>
           Current
         </div>
       )}
 
       <CardHeader className="pb-2">
         <div className="flex items-center gap-3">
-          <div
-            className={cn(
-              "transition-transform duration-500",
-              isHovered && "scale-110"
-            )}
-          >
-            <RankBadge
-              rank={rank}
-              size="xl"
-              showLabel={false}
-              showGlow={isUnlocked}
-            />
+          <div className={cn("transition-transform duration-500", isHovered && "scale-110")}>
+            <RankBadge rank={rank} size="xl" showLabel={false} showGlow={isUnlocked} />
           </div>
           <div>
-            <CardTitle className={cn("uppercase", colors.text)}>
-              {rank}
-            </CardTitle>
+            <CardTitle className={cn("uppercase", colors.text)}>{rank}</CardTitle>
             <p className="text-xs text-muted-foreground">
-              {pointsRequired.toLocaleString()} VP required
+              {formatNumberShort(pointsRequired).toLocaleString()} VP required
             </p>
           </div>
         </div>
@@ -155,8 +127,7 @@ export function RankRewardsCard({
             className={cn(
               "text-center p-2 rounded-lg bg-muted/50 transition-all duration-300",
               isHovered && "bg-muted/80 scale-105"
-            )}
-          >
+            )}>
             <Zap
               className={cn(
                 "w-4 h-4 mx-auto mb-1 transition-all duration-300",
@@ -173,8 +144,7 @@ export function RankRewardsCard({
               "text-center p-2 rounded-lg bg-muted/50 transition-all duration-300",
               isHovered && "bg-muted/80 scale-105"
             )}
-            style={{ transitionDelay: "50ms" }}
-          >
+            style={{transitionDelay: "50ms"}}>
             <Users
               className={cn(
                 "w-4 h-4 mx-auto mb-1 transition-all duration-300",
@@ -182,9 +152,7 @@ export function RankRewardsCard({
                 isHovered && "animate-pulse"
               )}
             />
-            <p className="text-lg font-bold text-foreground">
-              x{referralMultiplier}
-            </p>
+            <p className="text-lg font-bold text-foreground">x{referralMultiplier}</p>
             <p className="text-xs text-muted-foreground">Referral</p>
           </div>
           <div
@@ -192,8 +160,7 @@ export function RankRewardsCard({
               "text-center p-2 rounded-lg bg-muted/50 transition-all duration-300",
               isHovered && "bg-muted/80 scale-105"
             )}
-            style={{ transitionDelay: "100ms" }}
-          >
+            style={{transitionDelay: "100ms"}}>
             <Gift
               className={cn(
                 "w-4 h-4 mx-auto mb-1 transition-all duration-300",
@@ -220,8 +187,7 @@ export function RankRewardsCard({
                   "flex items-center gap-2 text-sm text-muted-foreground transition-all duration-300",
                   isHovered && "translate-x-1"
                 )}
-                style={{ transitionDelay: `${i * 50}ms` }}
-              >
+                style={{transitionDelay: `${i * 50}ms`}}>
                 <Check className={cn("w-3 h-3", colors.text)} />
                 <span>{feature}</span>
               </li>
@@ -231,9 +197,7 @@ export function RankRewardsCard({
 
         {/* Perks section */}
         <div className="pt-2 border-t border-border/50">
-          <p className="text-xs font-medium text-muted-foreground mb-2">
-            Perks:
-          </p>
+          <p className="text-xs font-medium text-muted-foreground mb-2">Perks:</p>
           <div className="flex flex-wrap gap-1">
             {benefits.perks.map((perk, i) => (
               <span
@@ -244,8 +208,7 @@ export function RankRewardsCard({
                   colors.text,
                   isHovered && "scale-105"
                 )}
-                style={{ transitionDelay: `${i * 30}ms` }}
-              >
+                style={{transitionDelay: `${i * 30}ms`}}>
                 {perk}
               </span>
             ))}
@@ -261,19 +224,24 @@ export function RankRewardsCard({
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-full shrink-0",
                   colors.bg
-                )}
-              >
+                )}>
                 <Lock className={cn("h-4 w-4", colors.text)} />
               </div>
               {/* Text */}
               <div className="flex-1">
                 <p className="text-xs text-muted-foreground">
                   Unlock at <br />
-                  <span className="font-medium text-foreground">
-                    {pointsRequired.toLocaleString()} VP
-                  </span>
+                  <div>
+                    <span className="font-medium text-foreground">
+                      {formatNumberShort(pointsRequired).toLocaleString()} VP
+                    </span>
+                    <span className="text-xs"> & </span>
+                    <span className="font-medium text-foreground">
+                      {referrals_required}{" "}
+                      <span className="text-[10px] font-medium text-foreground">referrers</span>
+                    </span>
+                  </div>
                 </p>
-                <div> dnbjdb{referers}</div>
               </div>
             </div>
 

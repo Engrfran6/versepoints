@@ -36,10 +36,10 @@ export default async function RankPage() {
     .order("awarded_at", {ascending: false})
     .limit(5);
 
-  const currentRank = (userData?.user_ranks?.[0]?.rank_name || "rookie") as RankName;
+  const currentRank = (userData?.user_current_rank || "rookie") as RankName;
   const totalPoints = userData?.total_mined || 0;
-
-  console.log("confirming rankConfigs===========", rankConfigs);
+  const userReferrals = userData?.total_referred || 0;
+  const userPoints = userData?.points_balance || 0;
 
   return (
     <RankPageContent
@@ -47,6 +47,8 @@ export default async function RankPage() {
       totalPoints={totalPoints}
       rankConfigs={rankConfigs || []}
       rankHistory={rankHistory || []}
+      userReferrals={userReferrals}
+      userPoints={userPoints}
     />
   );
 }

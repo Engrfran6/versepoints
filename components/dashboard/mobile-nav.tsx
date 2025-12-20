@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
+import {usePathname, useRouter} from "next/navigation";
+import {cn} from "@/lib/utils";
 import {
   LayoutDashboard,
   Crown,
@@ -17,10 +17,10 @@ import {
   DollarSign,
   Rocket,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
-import { useState } from "react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {Button} from "@/components/ui/button";
+import {createClient} from "@/lib/supabase/client";
+import {useState} from "react";
+import {Sheet, SheetContent, SheetTrigger} from "@/components/ui/sheet";
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -28,18 +28,18 @@ export function MobileNav() {
   const [open, setOpen] = useState(false);
 
   const mainNavItems = [
-    { href: "/dashboard", icon: LayoutDashboard, label: "Home" },
-    { href: "/dashboard/tasks", icon: CheckSquare, label: "Tasks" },
-    { href: "/dashboard/nfts", icon: Store, label: "NFTs" },
-    { href: "/dashboard/leaderboard", icon: Trophy, label: "Leaders" },
+    {href: "/dashboard", icon: LayoutDashboard, label: "Home"},
+    {href: "/dashboard/tasks", icon: CheckSquare, label: "Tasks"},
+    {href: "/dashboard/nfts", icon: Store, label: "NFTs"},
+    {href: "/dashboard/rank", icon: Crown, label: "Rank"},
   ];
 
   const moreNavItems = [
-    { href: "/dashboard/rank", icon: Crown, label: "Rank" },
-    { href: "/dashboard/referrals", icon: Users, label: "Referrals" },
-    { href: "/dashboard/whitepaper", icon: FileText, label: "Whitepaper" },
-    { href: "/dashboard/withdraw", icon: DollarSign, label: "Withdraw" },
-    { href: "/dashboard/phases", icon: Rocket, label: "Roadmap" },
+    {href: "/dashboard/leaderboard", icon: Trophy, label: "Leaders"},
+    {href: "/dashboard/referrals", icon: Users, label: "Referrals"},
+    {href: "/dashboard/whitepaper", icon: FileText, label: "Whitepaper"},
+    {href: "/dashboard/withdraw", icon: DollarSign, label: "Withdraw"},
+    {href: "/dashboard/phases", icon: Rocket, label: "Roadmap"},
   ];
 
   const handleLogout = async () => {
@@ -62,8 +62,7 @@ export function MobileNav() {
                 pathname === item.href
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
-              )}
-            >
+              )}>
               <item.icon className="h-5 w-5" />
               {item.label}
             </Link>
@@ -76,8 +75,7 @@ export function MobileNav() {
                 className={cn(
                   "flex flex-col items-center gap-1 px-3 py-2 text-xs font-medium transition-colors",
                   open ? "text-primary" : "text-muted-foreground"
-                )}
-              >
+                )}>
                 <Menu className="h-5 w-5" />
                 More
               </button>
@@ -95,8 +93,7 @@ export function MobileNav() {
                         ? "bg-primary text-primary-foreground"
                         : "text-foreground hover:bg-accent"
                     )}
-                    onClick={() => setOpen(false)}
-                  >
+                    onClick={() => setOpen(false)}>
                     <item.icon className="h-5 w-5" />
                     {item.label}
                   </Link>
@@ -112,8 +109,7 @@ export function MobileNav() {
                       ? "bg-primary text-primary-foreground"
                       : "text-foreground hover:bg-accent"
                   )}
-                  onClick={() => setOpen(false)}
-                >
+                  onClick={() => setOpen(false)}>
                   <Settings className="h-5 w-5" />
                   Settings
                 </Link>
@@ -124,8 +120,7 @@ export function MobileNav() {
                   onClick={() => {
                     handleLogout();
                     setOpen(false);
-                  }}
-                >
+                  }}>
                   <LogOut className="h-5 w-5" />
                   Logout
                 </Button>

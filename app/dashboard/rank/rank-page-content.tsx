@@ -23,6 +23,8 @@ interface RankPageContentProps {
   totalPoints: number;
   rankConfigs: RankConfig[];
   rankHistory: RankRewardsLog[];
+  userReferrals: number;
+  userPoints: number;
 }
 
 export function RankPageContent({
@@ -30,6 +32,8 @@ export function RankPageContent({
   totalPoints,
   rankConfigs,
   rankHistory,
+  userReferrals,
+  userPoints,
 }: RankPageContentProps) {
   return (
     <div className="relative p-4 md:p-8 min-h-screen">
@@ -48,13 +52,13 @@ export function RankPageContent({
 
       {/* Current Rank Card with 3D Badge */}
       <Card className="relative z-10 mb-8 bg-gradient-to-br from-card/90 to-primary/10 border-border gradient-border backdrop-blur-sm overflow-hidden">
-        <CardContent className="p-6">
+        <CardContent className="py-2">
           <div className="flex flex-col md:flex-row items-center gap-6">
-            <Suspense fallback={<RankBadge rank={currentRank} size="xl" />}>
+            {/* <Suspense fallback={<RankBadge rank={currentRank} size="xl" />}>
               <div className="w-40 h-40 md:w-48 md:h-48">
                 <AnimatedRankBadge rank={currentRank} />
               </div>
-            </Suspense>
+            </Suspense> */}
             <div className="flex-1 w-full">
               <RankProgress currentRank={currentRank} totalPoints={totalPoints} />
             </div>
@@ -78,7 +82,9 @@ export function RankPageContent({
               referralMultiplier={config.referral_bonus_multiplier}
               dailyReward={config.daily_mining_reward}
               features={config.features as string[]}
-              referers={config.referers}
+              referrals_required={config.referrals_required}
+              userReferrals={userReferrals}
+              userPoints={userPoints}
             />
           ))}
         </div>

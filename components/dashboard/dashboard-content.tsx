@@ -1,53 +1,34 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import {cn} from "@/lib/utils";
 
-import { useState, useCallback, Suspense, useEffect } from "react";
+import {useState, useCallback, Suspense, useEffect, useMemo} from "react";
 import dynamic from "next/dynamic";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MiningButton } from "@/components/dashboard/mining-button";
-import { PointsDisplay } from "@/components/dashboard/points-display";
-import { StatsCard } from "@/components/dashboard/stats-card";
-import { ReferralLink } from "@/components/dashboard/referral-link";
-import {
-  Pickaxe,
-  Users,
-  Trophy,
-  TrendingUp,
-  Gift,
-  Sparkles,
-  Star,
-  Flame,
-  Zap,
-} from "lucide-react";
-import type { User } from "@/lib/types/database";
-import { generateFingerprint, getBrowserInfo } from "@/lib/fingerprint";
-import { MINING_CONSTANTS } from "@/lib/constants";
-import { useMiningProgress } from "@/hooks/useMiningProgress";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Badge} from "@/components/ui/badge";
+import {MiningButton} from "@/components/dashboard/mining-button";
+import {PointsDisplay} from "@/components/dashboard/points-display";
+import {StatsCard} from "@/components/dashboard/stats-card";
+import {ReferralLink} from "@/components/dashboard/referral-link";
+import {Pickaxe, Users, Trophy, TrendingUp, Gift, Sparkles, Star, Flame, Zap} from "lucide-react";
+import type {User} from "@/lib/types/database";
+import {generateFingerprint, getBrowserInfo} from "@/lib/fingerprint";
+import {MINING_CONSTANTS} from "@/lib/constants";
+import {useMiningProgress} from "@/hooks/useMiningProgress";
 
 const FloatingParticles = dynamic(
-  () =>
-    import("@/components/3d/floating-particles").then(
-      (mod) => mod.FloatingParticles
-    ),
-  { ssr: false }
+  () => import("@/components/3d/floating-particles").then((mod) => mod.FloatingParticles),
+  {ssr: false}
 );
 const MiningRigScene = dynamic(
-  () =>
-    import("@/components/3d/mining-rig-scene").then(
-      (mod) => mod.MiningRigScene
-    ),
+  () => import("@/components/3d/mining-rig-scene").then((mod) => mod.MiningRigScene),
   {
     ssr: false,
   }
 );
-const MiningCrystals3D = dynamic(
-  () => import("@/components/3d/mining-crystals-3d"),
-  {
-    ssr: false,
-  }
-);
+const MiningCrystals3D = dynamic(() => import("@/components/3d/mining-crystals-3d"), {
+  ssr: false,
+});
 
 interface DashboardContentProps {
   user: User;
@@ -55,13 +36,9 @@ interface DashboardContentProps {
   rank: number;
 }
 
-export function DashboardContent({
-  user: initialUser,
-  referralCount,
-  rank,
-}: DashboardContentProps) {
+export function DashboardContent({user: initialUser, referralCount, rank}: DashboardContentProps) {
   const [user, setUser] = useState(initialUser);
-  const [isMining, setIsMining] = useState(false);
+  const [isMining, setIsMining] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
@@ -77,24 +54,22 @@ export function DashboardContent({
 
   const getStreakMultiplier = (streak: number): number => {
     const thresholds = Object.entries(MINING_CONSTANTS.STREAK_BONUS_MULTIPLIERS)
-      .map(([days, mult]) => ({ days: Number.parseInt(days), mult }))
+      .map(([days, mult]) => ({days: Number.parseInt(days), mult}))
       .sort((a, b) => b.days - a.days);
 
-    for (const { days, mult } of thresholds) {
+    for (const {days, mult} of thresholds) {
       if (streak >= days) return mult;
     }
     return 1.0;
   };
 
-  const getNextStreakMilestone = (
-    streak: number
-  ): { days: number; multiplier: number } | null => {
+  const getNextStreakMilestone = (streak: number): {days: number; multiplier: number} | null => {
     const thresholds = Object.entries(MINING_CONSTANTS.STREAK_BONUS_MULTIPLIERS)
-      .map(([days, mult]) => ({ days: Number.parseInt(days), mult }))
+      .map(([days, mult]) => ({days: Number.parseInt(days), mult}))
       .sort((a, b) => a.days - b.days);
 
-    for (const { days, mult } of thresholds) {
-      if (streak < days) return { days, multiplier: mult };
+    for (const {days, mult} of thresholds) {
+      if (streak < days) return {days, multiplier: mult};
     }
     return null;
   };
@@ -110,8 +85,8 @@ export function DashboardContent({
 
       const response = await fetch("/api/mining/mine", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fingerprint, browserInfo }),
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({fingerprint, browserInfo}),
       });
 
       const data = await response.json();
@@ -120,9 +95,7 @@ export function DashboardContent({
         setUser((prev) => ({
           ...prev,
           points_balance: prev.points_balance,
-          total_mined:
-            prev.total_mined +
-            (data.points || MINING_CONSTANTS.POINTS_PER_MINE),
+          total_mined: prev.total_mined + (data.points || MINING_CONSTANTS.POINTS_PER_MINE),
           mining_count: prev.mining_count + 1,
           last_mining_at: new Date().toISOString(),
           current_streak: data.streak || (prev.current_streak || 0) + 1,
@@ -131,12 +104,12 @@ export function DashboardContent({
             data.streak || (prev.current_streak || 0) + 1
           ),
         }));
-        return { ...data, streak: data.streak, multiplier: data.multiplier };
+        return {...data, streak: data.streak, multiplier: data.multiplier};
       }
 
       return data;
     } catch {
-      return { success: false, error: "Network error" };
+      return {success: false, error: "Network error"};
     } finally {
       setTimeout(() => setIsMining(false), 2000);
     }
@@ -147,6 +120,47 @@ export function DashboardContent({
     MINING_CONSTANTS.POINTS_PER_MINE ?? 0,
     user.last_mining_at
   );
+
+  const [displayPoints, setDisplayPoints] = useState(visualPoints);
+  const [animate] = useState(false);
+
+  useEffect(() => {
+    if (!animate) {
+      setDisplayPoints(visualPoints);
+      return;
+    }
+
+    const diff = visualPoints - displayPoints;
+    const steps = 30;
+    const increment = diff / steps;
+    let current = displayPoints;
+    let step = 0;
+
+    const interval = setInterval(() => {
+      step++;
+      current += increment;
+
+      if (step >= steps) {
+        setDisplayPoints(visualPoints);
+        clearInterval(interval);
+      } else {
+        setDisplayPoints(current);
+      }
+    }, 25);
+
+    return () => clearInterval(interval);
+  }, [visualPoints]);
+
+  const isWelcomeBack = (() => {
+    const lastMinedAt = user.last_mining_at;
+    if (!lastMinedAt) return false;
+
+    const lastVisit = new Date(lastMinedAt).getTime();
+    const now = Date.now();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+
+    return now - lastVisit > twentyFourHours;
+  })();
 
   return (
     <div className="relative p-4 md:p-8 min-h-screen">
@@ -181,56 +195,71 @@ export function DashboardContent({
 
       {/* Header */}
       <div className="relative z-10 mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-          Welcome back, <span className="text-primary">{user.username}</span>
+        <h1 className="text-xl md:text-3xl font-bold text-foreground">
+          {isWelcomeBack ? "Welcome back," : "Welcome,"}{" "}
+          <span className="text-primary">{user.username}</span>
         </h1>
-        <p className="text-muted-foreground mt-1">
-          Ready to mine some VersePoints?
-        </p>
+
+        <p className="text-muted-foreground mt-1">Ready to mine some VersePoints?</p>
       </div>
 
       {/* Main Grid */}
       <div className="relative z-10 grid gap-6 lg:grid-cols-3">
         {/* Left Column - Mining */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="bg-primary/5 bg-gradient-to-br from-card to-background/20 border-border shadow-2xl overflow-hidden relative">
-            <div className="absolute left-0 top-0 bottom-0 w-32 hidden lg:block">
-              <Suspense fallback={null}>
-                <MiningCrystals3D />
-              </Suspense>
-            </div>
-            <div className="absolute right-0 top-0 bottom-0 w-32 hidden lg:block">
-              <Suspense fallback={null}>
-                <MiningCrystals3D />
-              </Suspense>
-            </div>
+          <Card
+            className={cn(
+              "relative border-border shadow-2xl overflow-hidden transition-all duration-700",
+              isMining ? "bg-[#083905]" : "bg-[#070b11]"
+            )}>
+            {/* BASE GRADIENT */}
+            <div
+              className={cn(
+                "absolute inset-0 transition-opacity duration-700",
+                isMining
+                  ? "bg-gradient-to-br from-green-400/40 via-cyan-900/30 to-indigo-900/40 opacity-100"
+                  : "bg-gradient-to-br from-purple-950/60 via-indigo-900/40 to-teal-950/30 opacity-90"
+              )}
+            />
 
-            <CardContent className="p-6 relative z-10">
+            {/* RADIAL ENERGY CORE */}
+            <div
+              className={cn(
+                "absolute inset-0 transition-all duration-700",
+                isMining
+                  ? "bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.35),transparent_65%)] animate-pulse"
+                  : "bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.18),transparent_70%)]"
+              )}
+            />
+
+            <CardContent className="p-6 relative z-20">
               <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex-1 flex flex-col md:flex-row items-center gap-6">
                   <Suspense
-                    fallback={
-                      <div className="w-32 h-32 bg-muted/20 rounded-lg animate-pulse" />
-                    }
-                  >
+                    fallback={<div className="w-32 h-32 bg-muted/20 rounded-lg animate-pulse" />}>
                     <div className="w-32 hidden lg:block h-32 md:w-40 md:h-40 relative">
-                      <MiningRigScene isActive={isMining} />
+                      <MiningRigScene />
+
+                      {/* Mining glow — purple + cyan hybrid */}
                       <div
                         className={cn(
                           "absolute inset-0 rounded-lg transition-all duration-500",
                           isMining
-                            ? "shadow-[0_0_40px_rgba(34,211,238,0.4)]"
-                            : "shadow-[0_0_20px_rgba(34,211,238,0.1)]"
+                            ? "shadow-[0_0_40px_rgba(168,85,247,0.35),0_0_60px_rgba(34,211,238,0.25)]"
+                            : "shadow-[0_0_20px_rgba(168,85,247,0.15)]"
                         )}
                       />
                     </div>
                   </Suspense>
-                  <PointsDisplay points={visualPoints} animate />
+
+                  <PointsDisplay points={displayPoints} animate isMining={isMining} />
                 </div>
+
                 <MiningButton
                   lastMiningAt={user.last_mining_at}
                   currentStreak={user.current_streak || 0}
                   onMine={handleMine}
+                  isMining={isMining}
                 />
               </div>
             </CardContent>
@@ -254,16 +283,13 @@ export function DashboardContent({
                         )}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Longest: {user.longest_streak || user.current_streak}{" "}
-                        days
+                        Longest: {user.longest_streak || user.current_streak} days
                       </p>
                     </div>
                   </div>
                   {nextMilestone && (
                     <div className="text-right">
-                      <p className="text-xs text-muted-foreground">
-                        Next milestone
-                      </p>
+                      <p className="text-xs text-muted-foreground">Next milestone</p>
                       <p className="font-bold text-foreground flex items-center gap-1">
                         {nextMilestone.days} days
                         <Zap className="w-4 h-4 text-yellow-400" />
@@ -273,11 +299,7 @@ export function DashboardContent({
                         <div
                           className="h-full bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full transition-all"
                           style={{
-                            width: `${
-                              ((user.current_streak || 0) /
-                                nextMilestone.days) *
-                              100
-                            }%`,
+                            width: `${((user.current_streak || 0) / nextMilestone.days) * 100}%`,
                           }}
                         />
                       </div>
@@ -330,13 +352,8 @@ export function DashboardContent({
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                <span className="text-muted-foreground">
-                  Base points per mine
-                </span>
-                <Badge
-                  variant="outline"
-                  className="border-primary/50 text-primary font-bold"
-                >
+                <span className="text-muted-foreground">Base points per mine</span>
+                <Badge variant="outline" className="border-primary/50 text-primary font-bold">
                   {MINING_CONSTANTS.POINTS_PER_MINE} VP
                 </Badge>
               </div>
@@ -347,10 +364,8 @@ export function DashboardContent({
                     Streak bonus
                   </span>
                   <Badge className="bg-orange-500/20 text-orange-400 font-bold">
-                    {Math.floor(
-                      MINING_CONSTANTS.POINTS_PER_MINE * currentMultiplier
-                    )}{" "}
-                    VP ({currentMultiplier}x)
+                    {Math.floor(MINING_CONSTANTS.POINTS_PER_MINE * currentMultiplier)} VP (
+                    {currentMultiplier}x)
                   </Badge>
                 </div>
               )}
@@ -362,10 +377,7 @@ export function DashboardContent({
               </div>
               <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                 <span className="text-muted-foreground">Referral bonus</span>
-                <Badge
-                  variant="outline"
-                  className="border-accent/50 text-accent font-bold"
-                >
+                <Badge variant="outline" className="border-accent/50 text-accent font-bold">
                   +{MINING_CONSTANTS.REFERRAL_FIRST_MINING_BONUS} VP
                 </Badge>
               </div>
@@ -392,60 +404,50 @@ export function DashboardContent({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {Object.entries(MINING_CONSTANTS.STREAK_BONUS_MULTIPLIERS).map(
-                ([days, mult]) => {
-                  const isAchieved =
-                    (user.current_streak || 0) >= Number.parseInt(days);
-                  const isNext =
-                    !isAchieved &&
-                    (user.current_streak || 0) < Number.parseInt(days) &&
-                    Object.keys(MINING_CONSTANTS.STREAK_BONUS_MULTIPLIERS)
-                      .map(Number)
-                      .filter((d) => d < Number.parseInt(days))
-                      .every(
-                        (d) =>
-                          (user.current_streak || 0) >= d ||
-                          d > (user.current_streak || 0)
-                      );
+              {Object.entries(MINING_CONSTANTS.STREAK_BONUS_MULTIPLIERS).map(([days, mult]) => {
+                const isAchieved = (user.current_streak || 0) >= Number.parseInt(days);
+                const isNext =
+                  !isAchieved &&
+                  (user.current_streak || 0) < Number.parseInt(days) &&
+                  Object.keys(MINING_CONSTANTS.STREAK_BONUS_MULTIPLIERS)
+                    .map(Number)
+                    .filter((d) => d < Number.parseInt(days))
+                    .every(
+                      (d) => (user.current_streak || 0) >= d || d > (user.current_streak || 0)
+                    );
 
-                  return (
-                    <div
-                      key={days}
+                return (
+                  <div
+                    key={days}
+                    className={cn(
+                      "flex justify-between items-center p-2 rounded-lg transition-all",
+                      isAchieved
+                        ? "bg-orange-500/20 border border-orange-500/30"
+                        : isNext
+                        ? "bg-muted/50 border border-dashed border-orange-500/30"
+                        : "bg-muted/20 opacity-60"
+                    )}>
+                    <span
                       className={cn(
-                        "flex justify-between items-center p-2 rounded-lg transition-all",
+                        "text-sm flex items-center gap-1",
+                        isAchieved ? "text-orange-400 font-medium" : "text-muted-foreground"
+                      )}>
+                      {isAchieved && <Sparkles className="w-3 h-3" />}
+                      {days} days
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "text-xs",
                         isAchieved
-                          ? "bg-orange-500/20 border border-orange-500/30"
-                          : isNext
-                          ? "bg-muted/50 border border-dashed border-orange-500/30"
-                          : "bg-muted/20 opacity-60"
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "text-sm flex items-center gap-1",
-                          isAchieved
-                            ? "text-orange-400 font-medium"
-                            : "text-muted-foreground"
-                        )}
-                      >
-                        {isAchieved && <Sparkles className="w-3 h-3" />}
-                        {days} days
-                      </span>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "text-xs",
-                          isAchieved
-                            ? "border-orange-500/50 text-orange-400"
-                            : "border-muted-foreground/30"
-                        )}
-                      >
-                        {mult}x bonus
-                      </Badge>
-                    </div>
-                  );
-                }
-              )}
+                          ? "border-orange-500/50 text-orange-400"
+                          : "border-muted-foreground/30"
+                      )}>
+                      {mult}x bonus
+                    </Badge>
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
 
@@ -458,18 +460,17 @@ export function DashboardContent({
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               {[
-                { text: "Mine daily to build your streak bonus", icon: Flame },
+                {text: "Mine daily to build your streak bonus", icon: Flame},
                 {
                   text: "Share your referral link for bonus points",
                   icon: Users,
                 },
-                { text: "Complete tasks for extra rewards", icon: Star },
-                { text: "Climb the leaderboard for recognition", icon: Trophy },
+                {text: "Complete tasks for extra rewards", icon: Star},
+                {text: "Climb the leaderboard for recognition", icon: Trophy},
               ].map((tip, i) => (
                 <p
                   key={i}
-                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-default"
-                >
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-default">
                   <tip.icon className="w-4 h-4 text-primary" />
                   {tip.text}
                 </p>

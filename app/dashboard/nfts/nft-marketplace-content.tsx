@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import {useState, Suspense} from "react";
+import {useRouter} from "next/navigation";
 import dynamic from "next/dynamic";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { NFTCard } from "@/components/nft/nft-card";
-import { NFTInventoryCard } from "@/components/nft/nft-inventory-card";
-import { NFTUpgradePanel } from "@/components/nft/nft-upgrade-panel";
-import { Store, Package, Flame, Zap, Coins } from "lucide-react";
+import {Card, CardContent} from "@/components/ui/card";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {NFTCard} from "@/components/nft/nft-card";
+import {NFTInventoryCard} from "@/components/nft/nft-inventory-card";
+import {NFTUpgradePanel} from "@/components/nft/nft-upgrade-panel";
+import {Store, Package, Flame, Zap, Coins} from "lucide-react";
 import type {
   NFTCatalog,
   UserNFT,
@@ -16,14 +16,12 @@ import type {
   RankName,
   NFTTier,
 } from "@/lib/types/phase2";
-import { NFTCardVisual } from "@/components/3d/nft-card-3d";
+import {NFTCardVisual} from "@/components/3d/nft-card-3d";
+import {toast} from "sonner";
 
 const FloatingParticles = dynamic(
-  () =>
-    import("@/components/3d/floating-particles").then(
-      (mod) => mod.FloatingParticles
-    ),
-  { ssr: false }
+  () => import("@/components/3d/floating-particles").then((mod) => mod.FloatingParticles),
+  {ssr: false}
 );
 // const NFTCard3D = dynamic(
 //   () => import("@/components/3d/nft-card-3d").then((mod) => mod.NFTCard3D),
@@ -66,34 +64,33 @@ export function NFTMarketplaceContent({
   const handlePurchase = async (nftId: string) => {
     const response = await fetch("/api/nft/purchase", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nftId }),
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({nftId}),
     });
 
     const data = await response.json();
 
     if (data.success) {
+      toast.success("NFT purchase successful");
       setUserBalance((prev) => prev - (data.cost || 0));
       router.refresh();
     } else {
-      alert(data.error || "Purchase failed");
+      toast.error(data.error || "Purchase failed");
     }
   };
 
   const handleEquip = async (userNftId: string) => {
     const response = await fetch("/api/nft/equip", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userNftId }),
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({userNftId}),
     });
 
     const data = await response.json();
 
     if (data.success) {
       setUserNfts((prev) =>
-        prev.map((n) =>
-          n.id === userNftId ? { ...n, is_equipped: data.isEquipped } : n
-        )
+        prev.map((n) => (n.id === userNftId ? {...n, is_equipped: data.isEquipped} : n))
       );
     }
   };
@@ -101,8 +98,8 @@ export function NFTMarketplaceContent({
   const handleUpgrade = async (nftIds: string[], targetTier: NFTTier) => {
     const response = await fetch("/api/nft/upgrade", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nftIds, targetTier }),
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({nftIds, targetTier}),
     });
 
     const data = await response.json();
@@ -117,11 +114,7 @@ export function NFTMarketplaceContent({
   return (
     <div className="relative p-4 md:p-8 min-h-screen">
       <Suspense fallback={null}>
-        <FloatingParticles
-          className="opacity-20"
-          color="#8b5cf6"
-          count={1200}
-        />
+        <FloatingParticles className="opacity-20" color="#8b5cf6" count={1200} />
       </Suspense>
 
       {/* Header */}
@@ -140,11 +133,7 @@ export function NFTMarketplaceContent({
         {featuredNft && (
           <div className="col-span-2 md:col-span-1 row-span-2 backdrop-blur-sm border-border mx-auto">
             <p className="text-xs text-muted-foreground mb-2">Featured NFT</p>
-            <Suspense
-              fallback={
-                <div className="w-20 h-32 bg-muted/20 rounded-lg animate-pulse" />
-              }
-            >
+            <Suspense fallback={<div className="w-20 h-32 bg-muted/20 rounded-lg animate-pulse" />}>
               <NFTCardVisual
                 tier={featuredNft.tier as NFTTier}
                 name={featuredNft.name}
@@ -162,9 +151,7 @@ export function NFTMarketplaceContent({
                 <Coins className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">
-                  {userBalance.toLocaleString()}
-                </p>
+                <p className="text-2xl font-bold text-foreground">{userBalance.toLocaleString()}</p>
                 <p className="text-xs text-muted-foreground">VP Balance</p>
               </div>
             </div>
@@ -177,9 +164,7 @@ export function NFTMarketplaceContent({
                 <Package className="w-5 h-5 text-accent" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">
-                  {userNfts.length}
-                </p>
+                <p className="text-2xl font-bold text-foreground">{userNfts.length}</p>
                 <p className="text-xs text-muted-foreground">NFTs Owned</p>
               </div>
             </div>
@@ -192,9 +177,7 @@ export function NFTMarketplaceContent({
                 <Zap className="w-5 h-5 text-green-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">
-                  +{totalBoost}%
-                </p>
+                <p className="text-2xl font-bold text-foreground">+{totalBoost}%</p>
                 <p className="text-xs text-muted-foreground">Mining Boost</p>
               </div>
             </div>
@@ -255,9 +238,7 @@ export function NFTMarketplaceContent({
                 <CardContent className="p-12 text-center">
                   <Store className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
                   <p className="text-muted-foreground">No NFTs available</p>
-                  <p className="text-sm text-muted-foreground">
-                    Check back soon for new items!
-                  </p>
+                  <p className="text-sm text-muted-foreground">Check back soon for new items!</p>
                 </CardContent>
               </Card>
             )}
@@ -268,20 +249,14 @@ export function NFTMarketplaceContent({
             {userNfts.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {userNfts.map((userNft) => (
-                  <NFTInventoryCard
-                    key={userNft.id}
-                    userNft={userNft}
-                    onEquip={handleEquip}
-                  />
+                  <NFTInventoryCard key={userNft.id} userNft={userNft} onEquip={handleEquip} />
                 ))}
               </div>
             ) : (
               <Card className="bg-card/90 backdrop-blur-sm border-border">
                 <CardContent className="p-12 text-center">
                   <Package className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
-                  <p className="text-muted-foreground">
-                    No NFTs in your inventory
-                  </p>
+                  <p className="text-muted-foreground">No NFTs in your inventory</p>
                   <p className="text-sm text-muted-foreground">
                     Purchase NFTs from the marketplace!
                   </p>

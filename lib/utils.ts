@@ -1,5 +1,5 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import {clsx, type ClassValue} from "clsx";
+import {twMerge} from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -29,5 +29,19 @@ export function extractYouTubeVideoId(url: string): string | null {
     return null;
   } catch {
     return null;
+  }
+}
+
+/**
+ * Converts a number to a short format
+ * 1000 -> 1k, 1500 -> 1.5k, 2000000 -> 2M
+ */
+export function formatNumberShort(num: number): string {
+  if (num >= 1_000_000) {
+    return `${(num / 1_000_000).toFixed(num % 1_000_000 === 0 ? 0 : 1)}M`;
+  } else if (num >= 1_000) {
+    return `${(num / 1_000).toFixed(num % 1_000 === 0 ? 0 : 1)}k`;
+  } else {
+    return num.toString();
   }
 }

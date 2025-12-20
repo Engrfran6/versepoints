@@ -25,7 +25,7 @@ export interface RankConfig {
   badge_icon: string;
   features: string[];
   created_at: string;
-  referers: number;
+  referrals_required: number;
 }
 
 export interface RankRewardsLog {

@@ -1,56 +1,67 @@
-"use client"
+"use client";
 
-import { useMemo } from "react"
-import { cn } from "@/lib/utils"
-import type { RankName } from "@/lib/types/phase2"
-import { RANK_THRESHOLDS, RANK_COLORS } from "@/lib/constants"
-import { RankBadge } from "./rank-badge"
-import { Progress } from "@/components/ui/progress"
+import {Suspense, useMemo} from "react";
+import {cn, formatNumberShort} from "@/lib/utils";
+import type {RankName} from "@/lib/types/phase2";
+import {RANK_THRESHOLDS, RANK_COLORS} from "@/lib/constants";
+import {RankBadge} from "./rank-badge";
+import {Progress} from "@/components/ui/progress";
+import dynamic from "next/dynamic";
 
 interface RankProgressProps {
-  currentRank: RankName
-  totalPoints: number
-  className?: string
+  currentRank: RankName;
+  totalPoints: number;
+  className?: string;
 }
 
-const RANK_ORDER: RankName[] = ["rookie", "silver", "gold", "diamond", "citizen"]
+const AnimatedRankBadge = dynamic(
+  () => import("@/components/3d/animated-rank-badge").then((mod) => mod.AnimatedRankBadge),
+  {ssr: false}
+);
 
-export function RankProgress({ currentRank, totalPoints, className }: RankProgressProps) {
-  const { progress, nextRank, pointsToNext, pointsInCurrentTier } = useMemo(() => {
-    const currentIndex = RANK_ORDER.indexOf(currentRank)
-    const nextRankName = currentIndex < RANK_ORDER.length - 1 ? RANK_ORDER[currentIndex + 1] : null
+const RANK_ORDER: RankName[] = ["rookie", "silver", "gold", "diamond", "citizen"];
+
+export function RankProgress({currentRank, totalPoints, className}: RankProgressProps) {
+  const {progress, nextRank, pointsToNext, pointsInCurrentTier} = useMemo(() => {
+    const currentIndex = RANK_ORDER.indexOf(currentRank);
+    const nextRankName = currentIndex < RANK_ORDER.length - 1 ? RANK_ORDER[currentIndex + 1] : null;
 
     if (!nextRankName) {
-      return { progress: 100, nextRank: null, pointsToNext: 0, pointsInCurrentTier: 0 }
+      return {progress: 100, nextRank: null, pointsToNext: 0, pointsInCurrentTier: 0};
     }
 
-    const currentThreshold = RANK_THRESHOLDS[currentRank]
-    const nextThreshold = RANK_THRESHOLDS[nextRankName]
-    const pointsInTier = totalPoints - currentThreshold
-    const tierRange = nextThreshold - currentThreshold
-    const progressPercent = Math.min((pointsInTier / tierRange) * 100, 100)
+    const currentThreshold = RANK_THRESHOLDS[currentRank];
+    const nextThreshold = RANK_THRESHOLDS[nextRankName];
+    const pointsInTier = totalPoints - currentThreshold;
+    const tierRange = nextThreshold - currentThreshold;
+    const progressPercent = Math.min((pointsInTier / tierRange) * 100, 100);
 
     return {
       progress: progressPercent,
       nextRank: nextRankName,
       pointsToNext: nextThreshold - totalPoints,
       pointsInCurrentTier: pointsInTier,
-    }
-  }, [currentRank, totalPoints])
+    };
+  }, [currentRank, totalPoints]);
 
-  const currentColors = RANK_COLORS[currentRank]
-  const nextColors = nextRank ? RANK_COLORS[nextRank] : null
+  const currentColors = RANK_COLORS[currentRank];
+  const nextColors = nextRank ? RANK_COLORS[nextRank] : null;
 
   return (
     <div className={cn("space-y-4", className)}>
       {/* Current Rank Display */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <RankBadge rank={currentRank} size="lg" showLabel={false} />
-          <div>
+        <div className="">
+          {/* <RankBadge rank={currentRank} size="lg" showLabel={false} /> */}
+          <Suspense fallback={<RankBadge rank={currentRank} size="xl" showLabel={false} />}>
+            <div className="w-40 h-40 md:w-48 md:h-48 -mb-24">
+              <AnimatedRankBadge rank={currentRank} />
+            </div>
+          </Suspense>
+          {/* <div>
             <p className="text-sm text-muted-foreground">Current Rank</p>
             <p className={cn("text-xl font-bold uppercase", currentColors.text)}>{currentRank}</p>
-          </div>
+          </div> */}
         </div>
 
         {nextRank && (
@@ -59,7 +70,13 @@ export function RankProgress({ currentRank, totalPoints, className }: RankProgre
               <p className="text-sm text-muted-foreground">Next Rank</p>
               <p className={cn("text-xl font-bold uppercase", nextColors?.text)}>{nextRank}</p>
             </div>
-            <RankBadge rank={nextRank} size="lg" showLabel={false} showGlow={false} className="opacity-50" />
+            <RankBadge
+              rank={nextRank}
+              size="lg"
+              showLabel={false}
+              showGlow={false}
+              className="opacity-50"
+            />
           </div>
         )}
       </div>
@@ -80,9 +97,11 @@ export function RankProgress({ currentRank, totalPoints, className }: RankProgre
           </div>
 
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{totalPoints.toLocaleString()} VP</span>
+            <span className="text-muted-foreground">
+              {formatNumberShort(totalPoints).toLocaleString()} VP
+            </span>
             <span className={cn("font-medium", nextColors?.text)}>
-              {pointsToNext.toLocaleString()} VP to {nextRank}
+              {formatNumberShort(pointsToNext).toLocaleString()} VP to {nextRank}
             </span>
           </div>
         </div>
@@ -98,5 +117,5 @@ export function RankProgress({ currentRank, totalPoints, className }: RankProgre
         </div>
       )}
     </div>
-  )
+  );
 }

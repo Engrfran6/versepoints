@@ -1,99 +1,74 @@
-import { Card } from "@/components/ui/card"
-import { FileText } from "lucide-react"
+import {Button} from "@/components/ui/button";
+import {ArrowRight} from "lucide-react";
 
 export default function WhitepaperPage() {
   return (
-    <div className="container mx-auto p-6 space-y-6 max-w-4xl">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-          <FileText className="w-5 h-5 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold">VersePoints Whitepaper</h1>
-          <p className="text-muted-foreground">Complete project documentation and roadmap</p>
-        </div>
+    <section className="relative py-10 md:py-4 px-4 overflow-hidden flex items-center">
+      {/* Video Background */}
+      <div className="absolute inset-0 z-0">
+        <video autoPlay loop muted playsInline className="w-full h-full object-cover">
+          <source
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/6bdd8c01-81a2-4190-9ff8-fdd50e8eae95-y6zHywbsjLf6vmtdFHaKszOW6rWX1v.MP4"
+            type="video/mp4"
+          />
+        </video>
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
       </div>
 
-      <Card className="p-8">
-        <div className="prose prose-invert max-w-none">
-          <h2 className="text-2xl font-bold mb-4">Executive Summary</h2>
-          <p className="text-muted-foreground mb-6">
-            VersePoints is a revolutionary Web2-to-Web3 mining platform that rewards users with points through daily
-            mining activities, referrals, and task completion. The platform features a comprehensive ranking system, NFT
-            marketplace, and a 12-phase roadmap leading to full blockchain integration.
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="text-center mb-12 md:mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            Platform{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
+              Whitepaper
+            </span>
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Learn about VerseEstate's vision, tokenomics, and roadmap to revolutionize digital asset
+            mining
           </p>
+        </div>
 
-          <h2 className="text-2xl font-bold mb-4">Platform Overview</h2>
-          <p className="text-muted-foreground mb-6">
-            VersePoints combines gamification with cryptocurrency mechanics to create an engaging user experience. Users
-            earn VersePoints (VP) through various activities and can eventually convert them to tokens when the platform
-            migrates to blockchain.
-          </p>
-
-          <h2 className="text-2xl font-bold mb-4">Key Features</h2>
-          <ul className="list-disc list-inside space-y-2 text-muted-foreground mb-6">
-            <li>Daily Mining System with 24-hour cooldown (100 VP per mine)</li>
-            <li>Welcome Bonus: 1,000 VP for new users</li>
-            <li>Streak Mining System with multipliers up to 3x</li>
-            <li>5-Tier Ranking System (Rookie to Citizen)</li>
-            <li>NFT Marketplace with mining boosts</li>
-            <li>Referral Program with ongoing rewards</li>
-            <li>Task System for bonus points</li>
-            <li>Anti-Bot Security with device fingerprinting</li>
-          </ul>
-
-          <h2 className="text-2xl font-bold mb-4">Tokenomics (Phase 2)</h2>
-          <p className="text-muted-foreground mb-6">
-            The platform will migrate to blockchain technology in later phases, converting VersePoints to native tokens.
-            Details on token distribution, supply, and utility will be announced as we approach Phase 6 (Token Launch).
-          </p>
-
-          <h2 className="text-2xl font-bold mb-4">12-Phase Roadmap</h2>
-          <div className="space-y-4 text-muted-foreground">
-            <div>
-              <h3 className="text-lg font-semibold text-foreground">Phase 1: Foundation</h3>
-              <p>Web2 platform launch with core mining and referral features</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-foreground">Phase 2: NFT Integration</h3>
-              <p>Launch NFT marketplace with mining boosts and exclusive rewards</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-foreground">Phase 3: Community Growth</h3>
-              <p>Expand user base and implement advanced social features</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-foreground">Phase 4: Gamification</h3>
-              <p>Add achievements, leaderboard competitions, and mini-games</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-foreground">Phase 5: Partnerships</h3>
-              <p>Strategic partnerships with blockchain projects and exchanges</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-foreground">Phase 6: Token Launch</h3>
-              <p>Deploy smart contracts and launch native token</p>
-            </div>
+        <div className="grid lg:grid-cols-3 gap-6 md:gap-8 mb-12">
+          <div className="p-6 rounded-xl bg-card/80 border border-border/50 backdrop-blur-md hover:border-primary/30 transition-all hover:scale-105">
+            <h3 className="text-xl font-bold text-foreground mb-2">Platform Overview</h3>
+            <p className="text-muted-foreground">
+              Discover how VerseEstate combines Web2 accessibility with Web3 technology to create a
+              sustainable points mining ecosystem with real-world value.
+            </p>
           </div>
 
-          <h2 className="text-2xl font-bold mb-4 mt-8">Security & Anti-Fraud</h2>
-          <p className="text-muted-foreground mb-6">
-            VersePoints implements multiple layers of security including IP rate limiting, device fingerprinting,
-            behavioral analysis, and comprehensive audit logging to prevent bot abuse and ensure fair distribution of
-            rewards.
-          </p>
+          <div className="p-6 rounded-xl bg-card/80 border border-border/50 backdrop-blur-md hover:border-primary/30 transition-all hover:scale-105">
+            <h3 className="text-xl font-bold text-foreground mb-2">Tokenomics & Distribution</h3>
+            <p className="text-muted-foreground">
+              Learn about our fair distribution model, staking rewards, and how VersePoints convert
+              to blockchain tokens in Phase 3.
+            </p>
+          </div>
 
-          <h2 className="text-2xl font-bold mb-4">Community & Support</h2>
-          <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-            <li>Telegram: https://t.me/VerseEstate001</li>
-            <li>YouTube: https://youtube.com/@verseestate001</li>
-            <li>TikTok: https://www.tiktok.com/@verseestate5</li>
-            <li>Instagram: https://www.instagram.com/verse_estate</li>
-            <li>Discord: https://discord.gg/2RtpUKYt</li>
-            <li>WhatsApp: https://whatsapp.com/channel/0029VbBlIG7CXC3SvpwBTF2U</li>
-          </ul>
+          <div className="p-6 rounded-xl bg-card/80 border border-border/50 backdrop-blur-md hover:border-primary/30 transition-all hover:scale-105">
+            <h3 className="text-xl font-bold text-foreground mb-2">12-Phase Roadmap</h3>
+            <p className="text-muted-foreground">
+              Explore our comprehensive roadmap from foundation to full blockchain integration and
+              real estate tokenization.
+            </p>
+          </div>
         </div>
-      </Card>
-    </div>
-  )
+
+        <div className="text-center">
+          <a
+            href="https://docs.google.com/document/d/1N0pWRrpL0U76rUcmXr4YPZ6NpnyqUbgTXYCilUhBxAA/edit?usp=drivesdk"
+            target="_blank"
+            rel="noopener noreferrer">
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground glow-primary">
+              Read Full Whitepaper
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </a>
+        </div>
+      </div>
+    </section>
+  );
 }
