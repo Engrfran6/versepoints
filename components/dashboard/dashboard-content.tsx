@@ -38,7 +38,7 @@ interface DashboardContentProps {
 
 export function DashboardContent({user: initialUser, referralCount, rank}: DashboardContentProps) {
   const [user, setUser] = useState(initialUser);
-  const [isMining, setIsMining] = useState(true);
+  const [isMining, setIsMining] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
