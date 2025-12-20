@@ -1,15 +1,15 @@
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
-import { miningRequestSchema } from "@/lib/validations/mining";
-import { MINING_CONSTANTS, RATE_LIMITS } from "@/lib/constants";
-import { headers } from "next/headers";
+import {createClient} from "@/lib/supabase/server";
+import {NextResponse} from "next/server";
+import {miningRequestSchema} from "@/lib/validations/mining";
+import {MINING_CONSTANTS, RATE_LIMITS} from "@/lib/constants";
+import {headers} from "next/headers";
 
 function getStreakMultiplier(streak: number): number {
   const thresholds = Object.entries(MINING_CONSTANTS.STREAK_BONUS_MULTIPLIERS)
-    .map(([days, mult]) => ({ days: Number.parseInt(days), mult }))
+    .map(([days, mult]) => ({days: Number.parseInt(days), mult}))
     .sort((a, b) => b.days - a.days);
 
-  for (const { days, mult } of thresholds) {
+  for (const {days, mult} of thresholds) {
     if (streak >= days) return mult;
   }
   return 1.0;
@@ -18,9 +18,9 @@ function getStreakMultiplier(streak: number): number {
 function calculateStreak(
   lastMiningAt: string | null,
   currentStreak: number
-): { newStreak: number; streakBroken: boolean } {
+): {newStreak: number; streakBroken: boolean} {
   if (!lastMiningAt) {
-    return { newStreak: 1, streakBroken: false };
+    return {newStreak: 1, streakBroken: false};
   }
 
   const lastMining = new Date(lastMiningAt).getTime();
@@ -30,10 +30,10 @@ function calculateStreak(
 
   if (hoursSinceLastMining <= graceHours) {
     // Continue streak
-    return { newStreak: currentStreak + 1, streakBroken: false };
+    return {newStreak: currentStreak + 1, streakBroken: false};
   } else {
     // Streak broken, reset to 1
-    return { newStreak: 1, streakBroken: true };
+    return {newStreak: 1, streakBroken: true};
   }
 }
 
@@ -43,15 +43,12 @@ export async function POST(request: Request) {
 
     // Get authenticated user
     const {
-      data: { user },
+      data: {user},
       error: authError,
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({success: false, error: "Unauthorized"}, {status: 401});
     }
 
     // Parse and validate request body
@@ -59,13 +56,10 @@ export async function POST(request: Request) {
     const validationResult = miningRequestSchema.safeParse(body);
 
     if (!validationResult.success) {
-      return NextResponse.json(
-        { success: false, error: "Invalid request data" },
-        { status: 400 }
-      );
+      return NextResponse.json({success: false, error: "Invalid request data"}, {status: 400});
     }
 
-    const { fingerprint, browserInfo } = validationResult.data;
+    const {fingerprint, browserInfo} = validationResult.data;
 
     // Get request headers for IP and user agent
     const headersList = await headers();
@@ -74,53 +68,44 @@ export async function POST(request: Request) {
     const userAgent = headersList.get("user-agent") || "unknown";
 
     // Get user data
-    const { data: userData, error: userError } = await supabase
+    const {data: userData, error: userError} = await supabase
       .from("users")
       .select("*")
       .eq("id", user.id)
       .single();
 
     if (userError || !userData) {
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({success: false, error: "User not found"}, {status: 404});
     }
 
     // Check if user is suspended
     if (userData.status !== "active") {
-      return NextResponse.json(
-        { success: false, error: "Account is suspended" },
-        { status: 403 }
-      );
+      return NextResponse.json({success: false, error: "Account is suspended"}, {status: 403});
     }
 
     // Check 24-hour cooldown
     if (userData.last_mining_at) {
       const lastMining = new Date(userData.last_mining_at).getTime();
-      const cooldownMs =
-        MINING_CONSTANTS.MINING_COOLDOWN_HOURS * 60 * 60 * 1000;
+      const cooldownMs = MINING_CONSTANTS.MINING_COOLDOWN_HOURS * 60 * 60 * 1000;
       const now = Date.now();
 
       if (now - lastMining < cooldownMs) {
         const timeLeft = Math.ceil((lastMining + cooldownMs - now) / 1000 / 60);
         return NextResponse.json(
-          { success: false, error: `Mining available in ${timeLeft} minutes` },
-          { status: 429 }
+          {success: false, error: `Mining available in ${timeLeft} minutes`},
+          {status: 429}
         );
       }
     }
 
     // Check IP rate limiting
-    const { data: recentMiningFromIP } = await supabase
+    const {data: recentMiningFromIP} = await supabase
       .from("mining_sessions")
       .select("id")
       .eq("ip_address", ipAddress)
       .gte(
         "created_at",
-        new Date(
-          Date.now() - RATE_LIMITS.MINING_PER_IP_HOURS * 60 * 60 * 1000
-        ).toISOString()
+        new Date(Date.now() - RATE_LIMITS.MINING_PER_IP_HOURS * 60 * 60 * 1000).toISOString()
       )
       .neq("user_id", user.id)
       .limit(1);
@@ -132,17 +117,17 @@ export async function POST(request: Request) {
         action: "mining_ip_blocked",
         ip_address: ipAddress,
         user_agent: userAgent,
-        metadata: { fingerprint, reason: "IP already used" },
+        metadata: {fingerprint, reason: "IP already used"},
       });
 
       return NextResponse.json(
-        { success: false, error: "Mining limit reached for this network" },
-        { status: 429 }
+        {success: false, error: "Mining limit reached for this network"},
+        {status: 429}
       );
     }
 
     // Verify fingerprint consistency
-    const { data: existingFingerprint } = await supabase
+    const {data: existingFingerprint} = await supabase
       .from("device_fingerprints")
       .select("*")
       .eq("user_id", user.id)
@@ -151,7 +136,7 @@ export async function POST(request: Request) {
 
     if (!existingFingerprint) {
       // Check if this fingerprint belongs to another user
-      const { data: otherUserFingerprint } = await supabase
+      const {data: otherUserFingerprint} = await supabase
         .from("device_fingerprints")
         .select("user_id")
         .eq("fingerprint_hash", fingerprint)
@@ -165,12 +150,12 @@ export async function POST(request: Request) {
           action: "mining_fingerprint_conflict",
           ip_address: ipAddress,
           user_agent: userAgent,
-          metadata: { fingerprint, reason: "Device used by another account" },
+          metadata: {fingerprint, reason: "Device used by another account"},
         });
 
         return NextResponse.json(
-          { success: false, error: "Device verification failed" },
-          { status: 403 }
+          {success: false, error: "Device verification failed"},
+          {status: 403}
         );
       }
 
@@ -184,32 +169,28 @@ export async function POST(request: Request) {
       // Update last seen
       await supabase
         .from("device_fingerprints")
-        .update({ last_seen: new Date().toISOString() })
+        .update({last_seen: new Date().toISOString()})
         .eq("id", existingFingerprint.id);
     }
 
     const currentStreak = userData.current_streak || 0;
-    const { newStreak, streakBroken } = calculateStreak(
-      userData.last_mining_at,
-      currentStreak
-    );
+    const {newStreak, streakBroken} = calculateStreak(userData.last_mining_at, currentStreak);
     const multiplier = getStreakMultiplier(newStreak);
 
-    if (MINING_CONSTANTS.POINTS_PER_MINE > 1000) {
+    if (MINING_CONSTANTS.POINTS_PER_MINE > 10000) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "An exception occurred, We can not process your mining request, please contact support",
+          error: "An error occurred, We could not process your mining request",
         },
-        { status: 500 }
+        {status: 500}
       );
     }
 
     const basePoints = MINING_CONSTANTS.POINTS_PER_MINE;
     const pointsEarned = Math.floor(basePoints * multiplier);
 
-    const { error: updateError } = await supabase
+    const {error: updateError} = await supabase
       .from("users")
       .update({
         // points_balance: userData.points_balance + pointsEarned,
@@ -223,10 +204,7 @@ export async function POST(request: Request) {
       .eq("id", user.id);
 
     if (updateError) {
-      return NextResponse.json(
-        { success: false, error: "Failed to update balance" },
-        { status: 500 }
-      );
+      return NextResponse.json({success: false, error: "Failed to update balance"}, {status: 500});
     }
 
     // Record mining session
@@ -240,7 +218,7 @@ export async function POST(request: Request) {
 
     // Check if user was referred and award referrer bonus
     if (userData.referred_by) {
-      const { data: referral } = await supabase
+      const {data: referral} = await supabase
         .from("referrals")
         .select("*")
         .eq("referrer_id", userData.referred_by)
@@ -318,9 +296,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Mining error:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({success: false, error: "Internal server error"}, {status: 500});
   }
 }
