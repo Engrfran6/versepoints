@@ -547,11 +547,7 @@ export function MiningButton({
       )}
 
       {/* Info Text */}
-      <p
-        className={cn(
-          "text-sm text-center rounded-2xl border-2 p-4 w-full",
-          isMining ? "text-white" : "bg-muted-foreground"
-        )}>
+      <p className="text-sm text-center rounded-2xl border-2 p-4 w-full text-white">
         {canMine ? (
           <span className="flex items-center gap-1">
             <Sparkles className="w-4 h-4 text-primary animate-pulse" />
