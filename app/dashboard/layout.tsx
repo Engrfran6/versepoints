@@ -3,7 +3,7 @@ import {redirect} from "next/navigation";
 import {createClient} from "@/lib/supabase/server";
 import {Sidebar} from "@/components/dashboard/sidebar";
 import {MobileNav} from "@/components/dashboard/mobile-nav";
-import {Button} from "@/components/ui/button";
+import Logout from "@/components/logout";
 
 export default async function DashboardLayout({children}: {children: React.ReactNode}) {
   const supabase = await createClient();
@@ -31,7 +31,9 @@ export default async function DashboardLayout({children}: {children: React.React
         <Sidebar isAdmin={userData?.is_admin || false} />
       </div>
 
-      <Button className="absolute right-4 top-4">Logout</Button>
+      <div className="absolute right-2 top-2 z-[60]">
+        <Logout />
+      </div>
 
       {/* Main Content */}
       <main className="md:ml-64 pb-20 md:pb-0">{children}</main>
