@@ -3,6 +3,7 @@ import {redirect} from "next/navigation";
 import {createClient} from "@/lib/supabase/server";
 import {Sidebar} from "@/components/dashboard/sidebar";
 import {MobileNav} from "@/components/dashboard/mobile-nav";
+import {Button} from "@/components/ui/button";
 
 export default async function DashboardLayout({children}: {children: React.ReactNode}) {
   const supabase = await createClient();
@@ -24,11 +25,13 @@ export default async function DashboardLayout({children}: {children: React.React
     .single();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen bg-background">
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <Sidebar isAdmin={userData?.is_admin || false} />
       </div>
+
+      <Button className="absolute right-4 top-4">Logout</Button>
 
       {/* Main Content */}
       <main className="md:ml-64 pb-20 md:pb-0">{children}</main>

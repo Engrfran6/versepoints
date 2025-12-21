@@ -229,9 +229,9 @@ export function RankRewardsCard({
               </div>
               {/* Text */}
               <div className="flex-1">
-                <p className="text-xs text-muted-foreground">
+                <div className="text-xs text-muted-foreground">
                   Unlock at <br />
-                  <div>
+                  <p>
                     <span className="font-medium text-foreground">
                       {formatNumberShort(pointsRequired).toLocaleString()} VP
                     </span>
@@ -240,8 +240,8 @@ export function RankRewardsCard({
                       {referrals_required}{" "}
                       <span className="text-[10px] font-medium text-foreground">referrers</span>
                     </span>
-                  </div>
-                </p>
+                  </p>
+                </div>
               </div>
             </div>
 

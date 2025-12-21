@@ -15,6 +15,8 @@ import type {User} from "@/lib/types/database";
 import {generateFingerprint, getBrowserInfo} from "@/lib/fingerprint";
 import {MINING_CONSTANTS} from "@/lib/constants";
 import {useMiningProgress} from "@/hooks/useMiningProgress";
+import {Button} from "../ui/button";
+import {toast} from "sonner";
 
 const FloatingParticles = dynamic(
   () => import("@/components/3d/floating-particles").then((mod) => mod.FloatingParticles),
@@ -111,9 +113,53 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
     } catch {
       return {success: false, error: "Network error"};
     } finally {
-      setTimeout(() => setIsMining(false), 2000);
+      setTimeout(() => setIsMining(true), 2000);
     }
   }, []);
+
+  const isWelcomeBack = (() => {
+    const lastMinedAt = user.last_mining_at;
+    if (!lastMinedAt) return false;
+
+    const lastVisit = new Date(lastMinedAt).getTime();
+    const now = Date.now();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+
+    return now - lastVisit > twentyFourHours;
+  })();
+
+  const {points_balance: newUserPoint, created_at: newUserCreatedAt} = user;
+  const DAY = 24 * 60 * 60 * 1000;
+
+  const isNewUser =
+    !user.welcome_bonus_claimed &&
+    Date.now() - new Date(newUserCreatedAt).getTime() < DAY &&
+    user.mining_count === 0;
+
+  const [pending, setPending] = useState(false);
+  const handleCLaimWelcome = async () => {
+    if (!isNewUser) return;
+    setPending(true);
+
+    try {
+      const res = await fetch("/api/user/claim-welcome", {method: "POST"});
+      const data = await res.json();
+
+      if (data.success) {
+        setUser((prev) => ({
+          ...prev,
+          points_balance: data.newBalance,
+          welcome_bonus_claimed: true,
+        }));
+
+        toast.success(`+${data.pointsAwarded} VP added`);
+      }
+    } catch (error) {
+      toast.warning("Error processing claim");
+    } finally {
+      setPending(false);
+    }
+  };
 
   const visualPoints = useMiningProgress(
     user.points_balance,
@@ -150,17 +196,6 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
 
     return () => clearInterval(interval);
   }, [visualPoints]);
-
-  const isWelcomeBack = (() => {
-    const lastMinedAt = user.last_mining_at;
-    if (!lastMinedAt) return false;
-
-    const lastVisit = new Date(lastMinedAt).getTime();
-    const now = Date.now();
-    const twentyFourHours = 24 * 60 * 60 * 1000;
-
-    return now - lastVisit > twentyFourHours;
-  })();
 
   return (
     <div className="relative p-4 md:p-8 min-h-screen">
@@ -213,9 +248,21 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
               isMining ? "bg-[#083905]" : "bg-[#070b11]"
             )}>
             {/* BASE GRADIENT */}
+            {isNewUser && (
+              <div className="-mb-7 -mt-3 flex items-center justify-center gap-2">
+                <span className=" text-sm text-muted-foreground">
+                  🎉 +1,000 VP welcome bonus awaits
+                </span>
+
+                <Button disabled={pending} variant="outline" size="sm" onClick={handleCLaimWelcome}>
+                  {pending ? "Claiming..." : "Claim now"}
+                </Button>
+              </div>
+            )}
+
             <div
               className={cn(
-                "absolute inset-0 transition-opacity duration-700",
+                "absolute inset-0 pointer-events-none transition-opacity duration-700",
                 isMining
                   ? "bg-gradient-to-br from-green-400/40 via-cyan-900/30 to-indigo-900/40 opacity-100"
                   : "bg-gradient-to-br from-purple-950/60 via-indigo-900/40 to-teal-950/30 opacity-90"
@@ -225,7 +272,7 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
             {/* RADIAL ENERGY CORE */}
             <div
               className={cn(
-                "absolute inset-0 transition-all duration-700",
+                "absolute inset-0 pointer-events-none transition-all duration-700",
                 isMining
                   ? "bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.35),transparent_65%)] animate-pulse"
                   : "bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.18),transparent_70%)]"
@@ -258,8 +305,10 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
                 <MiningButton
                   lastMiningAt={user.last_mining_at}
                   currentStreak={user.current_streak || 0}
-                  onMine={handleMine}
                   isMining={isMining}
+                  onMineStart={() => setIsMining(true)}
+                  onMineComplete={() => setIsMining(false)}
+                  onMine={handleMine}
                 />
               </div>
             </CardContent>

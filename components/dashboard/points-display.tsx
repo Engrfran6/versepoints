@@ -12,17 +12,12 @@ interface PointsDisplayProps {
   points: number;
 }
 
-export function PointsDisplay({
-  points,
-  className,
-  showIcon = true,
-  isMining = false,
-}: PointsDisplayProps) {
+export function PointsDisplay({points, className, showIcon = true, isMining}: PointsDisplayProps) {
   const formatter = useMemo(
     () =>
       new Intl.NumberFormat(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
       }),
     []
   );
@@ -55,13 +50,18 @@ export function PointsDisplay({
             isMining ? "text-cyan-300" : "text-foreground"
           )}>
           {integerPart}
-          <span
-            className={cn(
-              "align-super text-sm ml-0.5 transition-opacity",
-              isMining ? "opacity-100" : "opacity-60"
-            )}>
-            .{decimalPart}
-          </span>
+
+          {isMining ? (
+            <span
+              className={cn(
+                "align-super text-sm ml-0.5 transition-opacity",
+                isMining ? "opacity-100" : "opacity-60"
+              )}>
+              .{decimalPart}
+            </span>
+          ) : (
+            points === 0 && <span>.00</span>
+          )}
         </p>
       </div>
     </div>

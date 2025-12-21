@@ -20,7 +20,8 @@ import {
 import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
 import {useState} from "react";
-import {Sheet, SheetContent, SheetTrigger} from "@/components/ui/sheet";
+import {Sheet, SheetContent, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
+import {DialogHeader} from "../ui/dialog";
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -70,6 +71,7 @@ export function MobileNav() {
 
           {/* Menu Trigger */}
           <Sheet open={open} onOpenChange={setOpen}>
+            <DialogHeader className="hidden"></DialogHeader>
             <SheetTrigger asChild>
               <button
                 className={cn(
@@ -82,6 +84,8 @@ export function MobileNav() {
             </SheetTrigger>
 
             <SheetContent side="right" className="w-64">
+              <SheetTitle className="hidden">Mobile navigation</SheetTitle>
+
               <div className="flex flex-col gap-4 mt-8">
                 {moreNavItems.map((item) => (
                   <Link

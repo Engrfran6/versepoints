@@ -4,17 +4,7 @@ import {useState, useEffect, useCallback, useRef, Suspense, useMemo} from "react
 import dynamic from "next/dynamic";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
-import {
-  Pickaxe,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-  Sparkles,
-  Flame,
-  Zap,
-  ArrowBigUpIcon,
-  Hammer,
-} from "lucide-react";
+import {Loader2, CheckCircle2, AlertCircle, Sparkles, Flame, Hammer} from "lucide-react";
 import {cn} from "@/lib/utils";
 import {MINING_CONSTANTS} from "@/lib/constants";
 import {useMiningProgress} from "@/hooks/useMiningProgress";
@@ -29,6 +19,9 @@ const MiningCrystals3D = dynamic(
 interface MiningButtonProps {
   lastMiningAt: string | null;
   currentStreak?: number;
+  isMining: boolean;
+  onMineStart: () => void;
+  onMineComplete: () => void;
   onMine: () => Promise<{
     success: boolean;
     points?: number;
@@ -36,17 +29,22 @@ interface MiningButtonProps {
     multiplier?: number;
     error?: string;
   }>;
-  onSuccess?: () => void;
-  isMining: boolean;
 }
 
 export function MiningButton({
   lastMiningAt,
   currentStreak = 0,
   onMine,
-  onSuccess,
-  isMining = false,
+  onMineStart,
+  onMineComplete,
+  isMining,
 }: MiningButtonProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [canMine, setCanMine] = useState(false);
   const [miningResult, setMiningResult] = useState<{
@@ -212,8 +210,10 @@ export function MiningButton({
       .padStart(2, "0")}`;
   };
 
-  const nextMineDate = new Date(Date.now() + timeLeft);
-  const nextMineTime = nextMineDate.toLocaleTimeString();
+  const nextMineTime = useMemo(() => {
+    if (!mounted) return "";
+    return new Date(Date.now() + timeLeft).toLocaleTimeString();
+  }, [mounted, timeLeft]);
 
   const handleMine = async () => {
     if (!canMine || isMining) return;
@@ -221,8 +221,11 @@ export function MiningButton({
     setMiningResult(null);
     setShowParticles(true);
 
+    onMineStart(); // 🔥 START VISUALS IMMEDIATELY
+
     try {
       const result = await onMine();
+
       if (result.success) {
         setMiningResult({
           success: true,
@@ -231,7 +234,6 @@ export function MiningButton({
           multiplier: result.multiplier,
         });
         setCanMine(false);
-        onSuccess?.();
       } else {
         setMiningResult({
           success: false,
@@ -241,7 +243,10 @@ export function MiningButton({
     } catch {
       setMiningResult({success: false, message: "An error occurred"});
     } finally {
-      setTimeout(() => setShowParticles(false), 2000);
+      setTimeout(() => {
+        setShowParticles(false);
+        onMineComplete(); // 🔥 STOP VISUALS
+      }, 1500);
     }
   };
 
@@ -341,12 +346,14 @@ export function MiningButton({
           </Suspense>
         </div>
 
-        <canvas
-          ref={canvasRef}
-          width={200}
-          height={200}
-          className="absolute inset-0 pointer-events-none -translate-x-[20px] -translate-y-[20px]"
-        />
+        {isMining && (
+          <canvas
+            ref={canvasRef}
+            width={200}
+            height={200}
+            className="absolute inset-0 pointer-events-none -translate-x-[20px] -translate-y-[20px]"
+          />
+        )}
 
         {showParticles && (
           <div className="absolute inset-0 pointer-events-none z-20">
@@ -469,9 +476,7 @@ export function MiningButton({
           disabled={!canMine || isMining}
           className={cn(
             "relative w-40 h-40 rounded-full font-bold transition-all duration-500 overflow-hidden",
-            canMine && !isMining
-              ? "bg-gradient-to-br  from-cyan-500 via-cyan-400 to-purple-500 text-black shadow-[0_0_40px_rgba(34,211,238,0.6)]  hover:scale-105"
-              : isMining
+            canMine && isMining
               ? "bg-gradient-to-br from-purple-500 to-cyan-500 text-white animate-pulse"
               : "bg-muted/80 text-muted-foreground cursor-not-allowed shadow-inner shadow-cyan-500/20 ring-1 ring-cyan-400/30 bg-gradient-to-br from-cyan-500/10 via-muted/80 to-purple-500/10"
           )}>
@@ -496,16 +501,14 @@ export function MiningButton({
                   </span>
                 </div>
               </>
-            ) : (
-              !canMine && (
-                <>
-                  <Hammer className="w-10 h-10 animate-bounce" />
-                  <p className="mb-2 text-xl"> 00.00 </p>
-                  <span className="text-2xl text-green-900 font-extrabold">Mine Now</span>
-                  <span className="text-xs opacity-80"> To earn more +VP</span>
-                </>
-              )
-            )}
+            ) : canMine ? (
+              <>
+                <Hammer className="w-10 h-10 animate-bounce" />
+                <p className="mb-1 text-xl">00.00</p>
+                <span className="text-2xl text-green-900 font-extrabold">Mine Now</span>
+                <span className="text-xs opacity-80">To earn more +VP</span>
+              </>
+            ) : null}
           </div>
         </Button>
       </div>
@@ -547,7 +550,7 @@ export function MiningButton({
       )}
 
       {/* Info Text */}
-      <p className="text-sm text-center rounded-2xl border-2 p-4 w-full text-white">
+      <div className="text-sm text-center rounded-2xl border-2 p-4 w-full text-white">
         {canMine ? (
           <span className="flex items-center gap-1">
             <Sparkles className="w-4 h-4 text-primary animate-pulse" />
@@ -557,12 +560,18 @@ export function MiningButton({
             )}
           </span>
         ) : (
-          <p>
-            Your next mine is at {nextMineTime} tomorrow
-            <br />({formatTime(timeLeft)} from now)
+          <p suppressHydrationWarning>
+            {mounted ? (
+              <>
+                Your next mine is at {nextMineTime} tomorrow
+                <br />({formatTime(timeLeft)} from now)
+              </>
+            ) : (
+              <span className="opacity-60">Calculating next mine time…</span>
+            )}
           </p>
         )}
-      </p>
+      </div>
     </div>
   );
 }

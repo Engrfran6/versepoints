@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import Link from "next/link"
-import dynamic from "next/dynamic"
-import { Suspense, useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import Link from "next/link";
+import dynamic from "next/dynamic";
+import {Suspense, useState, useEffect} from "react";
+import {Button} from "@/components/ui/button";
+import {Card, CardContent} from "@/components/ui/card";
+import {Badge} from "@/components/ui/badge";
 import {
   Pickaxe,
   Users,
@@ -25,52 +25,60 @@ import {
   CheckCircle2,
   Circle,
   Gift,
-} from "lucide-react"
-import { MINING_CONSTANTS } from "@/lib/constants"
+} from "lucide-react";
+import {MINING_CONSTANTS} from "@/lib/constants";
+import {formatNumberShort} from "@/lib/utils";
 
 const HeroCrystal = dynamic(
-  () => import("@/components/3d/hero-crystal").then((mod) => ({ default: mod.HeroCrystal })),
-  { ssr: false },
-)
+  () => import("@/components/3d/hero-crystal").then((mod) => ({default: mod.HeroCrystal})),
+  {ssr: false}
+);
 const ParticleWave = dynamic(
-  () => import("@/components/3d/particle-wave").then((mod) => ({ default: mod.ParticleWave })),
-  { ssr: false },
-)
+  () => import("@/components/3d/particle-wave").then((mod) => ({default: mod.ParticleWave})),
+  {ssr: false}
+);
 const NFTShowcase3D = dynamic(
-  () => import("@/components/3d/nft-showcase-3d").then((mod) => ({ default: mod.NFTShowcase3D })),
-  { ssr: false },
-)
+  () => import("@/components/3d/nft-showcase-3d").then((mod) => ({default: mod.NFTShowcase3D})),
+  {ssr: false}
+);
 const RoadmapTunnel = dynamic(
-  () => import("@/components/3d/roadmap-tunnel").then((mod) => ({ default: mod.RoadmapTunnel })),
-  { ssr: false },
-)
-const MiningCore = dynamic(() => import("@/components/3d/mining-core").then((mod) => ({ default: mod.MiningCore })), {
-  ssr: false,
-})
+  () => import("@/components/3d/roadmap-tunnel").then((mod) => ({default: mod.RoadmapTunnel})),
+  {ssr: false}
+);
+const MiningCore = dynamic(
+  () => import("@/components/3d/mining-core").then((mod) => ({default: mod.MiningCore})),
+  {
+    ssr: false,
+  }
+);
 const FloatingParticles = dynamic(
-  () => import("@/components/3d/floating-particles").then((mod) => ({ default: mod.FloatingParticles })),
-  { ssr: false },
-)
-const NFTGrid3D = dynamic(() => import("@/components/3d/nft-grid-3d").then((mod) => ({ default: mod.NFTGrid3D })), {
-  ssr: false,
-})
+  () =>
+    import("@/components/3d/floating-particles").then((mod) => ({default: mod.FloatingParticles})),
+  {ssr: false}
+);
+const NFTGrid3D = dynamic(
+  () => import("@/components/3d/nft-grid-3d").then((mod) => ({default: mod.NFTGrid3D})),
+  {
+    ssr: false,
+  }
+);
 
 // Animated counter component
-function AnimatedCounter({ value, duration = 2000 }: { value: number; duration?: number }) {
-  const [count, setCount] = useState(0)
+function AnimatedCounter({value, duration = 2000}: {value: number; duration?: number}) {
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
-    let startTime: number
+    let startTime: number;
     const animate = (timestamp: number) => {
-      if (!startTime) startTime = timestamp
-      const progress = Math.min((timestamp - startTime) / duration, 1)
-      setCount(Math.floor(progress * value))
-      if (progress < 1) requestAnimationFrame(animate)
-    }
-    requestAnimationFrame(animate)
-  }, [value, duration])
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      setCount(Math.floor(progress * value));
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+  }, [value, duration]);
 
-  return <span>{count.toLocaleString()}</span>
+  return <span>{count.toLocaleString()}</span>;
 }
 
 // NFT Preview Card
@@ -81,29 +89,28 @@ function NFTPreviewCard({
   color,
   icon: Icon,
 }: {
-  name: string
-  tier: string
-  boost: string
-  color: string
-  icon: React.ElementType
+  name: string;
+  tier: string;
+  boost: string;
+  color: string;
+  icon: React.ElementType;
 }) {
   return (
     <Card className="bg-card/50 border-border/50 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 group hover:scale-105">
       <CardContent className="p-6">
         <div
           className="w-16 h-16 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110"
-          style={{ backgroundColor: `${color}20`, boxShadow: `0 0 30px ${color}40` }}
-        >
-          <Icon className="w-8 h-8" style={{ color }} />
+          style={{backgroundColor: `${color}20`, boxShadow: `0 0 30px ${color}40`}}>
+          <Icon className="w-8 h-8" style={{color}} />
         </div>
         <h4 className="font-semibold text-foreground mb-1">{name}</h4>
-        <Badge variant="outline" className="mb-2" style={{ borderColor: color, color }}>
+        <Badge variant="outline" className="mb-2" style={{borderColor: color, color}}>
           {tier}
         </Badge>
         <p className="text-sm text-primary font-medium">{boost}</p>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 // Phase item for roadmap
@@ -114,27 +121,29 @@ function PhaseItem({
   isActive,
   isCurrent,
 }: {
-  phase: number
-  title: string
-  description: string
-  isActive: boolean
-  isCurrent: boolean
+  phase: number;
+  title: string;
+  description: string;
+  isActive: boolean;
+  isCurrent: boolean;
 }) {
   return (
     <div
       className={`flex gap-4 items-start p-4 rounded-xl transition-all duration-300 ${
-        isCurrent ? "bg-primary/10 border border-primary/30" : isActive ? "bg-card/50" : "opacity-50"
-      }`}
-    >
+        isCurrent
+          ? "bg-primary/10 border border-primary/30"
+          : isActive
+          ? "bg-card/50"
+          : "opacity-50"
+      }`}>
       <div
         className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
           isCurrent
             ? "bg-primary text-primary-foreground glow-primary"
             : isActive
-              ? "bg-primary/20 text-primary"
-              : "bg-muted text-muted-foreground"
-        }`}
-      >
+            ? "bg-primary/20 text-primary"
+            : "bg-muted text-muted-foreground"
+        }`}>
         {isActive ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
       </div>
       <div>
@@ -146,29 +155,53 @@ function PhaseItem({
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
     </div>
-  )
+  );
 }
 
 export default function HomePage() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [mousePosition, setMousePosition] = useState({x: 0, y: 0});
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth - 0.5) * 20,
         y: (e.clientY / window.innerHeight - 0.5) * 20,
-      })
-    }
-    window.addEventListener("mousemove", handleMouseMove)
-    return () => window.removeEventListener("mousemove", handleMouseMove)
-  }, [])
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   const phases = [
-    { phase: 1, title: "Foundation", description: "Core platform & Web2 mining", isActive: true, isCurrent: false },
-    { phase: 2, title: "NFT System", description: "Mining boosts & collectibles", isActive: true, isCurrent: true },
-    { phase: 3, title: "Governance", description: "Community voting & proposals", isActive: false, isCurrent: false },
-    { phase: 4, title: "Blockchain", description: "Token launch & DEX listing", isActive: false, isCurrent: false },
-  ]
+    {
+      phase: 1,
+      title: "Foundation",
+      description: "Core platform & Web2 mining",
+      isActive: true,
+      isCurrent: false,
+    },
+    {
+      phase: 2,
+      title: "NFT System",
+      description: "Mining boosts & collectibles",
+      isActive: true,
+      isCurrent: true,
+    },
+    {
+      phase: 3,
+      title: "Governance",
+      description: "Community voting & proposals",
+      isActive: false,
+      isCurrent: false,
+    },
+    {
+      phase: 4,
+      title: "Blockchain",
+      description: "Token launch & DEX listing",
+      isActive: false,
+      isCurrent: false,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
@@ -178,26 +211,37 @@ export default function HomePage() {
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2 group">
               <div className="w-10 h-10 rounded-xl overflow-hidden bg-black/50">
-                <img src="/logo.jpg" alt="VerseEstate Logo" className="w-full h-full object-contain" />
+                <img
+                  src="/logo.jpg"
+                  alt="VerseEstate Logo"
+                  width="auto"
+                  height="auto"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
                 VerseEstate
               </span>
             </Link>
             <div className="hidden md:flex items-center gap-6">
-              <Link href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link
+                href="#features"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Features
               </Link>
-              <Link href="#nfts" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link
+                href="#nfts"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 NFTs
               </Link>
-              <Link href="#roadmap" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link
+                href="#roadmap"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Roadmap
               </Link>
               <Link
                 href="#whitepaper"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Whitepaper
               </Link>
             </div>
@@ -228,8 +272,9 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div
               className="text-center lg:text-left"
-              style={{ transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)` }}
-            >
+              style={{
+                transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)`,
+              }}>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 mb-8 backdrop-blur-sm">
                 <Sparkles className="w-4 h-4 text-primary animate-pulse" />
                 <span className="text-sm text-primary font-medium">Phase 2 - NFT System Live</span>
@@ -245,8 +290,8 @@ export default function HomePage() {
               </h1>
 
               <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-6 text-pretty">
-                Start earning points through daily mining, collect powerful NFTs, and climb the ranks. Your journey to
-                blockchain rewards starts here.
+                Start earning points through daily mining, collect powerful NFTs, and climb the
+                ranks. Your journey to blockchain rewards starts here.
               </p>
 
               <div className="flex items-center justify-center lg:justify-start gap-2 mb-8 animate-pulse">
@@ -261,8 +306,7 @@ export default function HomePage() {
                 <Link href="/auth/sign-up">
                   <Button
                     size="lg"
-                    className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground text-lg px-8 py-6 glow-primary group"
-                  >
+                    className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground text-lg px-8 py-6 glow-primary group">
                     Start Mining
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
@@ -271,8 +315,7 @@ export default function HomePage() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="text-lg px-8 py-6 bg-background/50 backdrop-blur-sm border-border/50"
-                  >
+                    className="text-lg px-8 py-6 bg-background/50 backdrop-blur-sm border-border/50">
                     Explore Features
                   </Button>
                 </Link>
@@ -281,14 +324,13 @@ export default function HomePage() {
               {/* Live Stats - Updated values */}
               <div className="grid grid-cols-3 gap-4 max-w-md mx-auto lg:mx-0">
                 {[
-                  { label: "Total Mined", value: 12500000, suffix: "+" },
-                  { label: "Active Miners", value: 85000, suffix: "" },
-                  { label: "NFTs Minted", value: 32000, suffix: "" },
+                  {label: "Total Mined", value: 12500000, suffix: "+"},
+                  {label: "Active Miners", value: 85000, suffix: ""},
+                  {label: "NFTs Minted", value: 32000, suffix: ""},
                 ].map((stat) => (
                   <div
                     key={stat.label}
-                    className="p-4 rounded-xl bg-card/30 backdrop-blur-sm border border-border/30 hover:border-primary/30 transition-colors"
-                  >
+                    className="p-4 rounded-xl bg-card/30 backdrop-blur-sm border border-border/30 hover:border-primary/30 transition-colors">
                     <div className="text-2xl font-bold text-primary">
                       <AnimatedCounter value={stat.value} />
                       {stat.suffix}
@@ -300,7 +342,7 @@ export default function HomePage() {
             </div>
 
             {/* 3D Mining Core */}
-            <div className="relative h-[500px] hidden lg:block">
+            <div className="relative h-125 hidden lg:block">
               <Suspense fallback={null}>
                 <MiningCore />
               </Suspense>
@@ -324,7 +366,9 @@ export default function HomePage() {
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-primary/10 text-primary border-primary/30">How It Works</Badge>
+            <Badge className="mb-4 bg-primary/10 text-primary border-primary/30">
+              How It Works
+            </Badge>
             <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-4 text-balance">
               Simple. Powerful. <span className="text-primary">Rewarding.</span>
             </h2>
@@ -346,14 +390,16 @@ export default function HomePage() {
               {
                 icon: Users,
                 title: "Referral Rewards",
-                description: "Share your unique link and earn bonus points when friends sign up and mine.",
+                description:
+                  "Share your unique link and earn bonus points when friends sign up and mine.",
                 color: "#8b5cf6",
                 stats: `+${MINING_CONSTANTS.REFERRAL_FIRST_MINING_BONUS} VP per referral`,
               },
               {
                 icon: Trophy,
                 title: "Rank Up",
-                description: "Climb from Rookie to Citizen, unlock exclusive perks and higher mining rates.",
+                description:
+                  "Climb from Rookie to Citizen, unlock exclusive perks and higher mining rates.",
                 color: "#f59e0b",
                 stats: "5 unique ranks",
               },
@@ -361,22 +407,24 @@ export default function HomePage() {
               <Card
                 key={feature.title}
                 className="bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-500 group overflow-hidden hover:scale-105"
-                style={{ animationDelay: `${i * 100}ms` }}
-              >
+                style={{animationDelay: `${i * 100}ms`}}>
                 <CardContent className="p-8 relative">
                   <div
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                    style={{ background: `radial-gradient(circle at 50% 0%, ${feature.color}10 0%, transparent 70%)` }}
+                    style={{
+                      background: `radial-gradient(circle at 50% 0%, ${feature.color}10 0%, transparent 70%)`,
+                    }}
                   />
                   <div
                     className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110"
-                    style={{ backgroundColor: `${feature.color}20` }}
-                  >
-                    <feature.icon className="w-8 h-8" style={{ color: feature.color }} />
+                    style={{backgroundColor: `${feature.color}20`}}>
+                    <feature.icon className="w-8 h-8" style={{color: feature.color}} />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground mb-3">{feature.title}</h3>
                   <p className="text-muted-foreground mb-4">{feature.description}</p>
-                  <Badge variant="outline" style={{ borderColor: feature.color, color: feature.color }}>
+                  <Badge
+                    variant="outline"
+                    style={{borderColor: feature.color, color: feature.color}}>
                     {feature.stats}
                   </Badge>
                 </CardContent>
@@ -387,15 +435,14 @@ export default function HomePage() {
           {/* Stats Grid - Updated values */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20">
             {[
-              { label: "Points Per Mine", value: `${MINING_CONSTANTS.POINTS_PER_MINE}+`, icon: Zap },
-              { label: "Mining Interval", value: "24h", icon: Clock },
-              { label: "Max NFT Boost", value: "100%", icon: Gem },
-              { label: "Referral Levels", value: "3", icon: Users },
+              {label: "Points Per Mine", value: `${MINING_CONSTANTS.POINTS_PER_MINE}+`, icon: Zap},
+              {label: "Mining Interval", value: "24h", icon: Clock},
+              {label: "Max NFT Boost", value: "100%", icon: Gem},
+              {label: "Referral Levels", value: "3", icon: Users},
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="p-6 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/30 text-center hover:border-primary/30 hover:scale-105 transition-all duration-300"
-              >
+                className="p-6 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/30 text-center hover:border-primary/30 hover:scale-105 transition-all duration-300">
                 <stat.icon className="w-8 h-8 text-primary mx-auto mb-3" />
                 <div className="text-3xl font-bold text-foreground mb-1">{stat.value}</div>
                 <div className="text-sm text-muted-foreground">{stat.label}</div>
@@ -406,7 +453,9 @@ export default function HomePage() {
       </section>
 
       {/* NFT Marketplace Section */}
-      <section id="nfts" className="relative py-32 px-4 bg-gradient-to-b from-transparent via-card/20 to-transparent">
+      <section
+        id="nfts"
+        className="relative py-32 px-4 bg-gradient-to-b from-transparent via-card/20 to-transparent">
         <Suspense fallback={null}>
           <FloatingParticles color="#8b5cf6" count={1000} />
         </Suspense>
@@ -414,13 +463,15 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <Badge className="mb-4 bg-accent/10 text-accent border-accent/30">NFT Marketplace</Badge>
+              <Badge className="mb-4 bg-accent/10 text-accent border-accent/30">
+                NFT Marketplace
+              </Badge>
               <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-6 text-balance">
                 Collect. Boost. <span className="text-accent">Dominate.</span>
               </h2>
               <p className="text-lg text-muted-foreground mb-8">
-                Acquire powerful NFTs that boost your mining rate. Combine 3 NFTs of the same tier in the Forge to
-                create even more powerful collectibles.
+                Acquire powerful NFTs that boost your mining rate. Combine 3 NFTs of the same tier
+                in the Forge to create even more powerful collectibles.
               </p>
 
               <div className="grid grid-cols-2 gap-4 mb-8">
@@ -431,9 +482,27 @@ export default function HomePage() {
                   color="#f59e0b"
                   icon={Pickaxe}
                 />
-                <NFTPreviewCard name="Quantum Core" tier="Epic" boost="+30% Mining" color="#8b5cf6" icon={Gem} />
-                <NFTPreviewCard name="Energy Crystal" tier="Rare" boost="+20% Mining" color="#06b6d4" icon={Sparkles} />
-                <NFTPreviewCard name="Star Fragment" tier="Common" boost="+10% Mining" color="#6b7280" icon={Star} />
+                <NFTPreviewCard
+                  name="Quantum Core"
+                  tier="Epic"
+                  boost="+30% Mining"
+                  color="#8b5cf6"
+                  icon={Gem}
+                />
+                <NFTPreviewCard
+                  name="Energy Crystal"
+                  tier="Rare"
+                  boost="+20% Mining"
+                  color="#06b6d4"
+                  icon={Sparkles}
+                />
+                <NFTPreviewCard
+                  name="Star Fragment"
+                  tier="Common"
+                  boost="+10% Mining"
+                  color="#6b7280"
+                  icon={Star}
+                />
               </div>
 
               <Link href="/dashboard/nfts">
@@ -446,7 +515,8 @@ export default function HomePage() {
 
             {/* 3D NFT Grid visualization */}
             <div className="relative h-[500px] lg:h-[600px]">
-              <Suspense fallback={<div className="w-full h-full bg-muted/10 rounded-lg animate-pulse" />}>
+              <Suspense
+                fallback={<div className="w-full h-full bg-muted/10 rounded-lg animate-pulse" />}>
                 <NFTGrid3D />
               </Suspense>
             </div>
@@ -463,7 +533,8 @@ export default function HomePage() {
               The Journey to <span className="text-primary">Web3</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-              Follow our 12-phase roadmap as we evolve from Web2 mining to a full blockchain ecosystem.
+              Follow our 12-phase roadmap as we evolve from Web2 mining to a full blockchain
+              ecosystem.
             </p>
           </div>
 
@@ -475,8 +546,7 @@ export default function HomePage() {
                   <div className="h-[400px] flex items-center justify-center">
                     <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                   </div>
-                }
-              >
+                }>
                 <RoadmapTunnel currentPhase={2} />
               </Suspense>
             </div>
@@ -491,13 +561,14 @@ export default function HomePage() {
                 <CardContent className="p-6 flex items-center justify-between">
                   <div>
                     <h4 className="font-semibold text-foreground">See All 12 Phases</h4>
-                    <p className="text-sm text-muted-foreground">View the complete roadmap and track progress</p>
+                    <p className="text-sm text-muted-foreground">
+                      View the complete roadmap and track progress
+                    </p>
                   </div>
                   <Link href="/dashboard/phases">
                     <Button
                       variant="outline"
-                      className="border-primary/30 text-primary hover:bg-primary/10 bg-transparent"
-                    >
+                      className="border-primary/30 text-primary hover:bg-primary/10 bg-transparent">
                       View Roadmap
                       <ChevronRight className="ml-2 w-4 h-4" />
                     </Button>
@@ -510,11 +581,16 @@ export default function HomePage() {
       </section>
 
       {/* Whitepaper Section */}
-      <section id="whitepaper" className="relative py-24 md:py-32 px-4 overflow-hidden min-h-screen flex items-center">
+      <section
+        id="whitepaper"
+        className="relative py-24 md:py-32 px-4 overflow-hidden min-h-screen flex items-center">
         {/* Video Background */}
         <div className="absolute inset-0 z-0">
           <video autoPlay loop muted playsInline className="w-full h-full object-cover">
-            <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/6bdd8c01-81a2-4190-9ff8-fdd50e8eae95-y6zHywbsjLf6vmtdFHaKszOW6rWX1v.MP4" type="video/mp4" />
+            <source
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/6bdd8c01-81a2-4190-9ff8-fdd50e8eae95-y6zHywbsjLf6vmtdFHaKszOW6rWX1v.MP4"
+              type="video/mp4"
+            />
           </video>
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
         </div>
@@ -523,10 +599,13 @@ export default function HomePage() {
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
               Platform{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Whitepaper</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
+                Whitepaper
+              </span>
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Learn about VerseEstate's vision, tokenomics, and roadmap to revolutionize digital asset mining
+              Learn about VerseEstate's vision, tokenomics, and roadmap to revolutionize digital
+              asset mining
             </p>
           </div>
 
@@ -534,24 +613,24 @@ export default function HomePage() {
             <div className="p-6 rounded-xl bg-card/80 border border-border/50 backdrop-blur-md hover:border-primary/30 transition-all hover:scale-105">
               <h3 className="text-xl font-bold text-foreground mb-2">Platform Overview</h3>
               <p className="text-muted-foreground">
-                Discover how VerseEstate combines Web2 accessibility with Web3 technology to create a sustainable points
-                mining ecosystem with real-world value.
+                Discover how VerseEstate combines Web2 accessibility with Web3 technology to create
+                a sustainable points mining ecosystem with real-world value.
               </p>
             </div>
 
             <div className="p-6 rounded-xl bg-card/80 border border-border/50 backdrop-blur-md hover:border-primary/30 transition-all hover:scale-105">
               <h3 className="text-xl font-bold text-foreground mb-2">Tokenomics & Distribution</h3>
               <p className="text-muted-foreground">
-                Learn about our fair distribution model, staking rewards, and how VersePoints convert to blockchain
-                tokens in Phase 3.
+                Learn about our fair distribution model, staking rewards, and how VersePoints
+                convert to blockchain tokens in Phase 3.
               </p>
             </div>
 
             <div className="p-6 rounded-xl bg-card/80 border border-border/50 backdrop-blur-md hover:border-primary/30 transition-all hover:scale-105">
               <h3 className="text-xl font-bold text-foreground mb-2">12-Phase Roadmap</h3>
               <p className="text-muted-foreground">
-                Explore our comprehensive roadmap from foundation to full blockchain integration and real estate
-                tokenization.
+                Explore our comprehensive roadmap from foundation to full blockchain integration and
+                real estate tokenization.
               </p>
             </div>
           </div>
@@ -560,12 +639,10 @@ export default function HomePage() {
             <a
               href="https://docs.google.com/document/d/1N0pWRrpL0U76rUcmXr4YPZ6NpnyqUbgTXYCilUhBxAA/edit?usp=drivesdk"
               target="_blank"
-              rel="noopener noreferrer"
-            >
+              rel="noopener noreferrer">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground glow-primary"
-              >
+                className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground glow-primary">
                 Read Full Whitepaper
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
@@ -579,24 +656,34 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
-              <Badge className="mb-4 bg-success/10 text-success border-success/30">Security First</Badge>
+              <Badge className="mb-4 bg-success/10 text-success border-success/30">
+                Security First
+              </Badge>
               <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-6">
                 Bank-Grade <span className="text-success">Protection</span>
               </h2>
               <p className="text-muted-foreground mb-8 text-lg">
-                We employ multiple layers of protection to ensure fair play and secure mining for all users.
+                We employ multiple layers of protection to ensure fair play and secure mining for
+                all users.
               </p>
               <div className="space-y-4">
                 {[
-                  { icon: Shield, text: "Advanced anti-bot protection", desc: "AI-powered fraud detection" },
-                  { icon: Clock, text: "Rate limiting & monitoring", desc: "24/7 automated surveillance" },
-                  { icon: Zap, text: "Device fingerprinting", desc: "Multi-factor verification" },
-                  { icon: Lock, text: "Row-level security", desc: "Supabase RLS policies" },
+                  {
+                    icon: Shield,
+                    text: "Advanced anti-bot protection",
+                    desc: "AI-powered fraud detection",
+                  },
+                  {
+                    icon: Clock,
+                    text: "Rate limiting & monitoring",
+                    desc: "24/7 automated surveillance",
+                  },
+                  {icon: Zap, text: "Device fingerprinting", desc: "Multi-factor verification"},
+                  {icon: Lock, text: "Row-level security", desc: "Supabase RLS policies"},
                 ].map((item) => (
                   <div
                     key={item.text}
-                    className="flex items-start gap-4 p-4 rounded-xl bg-card/30 border border-border/30 hover:border-success/30 transition-colors"
-                  >
+                    className="flex items-start gap-4 p-4 rounded-xl bg-card/30 border border-border/30 hover:border-success/30 transition-colors">
                     <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
                       <item.icon className="w-6 h-6 text-success" />
                     </div>
@@ -634,15 +721,14 @@ export default function HomePage() {
               Ready to Start Your Journey?
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Join thousands of miners earning VersePoints every day. Create your account, start mining, and build your
-              path to blockchain rewards.
+              Join thousands of miners earning VersePoints every day. Create your account, start
+              mining, and build your path to blockchain rewards.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/auth/sign-up">
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground text-lg px-10 py-6 glow-primary group"
-                >
+                  className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground text-lg px-10 py-6 glow-primary group">
                   Create Free Account
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
@@ -666,21 +752,27 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src="/logo.jpg" alt="VerseEstate" className="w-10 h-10 rounded-xl object-cover" />
+                <img
+                  src="/logo.jpg"
+                  alt="VerseEstate"
+                  width="auto"
+                  height="auto"
+                  className="w-10 h-10 rounded-xl object-cover"
+                />
                 <span className="text-xl font-bold text-foreground">VerseEstate</span>
               </div>
-              <p className="text-sm text-muted-foreground mb-4">The next-generation Web2 to Web3 mining platform.</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                The next-generation Web2 to Web3 mining platform.
+              </p>
               <div className="space-y-2 mb-4">
                 <a
                   href="mailto:inquiry@verseestate.com"
-                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors">
                   inquiry@verseestate.com
                 </a>
                 <a
                   href="mailto:support@verseestate.com"
-                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors">
                   support@verseestate.com
                 </a>
               </div>
@@ -720,20 +812,17 @@ export default function HomePage() {
               <div className="space-y-2">
                 <Link
                   href="/dashboard"
-                  className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
+                  className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Dashboard
                 </Link>
                 <Link
                   href="/dashboard/nfts"
-                  className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
+                  className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
                   NFT Marketplace
                 </Link>
                 <Link
                   href="/dashboard/leaderboard"
-                  className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
+                  className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Leaderboard
                 </Link>
               </div>
@@ -743,20 +832,17 @@ export default function HomePage() {
               <div className="space-y-2">
                 <Link
                   href="/dashboard/phases"
-                  className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
+                  className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Roadmap
                 </Link>
                 <Link
                   href="/dashboard/rank"
-                  className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
+                  className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Ranking System
                 </Link>
                 <Link
                   href="/dashboard/tasks"
-                  className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
+                  className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Tasks
                 </Link>
               </div>
@@ -764,17 +850,23 @@ export default function HomePage() {
             <div>
               <h4 className="font-semibold text-foreground mb-4">Legal</h4>
               <div className="space-y-2">
-                <Link href="#" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  href="#"
+                  className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Terms of Service
                 </Link>
-                <Link href="#" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  href="#"
+                  className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Privacy Policy
                 </Link>
               </div>
             </div>
           </div>
           <div className="border-t border-border/50 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-muted-foreground">2024 VersePoints. All rights reserved.</div>
+            <div className="text-sm text-muted-foreground">
+              2024 VersePoints. All rights reserved.
+            </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="border-primary/30 text-primary">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
@@ -785,5 +877,5 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
