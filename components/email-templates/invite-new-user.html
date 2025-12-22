@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8" />
+    <title>You’ve been invited to VersePoints</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+
+  <body style="
+      margin:0;
+      padding:0;
+      background-color:#0b0f19;
+      font-family:Arial,Helvetica,sans-serif;
+    ">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center" style="padding:40px 16px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="
+              max-width:480px;
+              background:#111827;
+              border-radius:12px;
+              box-shadow:0 10px 30px rgba(0,0,0,0.4);
+              overflow:hidden;
+            ">
+            <!-- Header -->
+            <tr>
+              <td style="
+                  padding:24px;
+                  text-align:center;
+                  background:#020617;
+                ">
+                <h1 style="
+                    margin:0;
+                    color:#38bdf8;
+                    font-size:22px;
+                    font-weight:bold;
+                  ">
+                  You’ve been invited to VersePoints
+                </h1>
+                <p style="
+                    margin:6px 0 0;
+                    font-size:12px;
+                    color:#9ca3af;
+                  ">
+                  Powered by VerseEstate
+                </p>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding:28px;color:#e5e7eb;">
+                <h2 style="
+                    margin-top:0;
+                    color:#f9fafb;
+                    font-size:18px;
+                  ">
+                  Join the VersePoints ecosystem
+                </h2>
+
+                <p style="
+                    font-size:14px;
+                    line-height:1.6;
+                    color:#d1d5db;
+                  ">
+                  You’ve been invited to create an account on
+                  <strong>{{ .SiteURL }}</strong>.
+                </p>
+
+                <p style="
+                    font-size:14px;
+                    line-height:1.6;
+                    color:#d1d5db;
+                  ">
+                  Accept the invitation to activate your account and start
+                  mining rewards.
+                </p>
+
+                <!-- CTA -->
+                <div style="text-align:center;margin:32px 0;">
+                  <a href="{{ .ConfirmationURL }}/auth/sign-up" style="
+                      display:inline-block;
+                      padding:14px 24px;
+                      background:#38bdf8;
+                      color:#020617;
+                      text-decoration:none;
+                      border-radius:8px;
+                      font-weight:bold;
+                      font-size:14px;
+                    ">
+                    Accept Invitation
+                  </a>
+                </div>
+
+                <!-- Fallback link -->
+                <p style="
+                    font-size:12px;
+                    color:#9ca3af;
+                    line-height:1.6;
+                  ">
+                  If the button above doesn’t work, copy and paste this link
+                  into your browser:
+                </p>
+
+                <p style="
+                    font-size:12px;
+                    word-break:break-all;
+                    color:#60a5fa;
+                  ">
+                  {{ .ConfirmationURL }}
+                </p>
+
+                <p style="
+                    font-size:12px;
+                    color:#6b7280;
+                    margin-top:24px;
+                  ">
+                  If you weren’t expecting this invitation, you can safely
+                  ignore this email.
+                </p>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="
+                  padding:20px;
+                  text-align:center;
+                  background:#020617;
+                ">
+                <img src="https://verseestate.com/logo.png" alt="VerseEstate" width="44" style="
+                    display:block;
+                    margin:0 auto 8px;
+                    border-radius:6px;
+                  " />
+
+                <p style="
+                    margin:0;
+                    font-size:11px;
+                    color:#9ca3af;
+                  ">
+                  VersePoints is owned and powered by
+                  <strong style="color:#e5e7eb;">
+                    VerseEstate
+                  </strong>
+                </p>
+
+                <p style="
+                    margin:8px 0 0;
+                    font-size:11px;
+                    color:#6b7280;
+                  ">
+                  © {{ .Year }} VerseEstate. All rights reserved.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+
+</html>

@@ -17,6 +17,7 @@ export interface User {
   created_at: string;
   updated_at: string;
   welcome_bonus_claimed?: boolean;
+  is_mining?: boolean;
 }
 
 export interface MiningSession {

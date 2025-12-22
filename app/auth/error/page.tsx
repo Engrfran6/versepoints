@@ -1,14 +1,14 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { Pickaxe, AlertTriangle } from "lucide-react"
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import Link from "next/link";
+import {Pickaxe, AlertTriangle} from "lucide-react";
 
 export default async function AuthErrorPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{error?: string}>;
 }) {
-  const params = await searchParams
+  const params = await searchParams;
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-6 bg-background">
@@ -33,15 +33,19 @@ export default async function AuthErrorPage({
               {params?.error ? (
                 <p className="text-muted-foreground mb-6">Error: {params.error}</p>
               ) : (
-                <p className="text-muted-foreground mb-6">An unexpected error occurred during authentication.</p>
+                <p className="text-muted-foreground mb-6">
+                  An unexpected error occurred during authentication.
+                </p>
               )}
               <div className="space-y-3">
                 <Link href="/auth/login" className="block">
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">Try Again</Button>
+                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                    Try Again
+                  </Button>
                 </Link>
-                <Link href="/" className="block">
+                <Link href="/auth/login" className="block">
                   <Button variant="outline" className="w-full bg-transparent">
-                    Back to Home
+                    Back to Login
                   </Button>
                 </Link>
               </div>
@@ -50,5 +54,5 @@ export default async function AuthErrorPage({
         </div>
       </div>
     </div>
-  )
+  );
 }

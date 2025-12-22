@@ -45,3 +45,29 @@ export function formatNumberShort(num: number): string {
     return num.toString();
   }
 }
+
+export const getErrorMessage = (err: unknown, fallback = "Something went wrong") => {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  return fallback;
+};
+
+export const mapLoginAuthError = (message: string) => {
+  if (message.includes("Invalid login credentials")) return "Incorrect email or password.";
+
+  if (message.includes("Email not confirmed")) return "Please verify your email before signing in.";
+
+  if (message.includes("User not found")) return "No account found with this email.";
+
+  if (message.includes("Too many requests")) return "Too many attempts. Please try again later.";
+
+  return "Unable to sign in. Please try again.";
+};
+
+export const mapAuthError = (message: string) => {
+  if (message.includes("User already registered"))
+    return "An account with this email already exists.";
+  if (message.includes("Password should be"))
+    return "Password does not meet security requirements.";
+  return "Sign up failed. Please try again.";
+};

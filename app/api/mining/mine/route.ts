@@ -214,6 +214,8 @@ export async function POST(request: Request) {
       ip_address: ipAddress,
       user_agent: userAgent,
       fingerprint_hash: fingerprint,
+      is_active: true,
+      ends_at: Date.now() + 86_400_000,
     });
 
     // Check if user was referred and award referrer bonus

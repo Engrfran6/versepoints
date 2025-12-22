@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import {Suspense, useState} from "react";
+import {Suspense, useEffect, useState} from "react";
 import dynamic from "next/dynamic";
 import {createClient} from "@/lib/supabase/client";
 import {Button} from "@/components/ui/button";
@@ -13,6 +13,7 @@ import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
 import {signUpSchema, type SignUpInput} from "@/lib/validations/auth";
 import {Pickaxe, Eye, EyeOff, CheckCircle2, XCircle} from "lucide-react";
+import {getErrorMessage, mapAuthError} from "@/lib/utils";
 
 const FloatingParticles = dynamic(
   () => import("@/components/3d/floating-particles").then((mod) => mod.FloatingParticles),
@@ -42,11 +43,11 @@ function SignUpForm() {
   const refCode = searchParams.get("ref");
 
   // Set referral code from URL if present
-  useState(() => {
+  useEffect(() => {
     if (refCode && !formData.referralCode) {
       setFormData((prev) => ({...prev, referralCode: refCode}));
     }
-  });
+  }, [refCode]);
 
   const passwordRequirements = [
     {test: (p: string) => p.length >= 8, label: "At least 8 characters"},
@@ -86,14 +87,16 @@ function SignUpForm() {
       const supabase = createClient();
 
       let referrerId: string | null = null;
+
       if (formData.referralCode) {
-        const {data: referrer} = await supabase
+        const {data: referrer, error: refError} = await supabase
           .from("users")
           .select("id")
           .eq("referral_code", formData.referralCode.toUpperCase())
           .single();
 
-        if (referrer) {
+        // Optional: silently ignore invalid referral codes
+        if (!refError && referrer) {
           referrerId = referrer.id;
         }
       }
@@ -102,9 +105,7 @@ function SignUpForm() {
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-            `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
           data: {
             username: formData.username,
             referred_by: referrerId,
@@ -113,9 +114,11 @@ function SignUpForm() {
       });
 
       if (error) throw error;
+
       router.push("/auth/sign-up-success");
-    } catch (error: unknown) {
-      setServerError(error instanceof Error ? error.message : "An error occurred");
+    } catch (err: unknown) {
+      const raw = getErrorMessage(err);
+      setServerError(mapAuthError(raw));
     } finally {
       setIsLoading(false);
     }
@@ -257,7 +260,7 @@ function SignUpForm() {
                     </div>
 
                     {/* Confirm Password */}
-                    <div className=" grid gap-2">
+                    <div className="grid gap-2">
                       <Label htmlFor="confirmPassword" className="text-foreground">
                         Confirm Password
                       </Label>

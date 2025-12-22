@@ -40,8 +40,10 @@ interface DashboardContentProps {
 
 export function DashboardContent({user: initialUser, referralCount, rank}: DashboardContentProps) {
   const [user, setUser] = useState(initialUser);
-  const [isMining, setIsMining] = useState(false);
+  const [isMining, setIsMining] = useState(initialUser.is_mining!);
   const [showWelcome, setShowWelcome] = useState(false);
+
+  console.log("checking user data=====", user);
 
   useEffect(() => {
     // Show welcome message for new users (joined in last 5 minutes)

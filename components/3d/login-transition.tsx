@@ -1,35 +1,47 @@
-"use client"
+"use client";
 
-import { useRef, useState, useEffect } from "react"
-import { Canvas, useFrame, useThree } from "@react-three/fiber"
-import { Float, Text, MeshDistortMaterial } from "@react-three/drei"
-import * as THREE from "three"
+import {useRef, useState, useEffect} from "react";
+import {Canvas, useFrame, useThree} from "@react-three/fiber";
+import {Float, Text, MeshDistortMaterial} from "@react-three/drei";
+import * as THREE from "three";
 
-function TunnelScene({ onComplete }: { onComplete: () => void }) {
-  const { camera } = useThree()
-  const tunnelRef = useRef<THREE.Group>(null)
-  const [progress, setProgress] = useState(0)
-  const targetZ = -50
+function TunnelScene({onComplete}: {onComplete: () => void}) {
+  const {camera} = useThree();
+  const completedRef = useRef(false);
+  const progressRef = useRef(0);
+  const textGroupRef = useRef<THREE.Group>(null);
+
+  const targetZ = -50;
 
   useFrame((state, delta) => {
-    if (progress < 1) {
-      const newProgress = Math.min(progress + delta * 0.3, 1)
-      setProgress(newProgress)
+    if (completedRef.current) return;
 
-      // Move camera forward
-      camera.position.z = THREE.MathUtils.lerp(5, targetZ, easeInOutCubic(newProgress))
+    progressRef.current = Math.min(progressRef.current + delta * 0.3, 1);
+    const p = progressRef.current;
 
-      // Slight rotation for dynamic feel
-      camera.rotation.z = Math.sin(state.clock.getElapsedTime() * 2) * 0.02
-    } else {
-      onComplete()
+    camera.position.z = THREE.MathUtils.lerp(5, targetZ, easeInOutCubic(p));
+
+    camera.rotation.z = Math.sin(state.clock.getElapsedTime() * 2) * 0.02;
+
+    // 👇 Text shrink near the end
+    if (textGroupRef.current) {
+      const shrinkStart = 0.75; // when shrinking begins
+      const shrinkProgress = THREE.MathUtils.clamp((p - shrinkStart) / (1 - shrinkStart), 0, 1);
+
+      const scale = THREE.MathUtils.lerp(1, 0.2, easeInOutCubic(shrinkProgress));
+      textGroupRef.current.scale.setScalar(scale);
     }
-  })
+
+    if (p >= 1) {
+      completedRef.current = true;
+      onComplete();
+    }
+  });
 
   return (
-    <group ref={tunnelRef}>
+    <group>
       {/* Tunnel rings */}
-      {Array.from({ length: 30 }).map((_, i) => (
+      {Array.from({length: 30}).map((_, i) => (
         <group key={i} position={[0, 0, -i * 2]}>
           <mesh>
             <torusGeometry args={[3 + Math.sin(i * 0.5) * 0.5, 0.1, 16, 32]} />
@@ -45,9 +57,10 @@ function TunnelScene({ onComplete }: { onComplete: () => void }) {
       ))}
 
       {/* Floating particles in tunnel */}
-      {Array.from({ length: 100 }).map((_, i) => (
+      {Array.from({length: 100}).map((_, i) => (
         <Float key={i} speed={2} floatIntensity={1}>
-          <mesh position={[(Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, -Math.random() * 60]}>
+          <mesh
+            position={[(Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, -Math.random() * 60]}>
             <sphereGeometry args={[0.05, 8, 8]} />
             <meshBasicMaterial color="#22d3ee" />
           </mesh>
@@ -55,7 +68,7 @@ function TunnelScene({ onComplete }: { onComplete: () => void }) {
       ))}
 
       {/* Welcome text at end */}
-      <group position={[0, 0, -55]}>
+      <group ref={textGroupRef} position={[0, 0, -55]}>
         <Text fontSize={0.8} color="#ffffff" anchorX="center" anchorY="middle">
           VERSEPOINTS
         </Text>
@@ -66,44 +79,49 @@ function TunnelScene({ onComplete }: { onComplete: () => void }) {
         </mesh>
       </group>
     </group>
-  )
+  );
 }
 
 function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
 interface LoginTransitionProps {
-  isActive: boolean
-  onComplete: () => void
+  isActive: boolean;
+  onComplete: () => void;
 }
 
-export function LoginTransition({ isActive, onComplete }: LoginTransitionProps) {
-  const [showTransition, setShowTransition] = useState(false)
+export function LoginTransition({isActive, onComplete}: LoginTransitionProps) {
+  const [showTransition, setShowTransition] = useState(false);
+  const completedRef = useRef(false); // ✅ ALWAYS called
 
   useEffect(() => {
     if (isActive) {
-      setShowTransition(true)
+      setShowTransition(true);
     }
-  }, [isActive])
+  }, [isActive]);
 
-  if (!showTransition) return null
+  const safeComplete = () => {
+    if (completedRef.current) return;
+    completedRef.current = true;
+    onComplete();
+  };
+
+  if (!showTransition) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-background">
-      <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
+      <Canvas camera={{position: [0, 0, 5], fov: 75}}>
         <ambientLight intensity={0.2} />
         <pointLight position={[0, 0, 10]} intensity={1} color="#06b6d4" />
-        <TunnelScene onComplete={onComplete} />
+        <TunnelScene onComplete={safeComplete} />
       </Canvas>
 
-      {/* Skip button */}
       <button
-        onClick={onComplete}
-        className="absolute bottom-8 right-8 text-muted-foreground hover:text-foreground text-sm transition-colors"
-      >
+        onClick={safeComplete}
+        className="absolute bottom-8 right-8 text-muted-foreground hover:text-foreground text-sm transition-colors">
         Skip →
       </button>
     </div>
-  )
+  );
 }

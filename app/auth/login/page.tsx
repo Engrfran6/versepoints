@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import {Suspense, useEffect} from "react";
+import {Suspense} from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import {createClient} from "@/lib/supabase/client";
@@ -13,8 +13,9 @@ import Link from "next/link";
 import {useRouter} from "next/navigation";
 import {useState} from "react";
 import {forgotPasswordSchema, loginSchema} from "@/lib/validations/auth";
-import {Eye, EyeOff, Facebook} from "lucide-react";
+import {Eye, EyeOff} from "lucide-react";
 import {toast} from "sonner";
+import {getErrorMessage, mapLoginAuthError} from "@/lib/utils";
 
 const LoginTransition = dynamic(
   () => import("@/components/3d/login-transition").then((mod) => mod.LoginTransition),
@@ -47,20 +48,6 @@ export default function LoginPage() {
 
   const router = useRouter();
 
-  // useEffect(() => {
-  //   const clearInvalidSession = async () => {
-  //     try {
-  //       const supabase = createClient();
-  //       // Sign out silently to clear any invalid session tokens
-  //       await supabase.auth.signOut();
-  //     } catch (error) {
-  //       // Ignore errors during cleanup
-  //       console.error("[v0] Failed to clear session:", error);
-  //     }
-  //   };
-  //   clearInvalidSession();
-  // }, []);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoggingIn(true);
@@ -75,7 +62,8 @@ export default function LoginPage() {
 
     try {
       const supabase = createClient();
-      const {error, data} = await supabase.auth.signInWithPassword({
+
+      const {data, error} = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -88,110 +76,70 @@ export default function LoginPage() {
         .eq("id", data.user.id)
         .single();
 
-      setIsTransitioning(true);
-      setTimeout(() => {
-        if (userData?.is_admin) {
-          router.push("/admin");
-        } else {
-          router.push("/dashboard");
-        }
-      }, 1500);
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
-      toast.error(error as unknown as any);
+      if (userData?.is_admin) {
+        return router.replace("/auth/transition?to=admin");
+      } else {
+        return router.replace("/auth/transition?to=dashboard");
+      }
+    } catch (err: unknown) {
+      const rawMessage = getErrorMessage(err);
+      const friendlyMessage = mapLoginAuthError(rawMessage);
+
+      setError(friendlyMessage);
+      toast.error(friendlyMessage);
       setIsLoggingIn(false);
     }
   };
 
-  // const handleForgotPassword = async () => {
-  //   setIsResetting(true);
-  //   setError(null);
+  const handleForgotPassword = async () => {
+    setIsResetting(true);
+    setError(null);
 
-  //   if (!email) {
-  //     toast.error("Enter your email first");
-  //     setIsResetting(false);
-  //     return;
-  //   }
+    if (!email) {
+      toast.error("Enter your email first");
+      setIsResetting(false);
+      return;
+    }
 
-  //   const result = forgotPasswordSchema.safeParse({email});
-  //   if (!result.success) {
-  //     setError(result.error.errors[0]?.message || "Invalid input email");
-  //     setIsResetting(false);
-  //     return;
-  //   }
+    const result = forgotPasswordSchema.safeParse({email});
+    if (!result.success) {
+      setError(result.error.errors[0]?.message || "Invalid input email");
+      setIsResetting(false);
+      return;
+    }
 
-  //   const supabase = createClient();
+    const supabase = createClient();
 
-  //   try {
-  //     await supabase.auth.resetPasswordForEmail(email, {
-  //       redirectTo: `${window.location.origin}/auth/reset-password`,
-  //     });
-
-  //     toast.success("If an account exists for this email, a reset link has been sent.");
-  //   } catch {
-  //     // do not leak info
-  //     toast.success("If an account exists for this email, a reset link has been sent.");
-  //   } finally {
-  //     setIsResetting(false);
-  //   }
-  // };
-
-  // const handleForgotPassword = async () => {
-  //   setIsResetting(true);
-  //   setError(null);
-
-  //   if (!email) {
-  //     toast.error("Enter your email first");
-  //     setIsResetting(false);
-  //     return;
-  //   }
-
-  //   const result = forgotPasswordSchema.safeParse({email});
-  //   if (!result.success) {
-  //     setError(result.error.errors[0]?.message || "Invalid input email");
-  //     setIsResetting(false);
-  //     return;
-  //   }
-
-  //   try {
-  //      const supabase = createClient()
-
-  //       const {error} = await supabase.auth.resetPasswordForEmail({
-  //         email: email,
-  //         options: {
-  //           emailRedirectTo:
-  //             `${process.env.NEXT_PUBLIC_SITE_URL/auth/ sign-up-success} || `${window.location.origin}/dashboard`,
-  //           data: {
-  //             username: formData.username,
-  //             referred_by: referrerId,
-  //           },
-  //         },
-  //       });
-
-  //       if (error) throw error
-  //       router.push("/auth/sign-up-success")
-
-  //     toast.success("Password reset email sent");
-  //   } catch (err: any) {
-  //     const message = err?.message && "Failed to send reset email";
-  //     setError(message);
-  //     toast.error(message);
-  //   } finally {
-  //     setIsResetting(false);
-  //   }
-  // };
-
-  const handleGoogleSignIn = async () => {
-    setIsOAuthLoading(true);
     try {
-      const res = await fetch("/api/auth/google");
-      const {url} = await res.json();
-      window.location.href = url;
+      const redirectBase =
+        process.env.NODE_ENV === "development"
+          ? process.env.NEXT_PUBLIC_SITE_URL
+          : "https://verseestate.com";
+
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${redirectBase}/auth/callback?next=/auth/reset-password`,
+      });
+
+      setResetEmailSent(true);
+      toast.success("If an account exists for this email, a reset link has been sent.");
     } catch {
-      setError("Google sign-in failed");
-      setIsOAuthLoading(false);
+      toast.success("If an account exists for this email, a reset link has been sent.");
+    } finally {
+      setIsResetting(false);
     }
   };
+
+  // const handleGoogleSignIn = async () => {
+  //   setIsOAuthLoading(true);
+  //   try {
+  //     const res = await fetch("/api/auth/google");
+  //     const {url} = await res.json();
+  //     window.location.href = url;
+  //   } catch {
+  //     setError("Google sign-in failed");
+  //     setIsOAuthLoading(false);
+  //   }
+  // };
 
   if (isTransitioning) {
     return (
@@ -309,7 +257,6 @@ export default function LoginPage() {
                     </div>
                   </form>
 
-                  {/* Forgot password
                   <div className="flex justify-end text-sm">
                     <button
                       onClick={(e) => {
@@ -322,11 +269,10 @@ export default function LoginPage() {
                       Forgot password?
                     </button>
                   </div>
-
                   {resetEmailSent && (
                     <p className="text-xs text-green-500 text-center">Password reset email sent</p>
                   )}
-                  <div className="relative my-4">
+                  {/* <div className="relative my-4">
                     <div className="absolute inset-0 flex items-center">
                       <span className="w-full border-t border-border" />
                     </div>
@@ -334,7 +280,6 @@ export default function LoginPage() {
                       <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
                     </div>
                   </div>
-
                   <Button
                     type="button"
                     variant="outline"
@@ -346,14 +291,14 @@ export default function LoginPage() {
                   </Button> */}
                 </div>
 
-                {/* <div className="mt-6 text-center text-sm text-muted-foreground">
+                <div className="mt-6 text-center text-sm text-muted-foreground">
                   Don&apos;t have an account?{" "}
                   <Link
                     href="/auth/sign-up"
                     className="text-primary hover:underline underline-offset-4">
                     Sign up
                   </Link>
-                </div> */}
+                </div>
               </CardContent>
             </Card>
           </div>
