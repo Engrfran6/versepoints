@@ -41,13 +41,7 @@ interface DashboardContentProps {
 export function DashboardContent({user: initialUser, referralCount, rank}: DashboardContentProps) {
   const [user, setUser] = useState(initialUser);
 
-  const {visualPoints, isMiningNow} = useMiningProgress(
-    user.points_balance,
-    MINING_CONSTANTS.POINTS_PER_MINE ?? 0,
-    user.last_mining_at
-  );
-
-  const [isMining, setIsMining] = useState(isMiningNow);
+  const [isMining, setIsMining] = useState(user.is_mining!);
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
@@ -166,6 +160,12 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
       setPending(false);
     }
   };
+
+  const {visualPoints, isMiningNow} = useMiningProgress(
+    user.points_balance,
+    MINING_CONSTANTS.POINTS_PER_MINE ?? 0,
+    user.last_mining_at
+  );
 
   const [displayPoints, setDisplayPoints] = useState(visualPoints);
 

@@ -2,7 +2,7 @@
 
 import {useEffect, useRef, useState} from "react";
 
-const DAY_SECONDS = 86400;
+const DAY_SECONDS = 24 * 60 * 60; // 86400
 
 export function useMiningProgress(
   committedBalance: number,
@@ -20,34 +20,37 @@ export function useMiningProgress(
   }, [committedBalance]);
 
   useEffect(() => {
-    if (!pendingPoints || !miningStartedAt) {
+    // ❌ No mining session
+    if (!miningStartedAt) {
       setVisualPoints(baseBalanceRef.current);
       setIsMiningNow(false);
       return;
     }
 
     const startTime = new Date(miningStartedAt).getTime();
-    setIsMiningNow(true);
 
     const tick = () => {
       const now = Date.now();
-      const elapsedSeconds = Math.max(0, (now - startTime) / 1000);
-      const progress = Math.min(elapsedSeconds / DAY_SECONDS, 1);
+      const elapsedSeconds = (now - startTime) / 1000;
 
-      const earnedSoFar = progress * pendingPoints;
-      setVisualPoints(baseBalanceRef.current + earnedSoFar);
+      // ⏱️ Clamp progress
+      const progress = Math.min(Math.max(elapsedSeconds / DAY_SECONDS, 0), 1);
 
-      // ✅ stop exactly at 24h
-      if (progress >= 1) {
-        setIsMiningNow(false);
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
+      // 💰 Accumulate
+      setVisualPoints(baseBalanceRef.current + pendingPoints * progress);
+
+      // 🔒 Mining state is ONLY time-based
+      setIsMiningNow(progress < 1);
+
+      // 🧹 Cleanup at exactly 24h
+      if (progress >= 1 && intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
 
-    tick(); // initial sync
+    tick(); // immediate sync
+
     intervalRef.current = setInterval(tick, 1000);
 
     return () => {

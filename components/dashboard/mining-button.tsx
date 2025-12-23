@@ -514,7 +514,7 @@ export function MiningButton({
           )}
 
           <div className="flex flex-col items-center gap-1 relative z-10">
-            {!canMine && isMining ? (
+            {isMining ? (
               <>
                 <Loader2 className="size-8 animate-spin text-white" />
                 <span className="text-2xl tracking-wide">Mining</span>
