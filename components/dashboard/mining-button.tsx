@@ -365,12 +365,14 @@ export function MiningButton({
         </div>
 
         {isMining && (
-          <canvas
-            ref={canvasRef}
-            width={200}
-            height={200}
-            className="absolute inset-0 pointer-events-none -translate-x-[20px] -translate-y-[20px]"
-          />
+          <>
+            <canvas
+              ref={canvasRef}
+              width={200}
+              height={200}
+              className="absolute inset-3.5 pointer-events-none -translate-x-[20px] -translate-y-[20px]"
+            />
+          </>
         )}
 
         {showParticles && (
@@ -443,7 +445,8 @@ export function MiningButton({
 
         {isMining && (
           <svg
-            className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none drop-shadow-[0_0_12px_rgba(34,211,238,0.8)]"
+            className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none
+             drop-shadow-[0_0_14px_rgba(250,204,21,0.9)]"
             viewBox="0 0 200 200">
             {/* Background ring */}
             <circle
@@ -451,9 +454,9 @@ export function MiningButton({
               cy="100"
               r={RADIUS}
               fill="none"
-              stroke="hsl(var(--muted))"
+              stroke="#facc15"
               strokeWidth="6"
-              className="opacity-30"
+              opacity="0.15"
             />
 
             {/* Progress ring */}
@@ -469,11 +472,19 @@ export function MiningButton({
               strokeDashoffset={CIRCUMFERENCE * (1 - progress / 100)}
               className="transition-[stroke-dashoffset] duration-150 ease-linear"
             />
-
             <defs>
-              <linearGradient id="miningGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="hsl(var(--primary))" />
-                <stop offset="100%" stopColor="hsl(var(--accent))" />
+              <linearGradient
+                id="miningGradient"
+                gradientUnits="userSpaceOnUse"
+                x1="0"
+                y1="0"
+                x2="200"
+                y2="0">
+                <stop offset="0%" stopColor="#ca8a04">
+                  <animate attributeName="offset" values="0;1" dur="2s" repeatCount="indefinite" />
+                </stop>
+                <stop offset="50%" stopColor="#fde047" />
+                <stop offset="100%" stopColor="#facc15" />
               </linearGradient>
             </defs>
           </svg>
