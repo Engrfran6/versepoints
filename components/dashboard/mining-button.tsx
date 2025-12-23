@@ -258,7 +258,7 @@ export function MiningButton({
 
   // Points mining count per day
 
-  const visualPoints = useMiningProgress(0, MINING_CONSTANTS.POINTS_PER_MINE ?? 0, lastMiningAt);
+  const {visualPoints} = useMiningProgress(0, MINING_CONSTANTS.POINTS_PER_MINE ?? 0, lastMiningAt);
 
   const [displayPoints, setDisplayPoints] = useState(visualPoints);
   const [animate] = useState(false);

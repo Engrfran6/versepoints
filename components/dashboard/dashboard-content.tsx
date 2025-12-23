@@ -40,7 +40,14 @@ interface DashboardContentProps {
 
 export function DashboardContent({user: initialUser, referralCount, rank}: DashboardContentProps) {
   const [user, setUser] = useState(initialUser);
-  const [isMining, setIsMining] = useState(initialUser.is_mining!);
+
+  const {visualPoints, isMiningNow} = useMiningProgress(
+    user.points_balance,
+    MINING_CONSTANTS.POINTS_PER_MINE ?? 0,
+    user.last_mining_at
+  );
+
+  const [isMining, setIsMining] = useState(isMiningNow);
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
@@ -160,21 +167,9 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
     }
   };
 
-  const visualPoints = useMiningProgress(
-    user.points_balance,
-    MINING_CONSTANTS.POINTS_PER_MINE ?? 0,
-    user.last_mining_at
-  );
-
   const [displayPoints, setDisplayPoints] = useState(visualPoints);
-  const [animate] = useState(false);
 
   useEffect(() => {
-    if (!animate) {
-      setDisplayPoints(visualPoints);
-      return;
-    }
-
     const diff = visualPoints - displayPoints;
     const steps = 30;
     const increment = diff / steps;
