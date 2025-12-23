@@ -2,7 +2,7 @@
 
 import {useRef, useState, useEffect} from "react";
 import {Canvas, useFrame, useThree} from "@react-three/fiber";
-import {Float, Text, MeshDistortMaterial} from "@react-three/drei";
+import {Float, Text, MeshDistortMaterial, Image} from "@react-three/drei";
 import * as THREE from "three";
 
 function TunnelScene({onComplete}: {onComplete: () => void}) {
@@ -69,9 +69,31 @@ function TunnelScene({onComplete}: {onComplete: () => void}) {
 
       {/* Welcome text at end */}
       <group ref={textGroupRef} position={[0, 0, -55]}>
-        <Text fontSize={0.8} color="#ffffff" anchorX="center" anchorY="middle">
+        <Text
+          fontSize={0.9}
+          color="#ffffff"
+          anchorX="center"
+          anchorY="middle"
+          position={[0, 1.1, 0]}>
           VERSEPOINTS
         </Text>
+
+        <Text
+          fontSize={0.35}
+          color="#9ca3af"
+          anchorX="center"
+          anchorY="middle"
+          position={[0, 0.3, 0]}>
+          BY
+        </Text>
+
+        <Image
+          url="/logo.png"
+          scale={[2, 1, 1]}
+          position={[0, -0.9, 0]}
+          transparent
+          toneMapped={false}
+        />
 
         <mesh position={[0, 0, -1]}>
           <planeGeometry args={[8, 4]} />
