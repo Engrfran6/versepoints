@@ -43,8 +43,6 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
   const [isMining, setIsMining] = useState(initialUser.is_mining!);
   const [showWelcome, setShowWelcome] = useState(false);
 
-  console.log("checking user data=====", user);
-
   useEffect(() => {
     // Show welcome message for new users (joined in last 5 minutes)
     const joinedAt = new Date(user.created_at).getTime();
@@ -83,7 +81,6 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
 
   const handleMine = useCallback(async () => {
     try {
-      setIsMining(true);
       const fingerprint = await generateFingerprint();
       const browserInfo = getBrowserInfo();
 
@@ -115,7 +112,7 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
     } catch {
       return {success: false, error: "Network error"};
     } finally {
-      setTimeout(() => setIsMining(true), 2000);
+      setTimeout(() => setIsMining(isMining), 2000);
     }
   }, []);
 
@@ -206,9 +203,9 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
       </Suspense>
 
       {showWelcome && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-500">
-          <Card className="bg-gradient-to-r from-primary/20 to-accent/20 border-primary/50 shadow-lg shadow-primary/20">
-            <CardContent className="p-4 flex items-center gap-3">
+        <div>
+          <Card className="bg-gray-600 w-full h-max border-primary/50 shadow-lg shadow-primary/20">
+            <CardContent className="px-4 flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center animate-bounce">
                 <Gift className="w-6 h-6 text-primary" />
               </div>

@@ -216,7 +216,7 @@ export function MiningButton({
   }, [mounted, timeLeft]);
 
   const handleMine = async () => {
-    if (!canMine || isMining) return;
+    // if (!canMine || isMining) return;
 
     setMiningResult(null);
     setShowParticles(true);
@@ -229,7 +229,7 @@ export function MiningButton({
       if (result.success) {
         setMiningResult({
           success: true,
-          message: `+${result.points || effectivePoints} VersePoints!`,
+          message: `+${result.points} VersePoints!`,
           streak: result.streak,
           multiplier: result.multiplier,
         });
@@ -300,6 +300,24 @@ export function MiningButton({
   );
   const formatted = formatter.format(displayPoints);
   const [integerPart, decimalPart] = formatted.split(".");
+
+  const nextMineDate = useMemo(() => {
+    if (!mounted) return null;
+    return new Date(Date.now() + timeLeft);
+  }, [mounted, timeLeft]);
+
+  function getDayLabel(date: Date) {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+    const diffDays = (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+
+    if (diffDays === 0) return "today";
+    if (diffDays === 1) return "tomorrow";
+
+    return date.toLocaleDateString(undefined, {weekday: "long"});
+  }
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -485,7 +503,7 @@ export function MiningButton({
           )}
 
           <div className="flex flex-col items-center gap-1 relative z-10">
-            {isMining ? (
+            {!canMine && isMining ? (
               <>
                 <Loader2 className="size-8 animate-spin text-white" />
                 <span className="text-2xl tracking-wide">Mining</span>
@@ -501,14 +519,14 @@ export function MiningButton({
                   </span>
                 </div>
               </>
-            ) : canMine ? (
+            ) : (
               <>
                 <Hammer className="w-10 h-10 animate-bounce" />
                 <p className="mb-1 text-xl">00.00</p>
                 <span className="text-2xl text-green-900 font-extrabold">Mine Now</span>
                 <span className="text-xs opacity-80">To earn more +VP</span>
               </>
-            ) : null}
+            )}
           </div>
         </Button>
       </div>
@@ -561,9 +579,14 @@ export function MiningButton({
           </span>
         ) : (
           <p suppressHydrationWarning>
-            {mounted ? (
+            {mounted && nextMineDate ? (
               <>
-                Your next mine is at {nextMineTime} tomorrow
+                Your next mine is at{" "}
+                {nextMineDate.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}{" "}
+                {getDayLabel(nextMineDate)}
                 <br />({formatTime(timeLeft)} from now)
               </>
             ) : (

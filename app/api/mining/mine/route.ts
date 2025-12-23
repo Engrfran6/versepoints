@@ -3,6 +3,7 @@ import {NextResponse} from "next/server";
 import {miningRequestSchema} from "@/lib/validations/mining";
 import {MINING_CONSTANTS, RATE_LIMITS} from "@/lib/constants";
 import {headers} from "next/headers";
+import {is} from "@react-three/fiber/dist/declarations/src/core/utils";
 
 function getStreakMultiplier(streak: number): number {
   const thresholds = Object.entries(MINING_CONSTANTS.STREAK_BONUS_MULTIPLIERS)
@@ -190,20 +191,19 @@ export async function POST(request: Request) {
     const basePoints = MINING_CONSTANTS.POINTS_PER_MINE;
     const pointsEarned = Math.floor(basePoints * multiplier);
 
-    const {error: updateError} = await supabase
+    const {error} = await supabase
       .from("users")
       .update({
-        // points_balance: userData.points_balance + pointsEarned,
-        // total_mined: userData.total_mined + pointsEarned,
         mining_count: userData.mining_count + 1,
         last_mining_at: new Date().toISOString(),
         current_streak: newStreak,
         longest_streak: Math.max(userData.longest_streak || 0, newStreak),
         streak_updated_at: new Date().toISOString(),
+        is_mining: true,
       })
       .eq("id", user.id);
 
-    if (updateError) {
+    if (error) {
       return NextResponse.json({success: false, error: "Failed to update balance"}, {status: 500});
     }
 
@@ -215,7 +215,7 @@ export async function POST(request: Request) {
       user_agent: userAgent,
       fingerprint_hash: fingerprint,
       is_active: true,
-      ends_at: Date.now() + 86_400_000,
+      ends_at: new Date(Date.now() + 86_400_000), // ✅ FIX
     });
 
     // Check if user was referred and award referrer bonus
