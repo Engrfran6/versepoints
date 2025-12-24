@@ -324,9 +324,9 @@ export default function HomePage() {
               {/* Live Stats - Updated values */}
               <div className="grid grid-cols-3 gap-4 max-w-md mx-auto lg:mx-0">
                 {[
-                  {label: "Total Mined", value: 12500000, suffix: "+"},
-                  {label: "Active Miners", value: 85000, suffix: ""},
-                  {label: "NFTs Minted", value: 32000, suffix: ""},
+                  {label: "Total Mined", value: 12, suffix: ".5M"},
+                  {label: "Active Miners", value: 85, suffix: "K"},
+                  {label: "NFTs Minted", value: 32, suffix: "K"},
                 ].map((stat) => (
                   <div
                     key={stat.label}

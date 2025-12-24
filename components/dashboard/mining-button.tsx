@@ -19,9 +19,6 @@ const MiningCrystals3D = dynamic(
 interface MiningButtonProps {
   lastMiningAt: string | null;
   currentStreak?: number;
-  isMining: boolean;
-  onMineStart: () => void;
-  onMineComplete: () => void;
   onMine: () => Promise<{
     success: boolean;
     points?: number;
@@ -31,14 +28,7 @@ interface MiningButtonProps {
   }>;
 }
 
-export function MiningButton({
-  lastMiningAt,
-  currentStreak = 0,
-  onMine,
-  onMineStart,
-  onMineComplete,
-  isMining,
-}: MiningButtonProps) {
+export function MiningButton({lastMiningAt, currentStreak = 0, onMine}: MiningButtonProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -56,6 +46,11 @@ export function MiningButton({
   const [showParticles, setShowParticles] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
+  const {visualPoints, isMiningNow} = useMiningProgress(
+    0,
+    MINING_CONSTANTS.POINTS_PER_MINE ?? 0,
+    lastMiningAt
+  );
 
   const getStreakMultiplier = (streak: number): number => {
     const thresholds = Object.entries(MINING_CONSTANTS.STREAK_BONUS_MULTIPLIERS)
@@ -123,7 +118,7 @@ export function MiningButton({
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Add new particles when mining or ready
-      if ((isMining || canMine) && Math.random() > 0.7) {
+      if ((isMiningNow || canMine) && Math.random() > 0.7) {
         const angle = Math.random() * Math.PI * 2;
         const speed = 1 + Math.random() * 2;
         particles.push({
@@ -199,7 +194,7 @@ export function MiningButton({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isMining, canMine, timeLeft]);
+  }, [isMiningNow, canMine, timeLeft]);
 
   const formatTime = (ms: number) => {
     const hours = Math.floor(ms / (1000 * 60 * 60));
@@ -210,18 +205,11 @@ export function MiningButton({
       .padStart(2, "0")}`;
   };
 
-  const nextMineTime = useMemo(() => {
-    if (!mounted) return "";
-    return new Date(Date.now() + timeLeft).toLocaleTimeString();
-  }, [mounted, timeLeft]);
-
   const handleMine = async () => {
-    // if (!canMine || isMining) return;
+    // if (!canMine || isMiningNow) return;
 
     setMiningResult(null);
     setShowParticles(true);
-
-    onMineStart(); // 🔥 START VISUALS IMMEDIATELY
 
     try {
       const result = await onMine();
@@ -245,7 +233,6 @@ export function MiningButton({
     } finally {
       setTimeout(() => {
         setShowParticles(false);
-        onMineComplete(); // 🔥 STOP VISUALS
       }, 1500);
     }
   };
@@ -257,8 +244,6 @@ export function MiningButton({
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
   // Points mining count per day
-
-  const {visualPoints} = useMiningProgress(0, MINING_CONSTANTS.POINTS_PER_MINE ?? 0, lastMiningAt);
 
   const [displayPoints, setDisplayPoints] = useState(visualPoints);
   const [animate] = useState(false);
@@ -325,7 +310,7 @@ export function MiningButton({
         <div
           className={cn(
             "flex items-center  gap-2 animate-in fade-in slide-in-from-top-2",
-            isMining && "bg-white rounded-full"
+            isMiningNow && "bg-white rounded-full"
           )}>
           <Badge
             variant="outline"
@@ -364,7 +349,7 @@ export function MiningButton({
           </Suspense>
         </div>
 
-        {isMining && (
+        {isMiningNow && (
           <>
             <canvas
               ref={canvasRef}
@@ -443,7 +428,7 @@ export function MiningButton({
           />
         </svg>
 
-        {isMining && (
+        {isMiningNow && (
           <svg
             className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none
              drop-shadow-[0_0_14px_rgba(250,204,21,0.9)]"
@@ -502,19 +487,19 @@ export function MiningButton({
 
         <Button
           onClick={handleMine}
-          disabled={!canMine || isMining}
+          disabled={!canMine || isMiningNow}
           className={cn(
             "relative w-40 h-40 rounded-full font-bold transition-all duration-500 overflow-hidden",
-            canMine && isMining
+            canMine && isMiningNow
               ? "bg-gradient-to-br from-purple-500 to-cyan-500 text-white animate-pulse"
               : "bg-muted/80 text-muted-foreground cursor-not-allowed shadow-inner shadow-cyan-500/20 ring-1 ring-cyan-400/30 bg-gradient-to-br from-cyan-500/10 via-muted/80 to-purple-500/10"
           )}>
-          {canMine && !isMining && (
+          {canMine && !isMiningNow && (
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-shimmer" />
           )}
 
           <div className="flex flex-col items-center gap-1 relative z-10">
-            {isMining ? (
+            {isMiningNow ? (
               <>
                 <Loader2 className="size-8 animate-spin text-white" />
                 <span className="text-2xl tracking-wide">Mining</span>
@@ -524,7 +509,7 @@ export function MiningButton({
                   <span
                     className={cn(
                       "align-super text-lg ml-0.5 transition-opacity",
-                      isMining ? "opacity-100" : "opacity-60"
+                      isMiningNow ? "opacity-100" : "opacity-60"
                     )}>
                     <span className="flex items-center">.{decimalPart}</span>
                   </span>

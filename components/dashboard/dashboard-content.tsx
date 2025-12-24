@@ -40,8 +40,11 @@ interface DashboardContentProps {
 
 export function DashboardContent({user: initialUser, referralCount, rank}: DashboardContentProps) {
   const [user, setUser] = useState(initialUser);
-
-  const [isMining, setIsMining] = useState(user.is_mining!);
+  const {visualPoints, isMiningNow} = useMiningProgress(
+    user.points_balance,
+    MINING_CONSTANTS.POINTS_PER_MINE ?? 0,
+    user.last_mining_at
+  );
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
@@ -113,7 +116,7 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
     } catch {
       return {success: false, error: "Network error"};
     } finally {
-      setTimeout(() => setIsMining(isMining), 2000);
+      setTimeout(() => isMiningNow, 2000);
     }
   }, []);
 
@@ -160,12 +163,6 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
       setPending(false);
     }
   };
-
-  const {visualPoints, isMiningNow} = useMiningProgress(
-    user.points_balance,
-    MINING_CONSTANTS.POINTS_PER_MINE ?? 0,
-    user.last_mining_at
-  );
 
   const [displayPoints, setDisplayPoints] = useState(visualPoints);
 
@@ -239,7 +236,7 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
           <Card
             className={cn(
               "relative border-border shadow-2xl overflow-hidden transition-all duration-700",
-              isMining ? "bg-[#083905]" : "bg-[#070b11]"
+              isMiningNow ? "bg-[#083905]" : "bg-[#070b11]"
             )}>
             {/* BASE GRADIENT */}
             {isNewUser && (
@@ -257,7 +254,7 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
             <div
               className={cn(
                 "absolute inset-0 pointer-events-none transition-opacity duration-700",
-                isMining
+                isMiningNow
                   ? "bg-gradient-to-br from-green-400/40 via-cyan-900/30 to-indigo-900/40 opacity-100"
                   : "bg-gradient-to-br from-purple-950/60 via-indigo-900/40 to-teal-950/30 opacity-90"
               )}
@@ -267,7 +264,7 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
             <div
               className={cn(
                 "absolute inset-0 pointer-events-none transition-all duration-700",
-                isMining
+                isMiningNow
                   ? "bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.35),transparent_65%)] animate-pulse"
                   : "bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.18),transparent_70%)]"
               )}
@@ -285,7 +282,7 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
                       <div
                         className={cn(
                           "absolute inset-0 rounded-lg transition-all duration-500",
-                          isMining
+                          isMiningNow
                             ? "shadow-[0_0_40px_rgba(168,85,247,0.35),0_0_60px_rgba(34,211,238,0.25)]"
                             : "shadow-[0_0_20px_rgba(168,85,247,0.15)]"
                         )}
@@ -293,15 +290,17 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
                     </div>
                   </Suspense>
 
-                  <PointsDisplay points={displayPoints} animate isMining={isMining} />
+                  {/* <PointsDisplay points={displayPoints} animate isMiningNow={isMiningNow} /> */}
+                  <PointsDisplay
+                    userPoints={user.points_balance}
+                    userLastMine={user.last_mining_at}
+                    animate
+                  />
                 </div>
 
                 <MiningButton
                   lastMiningAt={user.last_mining_at}
                   currentStreak={user.current_streak || 0}
-                  isMining={isMining}
-                  onMineStart={() => setIsMining(true)}
-                  onMineComplete={() => setIsMining(false)}
                   onMine={handleMine}
                 />
               </div>
