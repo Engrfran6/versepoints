@@ -14,7 +14,7 @@ export default function AuthTransitionClient() {
   const router = useRouter();
   const params = useSearchParams();
 
-  const to = params.get("to") ?? "dashboard";
+  const to = params.get("to");
 
   useEffect(() => {
     const supabase = createClient();

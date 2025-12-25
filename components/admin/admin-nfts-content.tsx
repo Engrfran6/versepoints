@@ -1,24 +1,30 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Plus, Edit, Trash2, Package } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
-import { NFT_TIER_COLORS } from "@/lib/constants"
-import { cn } from "@/lib/utils"
-import type { NFTCatalog, NFTTier } from "@/lib/types/phase2"
+import {useState} from "react";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {Textarea} from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
+import {Plus, Edit, Trash2, Package} from "lucide-react";
+import {useRouter} from "next/navigation";
+import {toast} from "sonner";
+import {NFT_TIER_COLORS} from "@/lib/constants";
+import {cn} from "@/lib/utils";
+import type {NFTCatalog, NFTTier} from "@/lib/types/phase2";
 
-export function AdminNFTsContent({ nftCatalog }: { nftCatalog: NFTCatalog[] }) {
-  const router = useRouter()
-  const [isCreating, setIsCreating] = useState(false)
-  const [editingNFT, setEditingNFT] = useState<NFTCatalog | null>(null)
+export function AdminNFTsContent({nftCatalog}: {nftCatalog: NFTCatalog[]}) {
+  const router = useRouter();
+  const [isCreating, setIsCreating] = useState(false);
+  const [editingNFT, setEditingNFT] = useState<NFTCatalog | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -28,45 +34,45 @@ export function AdminNFTsContent({ nftCatalog }: { nftCatalog: NFTCatalog[] }) {
     max_supply: 100,
     required_rank: "rookie",
     special_effect: "",
-  })
+  });
 
   const handleSubmit = async () => {
     try {
       const response = await fetch("/api/admin/nfts/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, id: editingNFT?.id }),
-      })
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({...formData, id: editingNFT?.id}),
+      });
 
-      if (!response.ok) throw new Error("Failed to save NFT")
+      if (!response.ok) throw new Error("Failed to save NFT");
 
-      toast.success(editingNFT ? "NFT updated" : "NFT created")
-      setIsCreating(false)
-      setEditingNFT(null)
-      router.refresh()
+      toast.success(editingNFT ? "NFT updated" : "NFT created");
+      setIsCreating(false);
+      setEditingNFT(null);
+      router.refresh();
     } catch (error: any) {
-      toast.error(error.message)
+      toast.error(error.message);
     }
-  }
+  };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this NFT?")) return
+    if (!confirm("Delete this NFT?")) return;
 
     try {
       const response = await fetch("/api/admin/nfts/delete", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      })
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({id}),
+      });
 
-      if (!response.ok) throw new Error("Failed to delete NFT")
+      if (!response.ok) throw new Error("Failed to delete NFT");
 
-      toast.success("NFT deleted")
-      router.refresh()
+      toast.success("NFT deleted");
+      router.refresh();
     } catch (error: any) {
-      toast.error(error.message)
+      toast.error(error.message);
     }
-  }
+  };
 
   return (
     <>
@@ -86,26 +92,41 @@ export function AdminNFTsContent({ nftCatalog }: { nftCatalog: NFTCatalog[] }) {
         <CardContent>
           <div className="space-y-3">
             {nftCatalog.map((nft) => {
-              const tierColors = NFT_TIER_COLORS[nft.tier as NFTTier]
+              const tierColors = NFT_TIER_COLORS[nft.tier as NFTTier];
               return (
-                <div key={nft.id} className={cn("p-4 rounded-lg border", tierColors.bg, tierColors.border)}>
+                <div
+                  key={nft.id}
+                  className={cn("p-4 rounded-lg border", tierColors.bg, tierColors.border)}>
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-foreground">{nft.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {nft.tier} • +{nft.mining_boost}% boost • {nft.vp_cost.toLocaleString()} VP
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">
+                        {nft.tier === "legendary"
+                          ? "⚡"
+                          : nft.tier === "diamond"
+                          ? "💎"
+                          : nft.tier === "gold"
+                          ? "🏆"
+                          : nft.tier === "silver"
+                          ? "🔧"
+                          : "⛏️"}
+                      </span>
+                      <div>
+                        <p className="font-bold text-foreground">{nft.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {nft.tier} • +{nft.mining_boost}% boost • {nft.vp_cost.toLocaleString()}{" "}
+                          VP
+                        </p>
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => {
-                          setEditingNFT(nft)
-                          setFormData(nft as any)
-                          setIsCreating(true)
-                        }}
-                      >
+                          setEditingNFT(nft);
+                          setFormData(nft as any);
+                          setIsCreating(true);
+                        }}>
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button size="sm" variant="destructive" onClick={() => handleDelete(nft.id)}>
@@ -114,7 +135,7 @@ export function AdminNFTsContent({ nftCatalog }: { nftCatalog: NFTCatalog[] }) {
                     </div>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         </CardContent>
@@ -123,10 +144,9 @@ export function AdminNFTsContent({ nftCatalog }: { nftCatalog: NFTCatalog[] }) {
       <Dialog
         open={isCreating}
         onOpenChange={(open) => {
-          setIsCreating(open)
-          if (!open) setEditingNFT(null)
-        }}
-      >
+          setIsCreating(open);
+          if (!open) setEditingNFT(null);
+        }}>
         <DialogContent className="bg-card border-border max-w-2xl">
           <DialogHeader>
             <DialogTitle>{editingNFT ? "Edit NFT" : "Create NFT"}</DialogTitle>
@@ -134,13 +154,16 @@ export function AdminNFTsContent({ nftCatalog }: { nftCatalog: NFTCatalog[] }) {
           <div className="space-y-4">
             <div>
               <Label>NFT Name</Label>
-              <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+              <Input
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+              />
             </div>
             <div>
               <Label>Description</Label>
               <Textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -148,8 +171,7 @@ export function AdminNFTsContent({ nftCatalog }: { nftCatalog: NFTCatalog[] }) {
                 <Label>Tier</Label>
                 <Select
                   value={formData.tier}
-                  onValueChange={(value) => setFormData({ ...formData, tier: value as NFTTier })}
-                >
+                  onValueChange={(value) => setFormData({...formData, tier: value as NFTTier})}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -166,8 +188,7 @@ export function AdminNFTsContent({ nftCatalog }: { nftCatalog: NFTCatalog[] }) {
                 <Label>Required Rank</Label>
                 <Select
                   value={formData.required_rank}
-                  onValueChange={(value) => setFormData({ ...formData, required_rank: value })}
-                >
+                  onValueChange={(value) => setFormData({...formData, required_rank: value})}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -187,7 +208,9 @@ export function AdminNFTsContent({ nftCatalog }: { nftCatalog: NFTCatalog[] }) {
                 <Input
                   type="number"
                   value={formData.mining_boost}
-                  onChange={(e) => setFormData({ ...formData, mining_boost: Number.parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setFormData({...formData, mining_boost: Number.parseInt(e.target.value)})
+                  }
                 />
               </div>
               <div>
@@ -195,7 +218,9 @@ export function AdminNFTsContent({ nftCatalog }: { nftCatalog: NFTCatalog[] }) {
                 <Input
                   type="number"
                   value={formData.vp_cost}
-                  onChange={(e) => setFormData({ ...formData, vp_cost: Number.parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setFormData({...formData, vp_cost: Number.parseInt(e.target.value)})
+                  }
                 />
               </div>
               <div>
@@ -203,7 +228,9 @@ export function AdminNFTsContent({ nftCatalog }: { nftCatalog: NFTCatalog[] }) {
                 <Input
                   type="number"
                   value={formData.max_supply || ""}
-                  onChange={(e) => setFormData({ ...formData, max_supply: Number.parseInt(e.target.value) || null })}
+                  onChange={(e) =>
+                    setFormData({...formData, max_supply: Number.parseInt(e.target.value) || null})
+                  }
                 />
               </div>
             </div>
@@ -211,7 +238,7 @@ export function AdminNFTsContent({ nftCatalog }: { nftCatalog: NFTCatalog[] }) {
               <Label>Special Effect</Label>
               <Input
                 value={formData.special_effect || ""}
-                onChange={(e) => setFormData({ ...formData, special_effect: e.target.value })}
+                onChange={(e) => setFormData({...formData, special_effect: e.target.value})}
                 placeholder="e.g., 2x streak protection"
               />
             </div>
@@ -227,5 +254,5 @@ export function AdminNFTsContent({ nftCatalog }: { nftCatalog: NFTCatalog[] }) {
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

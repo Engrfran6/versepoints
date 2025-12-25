@@ -30,17 +30,17 @@ export async function GET(request: Request) {
    * 🔹 OPTIONAL: First-login onboarding hook
    * (safe to remove if you already handle this elsewhere)
    */
-  try {
-    await supabase.from("users").upsert(
-      {
-        id: data.user.id,
-        email: data.user.email,
-      },
-      {onConflict: "id"}
-    );
-  } catch {
-    // Never block login
-  }
+  // try {
+  //   await supabase.from("users").upsert(
+  //     {
+  //       id: data.user.id,
+  //       email: data.user.email,
+  //     },
+  //     {onConflict: "id"}
+  //   );
+  // } catch {
+  //   // Never block login
+  // }
 
   return NextResponse.redirect(`${origin}${safeNext}`);
 }

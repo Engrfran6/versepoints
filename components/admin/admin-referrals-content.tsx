@@ -1,75 +1,89 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { UserPlus, Search, Ban, CheckCircle2, XCircle } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
+import {useState} from "react";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Badge} from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {UserPlus, Search, Ban, CheckCircle2, XCircle, Pickaxe} from "lucide-react";
+import {useRouter} from "next/navigation";
+import {toast} from "sonner";
 
 interface Referral {
-  id: string
-  status: string
-  signup_bonus_paid: boolean
-  first_mining_bonus_paid: boolean
-  created_at: string
-  referrer: { id: string; username: string; email: string; points_balance: number }
+  id: string;
+  status: string;
+  signup_bonus_paid: boolean;
+  first_mining_bonus_paid: boolean;
+  created_at: string;
+  referrer: {id: string; username: string; email: string; points_balance: number};
   referred: {
-    id: string
-    username: string
-    email: string
-    points_balance: number
-    created_at: string
-    mining_count: number
-  }
+    id: string;
+    username: string;
+    email: string;
+    points_balance: number;
+    created_at: string;
+    mining_count: number;
+  };
 }
 
-export function AdminReferralsContent({ referrals }: { referrals: Referral[] }) {
-  const router = useRouter()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
+export function AdminReferralsContent({referrals}: {referrals: Referral[]}) {
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const filteredReferrals = referrals.filter((ref) => {
     const matchesSearch =
       ref.referrer.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ref.referred.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ref.referrer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ref.referred.email.toLowerCase().includes(searchTerm.toLowerCase())
+      ref.referred.email.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = statusFilter === "all" || ref.status === statusFilter
+    const matchesStatus = statusFilter === "all" || ref.status === statusFilter;
 
-    return matchesSearch && matchesStatus
-  })
+    return matchesSearch && matchesStatus;
+  });
 
   const handleUpdateStatus = async (referralId: string, newStatus: string) => {
     try {
       const response = await fetch("/api/admin/referrals/update", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ referralId, status: newStatus }),
-      })
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({referralId, status: newStatus}),
+      });
 
-      if (!response.ok) throw new Error("Failed to update referral")
+      if (!response.ok) throw new Error("Failed to update referral");
 
-      toast.success(`Referral marked as ${newStatus}`)
-      router.refresh()
+      toast.success(`Referral marked as ${newStatus}`);
+      router.refresh();
     } catch (error: any) {
-      toast.error(error.message)
+      toast.error(error.message);
     }
-  }
+  };
 
   const stats = {
     total: referrals.length,
     active: referrals.filter((r) => r.status === "active").length,
     pending: referrals.filter((r) => r.status === "pending").length,
     invalid: referrals.filter((r) => r.status === "invalid").length,
-  }
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
+          <Pickaxe className="w-8 h-8 text-primary" />
+          Referrals Activity
+        </h1>
+        <p className="text-muted-foreground mt-1">Monitor referral activity</p>
+      </div>
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
         <Card className="bg-card border-border">
@@ -139,8 +153,7 @@ export function AdminReferralsContent({ referrals }: { referrals: Referral[] }) 
             {filteredReferrals.map((referral) => (
               <div
                 key={referral.id}
-                className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border"
-              >
+                className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <Badge
@@ -148,10 +161,9 @@ export function AdminReferralsContent({ referrals }: { referrals: Referral[] }) 
                         referral.status === "active"
                           ? "default"
                           : referral.status === "pending"
-                            ? "secondary"
-                            : "destructive"
-                      }
-                    >
+                          ? "secondary"
+                          : "destructive"
+                      }>
                       {referral.status}
                     </Badge>
                     {referral.signup_bonus_paid && (
@@ -171,7 +183,9 @@ export function AdminReferralsContent({ referrals }: { referrals: Referral[] }) 
                       <p className="font-medium text-foreground">
                         {referral.referrer.username} ({referral.referrer.email})
                       </p>
-                      <p className="text-xs text-muted-foreground">{referral.referrer.points_balance} VP</p>
+                      <p className="text-xs text-muted-foreground">
+                        {referral.referrer.points_balance} VP
+                      </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Referred User</p>
@@ -179,7 +193,8 @@ export function AdminReferralsContent({ referrals }: { referrals: Referral[] }) 
                         {referral.referred.username} ({referral.referred.email})
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {referral.referred.mining_count} mines • {referral.referred.points_balance} VP
+                        {referral.referred.mining_count} mines • {referral.referred.points_balance}{" "}
+                        VP
                       </p>
                     </div>
                   </div>
@@ -193,8 +208,7 @@ export function AdminReferralsContent({ referrals }: { referrals: Referral[] }) 
                       <Button
                         size="sm"
                         onClick={() => handleUpdateStatus(referral.id, "active")}
-                        className="bg-green-600 hover:bg-green-700 text-white gap-2"
-                      >
+                        className="bg-green-600 hover:bg-green-700 text-white gap-2">
                         <CheckCircle2 className="w-4 h-4" />
                         Activate
                       </Button>
@@ -202,8 +216,7 @@ export function AdminReferralsContent({ referrals }: { referrals: Referral[] }) 
                         size="sm"
                         variant="destructive"
                         onClick={() => handleUpdateStatus(referral.id, "invalid")}
-                        className="gap-2"
-                      >
+                        className="gap-2">
                         <XCircle className="w-4 h-4" />
                         Invalidate
                       </Button>
@@ -214,8 +227,7 @@ export function AdminReferralsContent({ referrals }: { referrals: Referral[] }) 
                       size="sm"
                       variant="destructive"
                       onClick={() => handleUpdateStatus(referral.id, "invalid")}
-                      className="gap-2"
-                    >
+                      className="gap-2">
                       <Ban className="w-4 h-4" />
                       Invalidate
                     </Button>
@@ -224,8 +236,7 @@ export function AdminReferralsContent({ referrals }: { referrals: Referral[] }) 
                     <Button
                       size="sm"
                       onClick={() => handleUpdateStatus(referral.id, "active")}
-                      className="bg-green-600 hover:bg-green-700 text-white gap-2"
-                    >
+                      className="bg-green-600 hover:bg-green-700 text-white gap-2">
                       <CheckCircle2 className="w-4 h-4" />
                       Reactivate
                     </Button>
@@ -240,5 +251,5 @@ export function AdminReferralsContent({ referrals }: { referrals: Referral[] }) 
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

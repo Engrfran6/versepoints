@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { cn } from "@/lib/utils"
+import Link from "next/link";
+import {usePathname, useRouter} from "next/navigation";
+import {cn} from "@/lib/utils";
 import {
   Shield,
   LayoutDashboard,
@@ -18,37 +18,37 @@ import {
   UserPlus,
   LogOut,
   Zap,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { createClient } from "@/lib/supabase/client"
-import { Menu } from "lucide-react"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { useState } from "react"
+} from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {createClient} from "@/lib/supabase/client";
+import {Menu} from "lucide-react";
+import {Sheet, SheetContent, SheetTrigger} from "@/components/ui/sheet";
+import {useState} from "react";
 
 export function AdminSidebar() {
-  const pathname = usePathname()
-  const router = useRouter()
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const pathname = usePathname();
+  const router = useRouter();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const navItems = [
-    { href: "/admin", icon: LayoutDashboard, label: "Overview" },
-    { href: "/admin/users", icon: Users, label: "Users" },
-    { href: "/admin/mining", icon: Pickaxe, label: "Mining Activity" },
-    { href: "/admin/tasks", icon: CheckSquare, label: "Tasks" },
-    { href: "/admin/boosts", icon: Zap, label: "Boosts" },
-    { href: "/admin/referrals", icon: UserPlus, label: "Referrals" },
-    { href: "/admin/fraud", icon: AlertTriangle, label: "Fraud Detection" },
-    { href: "/admin/ranks", icon: Crown, label: "Rank System" },
-    { href: "/admin/nfts", icon: Store, label: "NFT Management" },
-    { href: "/admin/phases", icon: Rocket, label: "Phase Control" },
-    { href: "/admin/settings", icon: Settings, label: "Settings" },
-  ]
+    {href: "/admin", icon: LayoutDashboard, label: "Overview"},
+    {href: "/admin/users", icon: Users, label: "Users"},
+    {href: "/admin/mining", icon: Pickaxe, label: "Mining Activity"},
+    // {href: "/admin/boosts", icon: Zap, label: "Boosts"},
+    {href: "/admin/referrals", icon: UserPlus, label: "Referrals"},
+    {href: "/admin/fraud", icon: AlertTriangle, label: "Fraud Detection"},
+    {href: "/admin/ranks", icon: Crown, label: "Rank System"},
+    {href: "/admin/tasks", icon: CheckSquare, label: "Tasks Management"},
+    {href: "/admin/nfts", icon: Store, label: "NFT Management"},
+    {href: "/admin/phases", icon: Rocket, label: "Phase Control"},
+    {href: "/admin/settings", icon: Settings, label: "Settings"},
+  ];
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push("/")
-  }
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   const NavContent = () => (
     <>
@@ -61,10 +61,9 @@ export function AdminSidebar() {
               "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
               pathname === item.href
                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
             )}
-            onClick={() => setMobileOpen(false)}
-          >
+            onClick={() => setMobileOpen(false)}>
             <item.icon className="h-5 w-5" />
             {item.label}
           </Link>
@@ -75,22 +74,20 @@ export function AdminSidebar() {
         <Link
           href="/dashboard"
           className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
-          onClick={() => setMobileOpen(false)}
-        >
+          onClick={() => setMobileOpen(false)}>
           <ArrowLeft className="h-5 w-5" />
           Back to Dashboard
         </Link>
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-          onClick={handleLogout}
-        >
+          onClick={handleLogout}>
           <LogOut className="h-5 w-5" />
           Logout
         </Button>
       </div>
     </>
-  )
+  );
 
   return (
     <>
@@ -128,5 +125,5 @@ export function AdminSidebar() {
         </div>
       </aside>
     </>
-  )
+  );
 }

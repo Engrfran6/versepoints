@@ -42,7 +42,7 @@ export async function updateSession(request: NextRequest) {
     "/auth/reset-password",
   ];
   const isPublicRoute = publicRoutes.some(
-    (route) => request.nextUrl.pathname === route || request.nextUrl.pathname.startsWith("/api/v1/")
+    (route) => request.nextUrl.pathname === route || request.nextUrl.pathname.startsWith("/api/")
   );
 
   // Admin routes

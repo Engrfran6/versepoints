@@ -1,15 +1,9 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import {Suspense, useState} from "react";
 import dynamic from "next/dynamic";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -17,32 +11,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  CheckSquare,
-  ExternalLink,
-  CheckCircle2,
-  Clock,
-  Gift,
-} from "lucide-react";
-import { cn, extractYouTubeVideoId } from "@/lib/utils";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { YouTubeTaskPlayer } from "@/components/tasks/youtube-task-player";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {CheckSquare, ExternalLink, CheckCircle2, Clock, Gift} from "lucide-react";
+import {cn, extractYouTubeVideoId} from "@/lib/utils";
+import {useRouter} from "next/navigation";
+import {toast} from "sonner";
+import {YouTubeTaskPlayer} from "@/components/tasks/youtube-task-player";
+import {TaskType} from "@/app/admin/tasks/task-table";
 
 const FloatingParticles = dynamic(
-  () =>
-    import("@/components/3d/floating-particles").then(
-      (mod) => mod.FloatingParticles
-    ),
-  { ssr: false }
+  () => import("@/components/3d/floating-particles").then((mod) => mod.FloatingParticles),
+  {ssr: false}
 );
 const TaskCheckmark3D = dynamic(
-  () =>
-    import("@/components/3d/task-checkmark-3d").then(
-      (mod) => mod.TaskCheckmark3D
-    ),
+  () => import("@/components/3d/task-checkmark-3d").then((mod) => mod.TaskCheckmark3D),
   {
     ssr: false,
   }
@@ -52,7 +35,7 @@ interface Task {
   id: string;
   title: string;
   description: string;
-  task_type: string;
+  task_type: TaskType;
   points_reward: number;
   action_url: string | null;
   is_active: boolean;
@@ -71,7 +54,7 @@ interface TasksContentProps {
   userTasks: UserTask[];
 }
 
-export function TasksContent({ tasks, userTasks }: TasksContentProps) {
+export function TasksContent({tasks, userTasks}: TasksContentProps) {
   const router = useRouter();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [proofUrl, setProofUrl] = useState("");
@@ -82,35 +65,99 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
     videoId: string;
   } | null>(null);
 
-  const handleStartTask = (task: Task) => {
-    if (
-      task.task_type === "special" &&
-      task.title.toLowerCase().includes("mining")
-    ) {
-      router.push("/dashboard");
-      toast.info(
-        `You will earn ${task.points_reward} when you mine for the first time`
-      );
+  // const handleStartTask = (task: Task) => {
+  //   if (
+  //     task.task_type === "special" &&
+  //     task.title.toLowerCase().includes("mining")
+  //   ) {
+  //     router.push("/dashboard");
+  //     toast.info(
+  //       `You will earn ${task.points_reward} when you mine for the first time`
+  //     );
+  //     return;
+  //   }
+
+  //   if (task.task_type === "referral") {
+  //     router.push("/dashboard/referrals");
+  //     toast.info("Share your referral link to complete this task");
+  //     return;
+  //   }
+
+  //   if (
+  //     task.title.toLowerCase().includes("profile") ||
+  //     task.title.toLowerCase().includes("complete")
+  //   ) {
+  //     router.push("/dashboard/settings");
+  //     toast.info("Complete your profile to earn points");
+  //     return;
+  //   }
+
+  //   // ✅ YOUTUBE TASK
+  //   if (task.action_url && task.title.toLowerCase().includes("watch")) {
+  //     const videoId = extractYouTubeVideoId(task.action_url);
+
+  //     if (!videoId) {
+  //       toast.error("Invalid YouTube link");
+  //       return;
+  //     }
+
+  //     if (completedTaskIds.has(task.id)) {
+  //       toast.info("You already completed this task");
+  //       return;
+  //     }
+
+  //     setActiveYouTubeTask({
+  //       taskId: task.id,
+  //       videoId,
+  //     });
+
+  //     return;
+  //   }
+
+  //   // Other tasks
+  //   if (task.action_url) {
+  //     window.open(task.action_url, "_blank");
+  //     setTimeout(() => setSelectedTask(task), 1000);
+  //   }
+  // };
+
+  const openExternalAndCollectProof = (task: Task) => {
+    if (!task.action_url) {
+      toast.error("No action link provided");
       return;
     }
 
-    if (task.task_type === "referral") {
+    window.open(task.action_url, "_blank");
+
+    setTimeout(() => {
+      setSelectedTask(task);
+    }, 800);
+  };
+
+  type TaskHandler = (task: Task) => void;
+
+  const TASK_HANDLERS: Record<TaskType, TaskHandler> = {
+    "mine verse points": (task) => {
+      router.push("/dashboard");
+      toast.info(`You will earn ${task.points_reward} VP when you mine for the first time`);
+    },
+
+    referral: () => {
       router.push("/dashboard/referrals");
       toast.info("Share your referral link to complete this task");
-      return;
-    }
+    },
 
-    if (
-      task.title.toLowerCase().includes("profile") ||
-      task.title.toLowerCase().includes("complete")
-    ) {
+    "complete profile": () => {
       router.push("/dashboard/settings");
       toast.info("Complete your profile to earn points");
-      return;
-    }
+    },
 
-    // ✅ YOUTUBE TASK
-    if (task.action_url && task.title.toLowerCase().includes("watch")) {
+    "watch youtube video": (task) => {
+      if (!task.action_url) {
+        toast.error("Missing YouTube link");
+        return;
+      }
+
       const videoId = extractYouTubeVideoId(task.action_url);
 
       if (!videoId) {
@@ -118,24 +165,37 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
         return;
       }
 
-      if (completedTaskIds.has(task.id)) {
-        toast.info("You already completed this task");
-        return;
-      }
-
       setActiveYouTubeTask({
         taskId: task.id,
         videoId,
       });
+    },
 
+    // 👇 All “open + submit proof” tasks
+    "follow on social media": openExternalAndCollectProof,
+    "join community": openExternalAndCollectProof,
+    "share content": openExternalAndCollectProof,
+    "complete survey": openExternalAndCollectProof,
+    "app download": openExternalAndCollectProof,
+    "content creation": openExternalAndCollectProof,
+    "daily check-in": openExternalAndCollectProof,
+    others: openExternalAndCollectProof,
+  };
+
+  const handleStartTask = (task: Task) => {
+    if (completedTaskIds.has(task.id)) {
+      toast.info("You already completed this task");
       return;
     }
 
-    // Other tasks
-    if (task.action_url) {
-      window.open(task.action_url, "_blank");
-      setTimeout(() => setSelectedTask(task), 1000);
+    const handler = TASK_HANDLERS[task.task_type];
+
+    if (!handler) {
+      toast.error(`No handler defined for task type: ${task.task_type}`);
+      return;
     }
+
+    handler(task);
   };
 
   const handleSubmitProof = async () => {
@@ -148,7 +208,7 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
     try {
       const response = await fetch("/api/tasks/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
           taskId: selectedTask.id,
           proofUrl: proofUrl.trim(),
@@ -193,28 +253,18 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
     return userTask.status;
   };
 
-  const noOfPendingTask = userTasks?.map(
-    (ut) => ut.status === "pending"
-  ).length;
+  const noOfPendingTask = userTasks?.map((ut) => ut.status === "pending").length;
 
   return (
     <div className="relative p-4 md:p-8 min-h-screen">
       {/* 3D Background */}
       <Suspense fallback={null}>
-        <FloatingParticles
-          count={1000}
-          color="#22c55e"
-          className="opacity-20"
-        />
+        <FloatingParticles count={1000} color="#22c55e" className="opacity-20" />
       </Suspense>
 
       {/* Header with 3D Checkmark */}
       <div className="relative z-10 mb-8 flex flex-col md:flex-row items-center gap-6">
-        <Suspense
-          fallback={
-            <div className="w-32 h-32 bg-muted/20 rounded-lg animate-pulse" />
-          }
-        >
+        <Suspense fallback={<div className="w-32 h-32 bg-muted/20 rounded-lg animate-pulse" />}>
           <div className="w-32 h-32 md:w-40 md:h-40">
             <TaskCheckmark3D />
           </div>
@@ -224,9 +274,7 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
             <CheckSquare className="w-8 h-8 text-primary" />
             Tasks
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Complete tasks to earn bonus VersePoints
-          </p>
+          <p className="text-muted-foreground mt-1">Complete tasks to earn bonus VersePoints</p>
         </div>
       </div>
 
@@ -234,9 +282,7 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
       <div className="relative z-10 grid grid-cols-2 gap-4 mb-8">
         <Card className="bg-card/90 backdrop-blur-sm border-border">
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-foreground">
-              {tasks?.length || 0}
-            </p>
+            <p className="text-2xl font-bold text-foreground">{tasks?.length || 0}</p>
             <p className="text-xs text-muted-foreground">Available</p>
           </CardContent>
         </Card>
@@ -253,15 +299,11 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
         <Card className="col-span-2 bg-card/90 backdrop-blur-sm border-border">
           <CardContent className="p-4 text-center grid grid-cols-2">
             <div>
-              <p className="text-2xl font-bold text-green-500">
-                {completedTaskIds.size}
-              </p>
+              <p className="text-2xl font-bold text-green-500">{completedTaskIds.size}</p>
               <p className="text-xs text-muted-foreground">Completed Tasks</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-red-500">
-                {noOfPendingTask}
-              </p>
+              <p className="text-2xl font-bold text-red-500">{noOfPendingTask}</p>
               <p className="text-xs text-muted-foreground">Pending Tasks</p>
             </div>
           </CardContent>
@@ -285,24 +327,17 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
               className={cn(
                 "bg-card/90 backdrop-blur-sm border-border transition-all",
                 isCompleted && "opacity-60 bg-green-500/5 border-green-500/20"
-              )}
-            >
+              )}>
               <CardContent className="p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
-                    <div className="text-3xl">
-                      {getTaskIcon(task.task_type)}
-                    </div>
+                    <div className="text-3xl">{getTaskIcon(task.task_type)}</div>
                     <div>
                       <h3 className="font-semibold text-foreground flex items-center gap-2">
                         {task.title}
-                        {isCompleted && (
-                          <CheckCircle2 className="w-4 h-4 text-green-500" />
-                        )}
+                        {isCompleted && <CheckCircle2 className="w-4 h-4 text-green-500" />}
                       </h3>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {task.description}
-                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
                       <div className="flex items-center gap-3 mt-3">
                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
                           <Gift className="w-3 h-3" />+{task.points_reward} VP
@@ -318,8 +353,7 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
                       <Button
                         disabled
                         variant="outline"
-                        className="gap-2 bg-green-500/10 border-green-500/30"
-                      >
+                        className="gap-2 bg-green-500/10 border-green-500/30">
                         <CheckCircle2 className="w-4 h-4 text-green-500" />
                         Completed
                       </Button>
@@ -327,16 +361,14 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
                       <Button
                         disabled
                         variant="outline"
-                        className="gap-2 bg-yellow-500/10 border-yellow-500/30"
-                      >
+                        className="gap-2 bg-yellow-500/10 border-yellow-500/30">
                         <Clock className="w-4 h-4 text-yellow-500" />
                         Pending
                       </Button>
                     ) : (
                       <Button
                         onClick={() => handleStartTask(task)}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
-                      >
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
                         {isSpecialTask ? "Go" : "Start"}
                         <ExternalLink className="w-4 h-4" />
                       </Button>
@@ -353,9 +385,7 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
             <CardContent className="p-12 text-center">
               <CheckSquare className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
               <p className="text-muted-foreground">No tasks available</p>
-              <p className="text-sm text-muted-foreground">
-                Check back later for new tasks!
-              </p>
+              <p className="text-sm text-muted-foreground">Check back later for new tasks!</p>
             </CardContent>
           </Card>
         )}
@@ -364,9 +394,7 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
       {/* Info Card */}
       <Card className="relative z-10 bg-primary/5 backdrop-blur-sm border-primary/20 mt-8">
         <CardHeader>
-          <CardTitle className="text-foreground text-lg">
-            How Tasks Work
-          </CardTitle>
+          <CardTitle className="text-foreground text-lg">How Tasks Work</CardTitle>
           <CardDescription className="text-muted-foreground">
             Complete tasks to earn bonus VersePoints
           </CardDescription>
@@ -382,9 +410,7 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
       <Dialog open={!!selectedTask} onOpenChange={() => setSelectedTask(null)}>
         <DialogContent className="bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="text-foreground">
-              Submit Task Completion
-            </DialogTitle>
+            <DialogTitle className="text-foreground">Submit Task Completion</DialogTitle>
             <DialogDescription className="text-muted-foreground">
               Provide proof that you completed: {selectedTask?.title}
             </DialogDescription>
@@ -402,23 +428,18 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
                 className="bg-background border-border text-foreground"
               />
               <p className="text-xs text-muted-foreground">
-                Provide a link to your profile, screenshot (uploaded to
-                imgur.com), or any proof of completion
+                Provide a link to your profile, screenshot (uploaded to imgur.com), or any proof of
+                completion
               </p>
             </div>
             <div className="flex gap-2">
               <Button
                 onClick={handleSubmitProof}
                 disabled={isSubmitting || !proofUrl.trim()}
-                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
-              >
+                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground">
                 {isSubmitting ? "Submitting..." : "Submit for Verification"}
               </Button>
-              <Button
-                onClick={() => setSelectedTask(null)}
-                variant="outline"
-                className="flex-1"
-              >
+              <Button onClick={() => setSelectedTask(null)} variant="outline" className="flex-1">
                 Cancel
               </Button>
             </div>
@@ -431,9 +452,7 @@ export function TasksContent({ tasks, userTasks }: TasksContentProps) {
           <DialogContent className="max-w-4xl bg-card border-border">
             <DialogHeader>
               <DialogTitle>Watch Video to Complete Task</DialogTitle>
-              <DialogDescription>
-                Watch at least 90% of the video to earn points
-              </DialogDescription>
+              <DialogDescription>Watch at least 90% of the video to earn points</DialogDescription>
             </DialogHeader>
 
             <YouTubeTaskPlayer

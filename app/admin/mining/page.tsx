@@ -1,21 +1,22 @@
-import { createClient } from "@/lib/supabase/server"
-import { AdminMiningContent } from "@/components/admin/admin-mining-content"
+import {createClient} from "@/lib/supabase/server";
+import {AdminMiningContent} from "@/components/admin/admin-mining-content";
+import {supabaseAdmin} from "@/lib/supabase/admin";
 
 export default async function AdminMiningPage() {
-  const supabase = await createClient()
-
   // Get mining sessions with user info
-  const { data: sessions } = await supabase
+  const {data: sessions} = await supabaseAdmin
     .from("mining_sessions")
-    .select(`
+    .select(
+      `
       *,
       users (
         username,
         email
       )
-    `)
-    .order("created_at", { ascending: false })
-    .limit(100)
+    `
+    )
+    .order("created_at", {ascending: false})
+    .limit(100);
 
-  return <AdminMiningContent sessions={sessions || []} />
+  return <AdminMiningContent sessions={sessions || []} />;
 }

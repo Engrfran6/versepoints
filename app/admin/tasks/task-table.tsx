@@ -1,39 +1,67 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {useState} from "react";
+import {Card, CardContent} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import {Badge} from "@/components/ui/badge";
 
-import { toast } from "sonner";
+import {toast} from "sonner";
 import TaskForm from "@/components/admin/task-form";
+
+export type TaskType =
+  | "complete profile"
+  | "referral"
+  | "watch youtube video"
+  | "follow on social media"
+  | "join community"
+  | "share content"
+  | "complete survey"
+  | "daily check-in"
+  | "app download"
+  | "content creation"
+  | "mine verse points"
+  | "others";
+export type PlatformType =
+  | "twitter"
+  | "facebook"
+  | "instagram"
+  | "linkedin"
+  | "youtube"
+  | "tiktok"
+  | "discord"
+  | "telegram"
+  | "reddit"
+  | "pinterest"
+  | "snapchat"
+  | "whatsapp"
+  | "issued by verse estate"
+  | "other";
 
 export interface AdminTask {
   id: string;
   title: string;
   description: string;
   points_reward: number;
-  task_type: "manual" | "referral" | "auto" | "watch";
-  platform?: "youtube" | "twitter" | "telegram" | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  task_type: TaskType;
+  platform?: PlatformType;
   action_url?: string | null;
   status: "active" | "disabled";
 }
 
-export default function TasksTable({ tasks }: { tasks: AdminTask[] }) {
+export default function TasksTable({tasks}: {tasks: AdminTask[]}) {
   const [editingTask, setEditingTask] = useState<AdminTask | null>(null);
-
-  const refresh = () => window.location.reload();
 
   const handleDelete = async (id: string) => {
     const res = await fetch("/api/admin/tasks/delete", {
       method: "POST",
-      body: JSON.stringify({ id }),
+      body: JSON.stringify({id}),
     });
 
     console.log("delete response", res);
 
     res.ok ? toast.success("Task deleted") : toast.error("Failed");
-    res.ok ? refresh() : null;
   };
 
   const handleToggle = async (task: AdminTask) => {
@@ -46,7 +74,6 @@ export default function TasksTable({ tasks }: { tasks: AdminTask[] }) {
     });
 
     res.ok ? toast.success("Task updated") : toast.error("Failed");
-    refresh();
   };
 
   return (
@@ -69,33 +96,19 @@ export default function TasksTable({ tasks }: { tasks: AdminTask[] }) {
               </div>
 
               <div className="flex gap-2">
-                <Badge
-                  variant={task.status === "active" ? "default" : "secondary"}
-                >
+                <Badge variant={task.status === "active" ? "default" : "secondary"}>
                   {task.status}
                 </Badge>
 
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setEditingTask(task)}
-                >
-                  Edit
-                </Button>
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleToggle(task)}
-                >
+                <Button size="sm" variant="outline" onClick={() => handleToggle(task)}>
                   {task.status === "active" ? "Disable" : "Enable"}
                 </Button>
 
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => handleDelete(task.id)}
-                >
+                <Button size="sm" variant="outline" onClick={() => setEditingTask(task)}>
+                  Edit
+                </Button>
+
+                <Button size="sm" variant="destructive" onClick={() => handleDelete(task.id)}>
                   Delete
                 </Button>
               </div>
@@ -104,13 +117,7 @@ export default function TasksTable({ tasks }: { tasks: AdminTask[] }) {
         ))}
       </div>
 
-      {editingTask && (
-        <TaskForm
-          task={editingTask}
-          onClose={() => setEditingTask(null)}
-          onSaved={refresh}
-        />
-      )}
+      {editingTask && <TaskForm task={editingTask} onClose={() => setEditingTask(null)} />}
     </>
   );
 }
