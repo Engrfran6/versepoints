@@ -157,7 +157,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center p-6 bg-background overflow-hidden">
+    <div className="relative flex min-h-screen items-center justify-center p-6 bg-background">
       {/* 3D Background */}
       <Suspense fallback={null}>
         <div className="fixed inset-0 z-0">
@@ -165,7 +165,7 @@ export default function LoginPage() {
         </div>
       </Suspense>
 
-      <div className="relative z-10 w-full max-w-4xl flex flex-col lg:flex-row items-center gap-8">
+      <div className="relative z-10 flex items-center justify-center w-full">
         {/* 3D Mining Core - Hidden on mobile */}
         <Suspense
           fallback={

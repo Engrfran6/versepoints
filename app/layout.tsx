@@ -5,6 +5,7 @@ import {Analytics} from "@vercel/analytics/next";
 import {SplashScreen} from "@/components/splash-screen";
 import "./globals.css";
 import {Toaster} from "sonner";
+import {ThemeProviders} from "./theme-provider";
 
 const _geist = Geist({subsets: ["latin"]});
 const _geistMono = Geist_Mono({subsets: ["latin"]});
@@ -31,12 +32,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className="font-sans antialiased min-h-screen">
-        <SplashScreen />
-        {children}
-        <Analytics />
-        <Toaster position="top-right" richColors closeButton expand />
+        <ThemeProviders>
+          <SplashScreen />
+          {children}
+          <Analytics />
+          <Toaster position="top-right" richColors closeButton expand />
+        </ThemeProviders>
       </body>
     </html>
   );

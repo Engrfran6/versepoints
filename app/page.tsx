@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import {MINING_CONSTANTS} from "@/lib/constants";
 import {formatNumberShort} from "@/lib/utils";
+import {ThemeToggle} from "@/components/theme-toggle";
 
 const HeroCrystal = dynamic(
   () => import("@/components/3d/hero-crystal").then((mod) => ({default: mod.HeroCrystal})),
@@ -219,10 +220,11 @@ export default function HomePage() {
                   className="w-full h-full object-contain"
                 />
               </div>
-              <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
+              {/* <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
                 VerseEstate
-              </span>
+              </span> */}
             </Link>
+            {/* <ThemeToggle /> */}
             <div className="hidden md:flex items-center gap-6">
               <Link
                 href="#features"
@@ -351,7 +353,7 @@ export default function HomePage() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+        <div className="absolute bottom-0 md:bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
           <div className="w-6 h-10 rounded-full border-2 border-primary/50 flex items-start justify-center p-2">
             <div className="w-1 h-2 bg-primary rounded-full animate-pulse" />
           </div>

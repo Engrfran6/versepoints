@@ -18,7 +18,7 @@ export default async function AdminRanksPage() {
     .order("points_threshold", {ascending: true});
 
   // Get all user ranks
-  const {data: userRanks} = await supabase
+  const {data: userRanks} = await supabaseAdmin
     .from("user_ranks")
     .select("*, user:user_id(username, email)");
 

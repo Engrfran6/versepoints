@@ -52,9 +52,11 @@ const PLATFORMS: PlatformType[] = [
 export default function TaskForm({
   task,
   onClose,
+  setAdminTasks,
 }: // onSaved,
 {
   task: Partial<AdminTask>;
+  setAdminTasks: React.Dispatch<React.SetStateAction<AdminTask[]>>;
   onClose: () => void;
 }) {
   const [form, setForm] = useState({
@@ -80,8 +82,12 @@ export default function TaskForm({
       return;
     }
 
+    const {task} = await res.json();
+
+    // ✅ Update state immediately
+    setAdminTasks((prev) => [task, ...prev]);
+
     toast.success("Task saved");
-    // onSaved();
     onClose();
   };
 

@@ -83,7 +83,7 @@ export function AdminNFTsContent({nftCatalog}: {nftCatalog: NFTCatalog[]}) {
               <Package className="w-5 h-5 text-primary" />
               NFT Catalog Management
             </CardTitle>
-            <Button onClick={() => setIsCreating(true)} className="gap-2">
+            <Button disabled onClick={() => setIsCreating(true)} className="gap-2">
               <Plus className="w-4 h-4" />
               Create NFT
             </Button>
@@ -120,6 +120,7 @@ export function AdminNFTsContent({nftCatalog}: {nftCatalog: NFTCatalog[]}) {
                     </div>
                     <div className="flex gap-2">
                       <Button
+                        disabled
                         size="sm"
                         variant="outline"
                         onClick={() => {
@@ -129,7 +130,11 @@ export function AdminNFTsContent({nftCatalog}: {nftCatalog: NFTCatalog[]}) {
                         }}>
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleDelete(nft.id)}>
+                      <Button
+                        disabled
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDelete(nft.id)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>

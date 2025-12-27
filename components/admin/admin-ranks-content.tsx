@@ -76,7 +76,7 @@ export function AdminRanksContent({rankConfigs}: {rankConfigs: RankConfig[]}) {
             Rank Configurations
           </CardTitle>
 
-          <Button onClick={() => setIsCreating(true)} className="gap-2">
+          <Button disabled onClick={() => setIsCreating(true)} className="gap-2">
             <Plus className="w-4 h-4" />
             Create Rank
           </Button>
@@ -125,6 +125,7 @@ export function AdminRanksContent({rankConfigs}: {rankConfigs: RankConfig[]}) {
                   {/* Actions */}
                   <div className="flex gap-2 sm:self-start">
                     <Button
+                      disabled
                       size="sm"
                       variant="outline"
                       onClick={() => {
@@ -135,7 +136,11 @@ export function AdminRanksContent({rankConfigs}: {rankConfigs: RankConfig[]}) {
                       <Edit className="w-4 h-4" />
                     </Button>
 
-                    <Button size="sm" variant="destructive" onClick={() => handleDelete(config.id)}>
+                    <Button
+                      disabled
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDelete(config.id)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>

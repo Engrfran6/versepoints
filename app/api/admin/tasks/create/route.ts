@@ -5,6 +5,7 @@ import {supabaseAdmin} from "@/lib/supabase/admin";
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
+
     const {
       data: {user},
       error: authError,
@@ -14,7 +15,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({error: "Unauthorized"}, {status: 401});
     }
 
-    // Check if user is admin
+    // Verify admin
     const {data: userData} = await supabase
       .from("users")
       .select("is_admin")
@@ -27,26 +28,35 @@ export async function POST(request: NextRequest) {
 
     const taskData = await request.json();
 
-    const {error: insertError} = await supabaseAdmin.from("tasks").insert({
-      title: taskData.title,
-      description: taskData.description,
-      points_reward: taskData.points_reward,
-      task_type: taskData.task_type,
-      platform: taskData.platform || null,
-      starts_at: taskData.starts_at || null,
-      ends_at: taskData.ends_at || null,
-      action_url: taskData.action_url || null,
-      verification_type: taskData.verification_type || "manual",
-      is_active: true,
-    });
+    // ✅ INSERT AND RETURN THE CREATED ROW
+    const {data: createdTask, error: insertError} = await supabaseAdmin
+      .from("tasks")
+      .insert({
+        title: taskData.title,
+        description: taskData.description,
+        points_reward: taskData.points_reward,
+        task_type: taskData.task_type,
+        platform: taskData.platform ?? null,
+        starts_at: taskData.starts_at ?? null,
+        ends_at: taskData.ends_at ?? null,
+        action_url: taskData.action_url ?? null,
+        verification_type: taskData.verification_type ?? "manual",
+        is_active: true,
+      })
+      .select()
+      .single();
 
     if (insertError) {
       throw insertError;
     }
 
-    return NextResponse.json({success: true});
+    // ✅ RETURN THE NEW TASK
+    return NextResponse.json({
+      success: true,
+      task: createdTask,
+    });
   } catch (error: any) {
     console.error("Task creation error:", error);
-    return NextResponse.json({error: error.message}, {status: 500});
+    return NextResponse.json({error: error.message ?? "Internal server error"}, {status: 500});
   }
 }

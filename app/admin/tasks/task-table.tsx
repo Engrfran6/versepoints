@@ -7,6 +7,7 @@ import {Badge} from "@/components/ui/badge";
 
 import {toast} from "sonner";
 import TaskForm from "@/components/admin/task-form";
+import {cn} from "@/lib/utils";
 
 export type TaskType =
   | "complete profile"
@@ -47,11 +48,12 @@ export interface AdminTask {
   task_type: TaskType;
   platform?: PlatformType;
   action_url?: string | null;
-  status: "active" | "disabled";
+  status: "active" | "paused" | "expired" | "draft";
 }
 
 export default function TasksTable({tasks}: {tasks: AdminTask[]}) {
   const [editingTask, setEditingTask] = useState<AdminTask | null>(null);
+  const [adminTasks, setAdminTasks] = useState<AdminTask[]>(tasks);
 
   const handleDelete = async (id: string) => {
     const res = await fetch("/api/admin/tasks/delete", {
@@ -59,9 +61,11 @@ export default function TasksTable({tasks}: {tasks: AdminTask[]}) {
       body: JSON.stringify({id}),
     });
 
-    console.log("delete response", res);
-
     res.ok ? toast.success("Task deleted") : toast.error("Failed");
+
+    const {taskId} = await res.json();
+
+    setAdminTasks((prev) => prev.filter((task) => task.id !== taskId));
   };
 
   const handleToggle = async (task: AdminTask) => {
@@ -69,11 +73,15 @@ export default function TasksTable({tasks}: {tasks: AdminTask[]}) {
       method: "POST",
       body: JSON.stringify({
         taskId: task.id,
-        status: task.status === "active" ? "disabled" : "active",
+        status: task.status,
       }),
     });
 
     res.ok ? toast.success("Task updated") : toast.error("Failed");
+
+    const {updatedTask} = await res.json();
+
+    setAdminTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
   };
 
   return (
@@ -83,7 +91,7 @@ export default function TasksTable({tasks}: {tasks: AdminTask[]}) {
       </Button>
 
       <div className="space-y-3">
-        {tasks.map((task) => (
+        {adminTasks.map((task) => (
           <Card key={task.id}>
             <CardContent className="p-4 flex justify-between items-center">
               <div>
@@ -96,12 +104,25 @@ export default function TasksTable({tasks}: {tasks: AdminTask[]}) {
               </div>
 
               <div className="flex gap-2">
-                <Badge variant={task.status === "active" ? "default" : "secondary"}>
+                <Badge
+                  className={cn(
+                    task.status === "active"
+                      ? "bg-green-500"
+                      : task.status === "paused"
+                      ? "bg-yellow-500"
+                      : task.status === "expired"
+                      ? "bg-red-500"
+                      : "bg-gray-500"
+                  )}>
                   {task.status}
                 </Badge>
 
                 <Button size="sm" variant="outline" onClick={() => handleToggle(task)}>
-                  {task.status === "active" ? "Disable" : "Enable"}
+                  {task.status === "expired"
+                    ? "Expired"
+                    : task.status === "active"
+                    ? "Disable"
+                    : "Enable"}
                 </Button>
 
                 <Button size="sm" variant="outline" onClick={() => setEditingTask(task)}>
@@ -117,7 +138,13 @@ export default function TasksTable({tasks}: {tasks: AdminTask[]}) {
         ))}
       </div>
 
-      {editingTask && <TaskForm task={editingTask} onClose={() => setEditingTask(null)} />}
+      {editingTask && (
+        <TaskForm
+          task={editingTask}
+          onClose={() => setEditingTask(null)}
+          setAdminTasks={setAdminTasks}
+        />
+      )}
     </>
   );
 }
