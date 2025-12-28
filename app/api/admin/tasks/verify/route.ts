@@ -38,7 +38,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (approved) {
-      await supabaseAdmin
+      // Mark submission as verified
+      const {error: updateError} = await supabaseAdmin
         .from("task_submissions")
         .update({
           status: "verified",
@@ -49,18 +50,34 @@ export async function POST(request: NextRequest) {
         })
         .eq("id", submissionId);
 
-      const {data: currentUser} = await supabaseAdmin
-        .from("users")
-        .select("points_balance")
-        .eq("id", submission.user_id)
-        .single();
+      if (updateError) {
+        console.error("Error updating submission table:", updateError);
+        throw new Error(updateError.message);
+      }
 
-      await supabase
-        .from("users")
-        .update({
-          points_balance: (currentUser?.points_balance || 0) + submission.tasks.points_reward,
-        })
-        .eq("id", submission.user_id);
+      // // Fetch current user points
+      // const {data: currentUser, error: userError} = await supabaseAdmin
+      //   .from("users")
+      //   .select("points_balance")
+      //   .eq("id", submission.user_id)
+      //   .single();
+
+      // if (userError || !currentUser) {
+      //   throw new Error("User not found");
+      // }
+
+      // // Update points using supabaseAdmin
+      // const {error: updateError} = await supabaseAdmin
+      //   .from("users")
+      //   .update({
+      //     points_balance: (currentUser.points_balance || 0) + submission.tasks.points_reward,
+      //   })
+      //   .eq("id", submission.user_id);
+
+      // if (updateError) {
+      //   console.error("Error updating points:", updateError);
+      //   throw new Error(updateError.message);
+      // }
     } else {
       await supabaseAdmin
         .from("task_submissions")

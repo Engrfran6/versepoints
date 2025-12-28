@@ -31,7 +31,7 @@ export function AdminNFTsContent({nftCatalog}: {nftCatalog: NFTCatalog[]}) {
     tier: "basic" as NFTTier,
     mining_boost: 0,
     vp_cost: 1000,
-    max_supply: 100,
+    max_supply: 100 as number | null,
     required_rank: "rookie",
     special_effect: "",
   });
@@ -233,9 +233,10 @@ export function AdminNFTsContent({nftCatalog}: {nftCatalog: NFTCatalog[]}) {
                 <Input
                   type="number"
                   value={formData.max_supply || ""}
-                  onChange={(e) =>
-                    setFormData({...formData, max_supply: Number.parseInt(e.target.value) || null})
-                  }
+                  onChange={(e) => {
+                    const parsed = Number.parseInt(e.target.value);
+                    setFormData({...formData, max_supply: isNaN(parsed) ? null : parsed});
+                  }}
                 />
               </div>
             </div>

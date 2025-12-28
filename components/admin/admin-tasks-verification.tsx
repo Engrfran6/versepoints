@@ -1,69 +1,101 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { CheckCircle2, XCircle, Eye, AlertTriangle, ExternalLink, Clock } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
+import {useState} from "react";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import {Badge} from "@/components/ui/badge";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
+import {CheckCircle2, XCircle, Eye, AlertTriangle, ExternalLink, Clock} from "lucide-react";
+import {useRouter} from "next/navigation";
+import {toast} from "sonner";
 
 interface TaskSubmission {
-  id: string
-  status: string
-  proof_url: string | null
-  proof_data: any
-  fraud_score: number
-  completed_at: string
-  created_at: string
+  id: string;
+  status: string;
+  proof_url: string | null;
+  proof_data: any;
+  fraud_score: number;
+  completed_at: string;
+  created_at: string;
   users: {
-    id: string
-    username: string
-    email: string
-  }
+    id: string;
+    username: string;
+    email: string;
+  };
   tasks: {
-    id: string
-    title: string
-    description: string
-    points_reward: number
-    platform: string
-    task_type: string
-  }
+    id: string;
+    title: string;
+    description: string;
+    points_reward: number;
+    platform: string;
+    task_type: string;
+  };
 }
 
-export function AdminTasksVerification({ submissions }: { submissions: TaskSubmission[] }) {
-  const router = useRouter()
-  const [selectedSubmission, setSelectedSubmission] = useState<TaskSubmission | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
+export function AdminTasksVerification({submissions}: {submissions: TaskSubmission[]}) {
+  const router = useRouter();
+  const [selectedSubmission, setSelectedSubmission] = useState<TaskSubmission | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showApproveAllDialog, setShowApproveAllDialog] = useState(false);
 
-  const pendingSubmissions = submissions.filter((s) => s.status === "pending")
-  const verifiedSubmissions = submissions.filter((s) => s.status === "verified")
-  const rejectedSubmissions = submissions.filter((s) => s.status === "rejected")
+  const pendingSubmissions = submissions.filter((s) => s.status === "pending");
+  const verifiedSubmissions = submissions.filter((s) => s.status === "verified");
+  const rejectedSubmissions = submissions.filter((s) => s.status === "rejected");
 
   const handleVerify = async (submissionId: string, approved: boolean, reason?: string) => {
-    setIsProcessing(true)
+    setIsProcessing(true);
     try {
       const response = await fetch("/api/admin/tasks/verify", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ submissionId, approved, reason }),
-      })
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({submissionId, approved, reason}),
+      });
 
-      if (!response.ok) throw new Error("Failed to verify submission")
+      if (!response.ok) throw new Error("Failed to verify submission");
 
-      toast.success(approved ? "Submission approved!" : "Submission rejected")
-      setSelectedSubmission(null)
-      router.refresh()
+      toast.success(approved ? "Submission approved!" : "Submission rejected");
+      setSelectedSubmission(null);
+      router.refresh();
     } catch (error: any) {
-      toast.error(error.message)
+      toast.error(error.message);
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
-  const SubmissionCard = ({ submission }: { submission: TaskSubmission }) => (
+  const handleApproveAllPending = async () => {
+    if (pendingSubmissions.length === 0) return;
+
+    setIsProcessing(true);
+
+    try {
+      await Promise.all(
+        pendingSubmissions.map((submission) =>
+          fetch("/api/admin/tasks/verify", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+              submissionId: submission.id,
+              approved: true,
+            }),
+          }).then((res) => {
+            if (!res.ok) throw new Error("Failed to approve one or more submissions");
+          })
+        )
+      );
+
+      toast.success(`${pendingSubmissions.length} submissions approved`);
+      setShowApproveAllDialog(false);
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message || "Bulk approval failed");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const SubmissionCard = ({submission}: {submission: TaskSubmission}) => (
     <Card className="bg-card/90 border-border">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
@@ -87,7 +119,11 @@ export function AdminTasksVerification({ submissions }: { submissions: TaskSubmi
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => setSelectedSubmission(submission)} className="gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setSelectedSubmission(submission)}
+              className="gap-2">
               <Eye className="w-4 h-4" />
               Review
             </Button>
@@ -97,8 +133,7 @@ export function AdminTasksVerification({ submissions }: { submissions: TaskSubmi
                   size="sm"
                   onClick={() => handleVerify(submission.id, true)}
                   disabled={isProcessing}
-                  className="bg-green-600 hover:bg-green-700 text-white gap-2"
-                >
+                  className="bg-green-600 hover:bg-green-700 text-white gap-2">
                   <CheckCircle2 className="w-4 h-4" />
                   Approve
                 </Button>
@@ -107,8 +142,7 @@ export function AdminTasksVerification({ submissions }: { submissions: TaskSubmi
                   variant="destructive"
                   onClick={() => handleVerify(submission.id, false)}
                   disabled={isProcessing}
-                  className="gap-2"
-                >
+                  className="gap-2">
                   <XCircle className="w-4 h-4" />
                   Reject
                 </Button>
@@ -118,14 +152,16 @@ export function AdminTasksVerification({ submissions }: { submissions: TaskSubmi
         </div>
       </CardContent>
     </Card>
-  )
+  );
 
   return (
     <>
       <Card className="bg-card border-border">
         <CardHeader>
           <CardTitle className="text-foreground">Task Verification Dashboard</CardTitle>
-          <CardDescription className="text-muted-foreground">Review and approve user task submissions</CardDescription>
+          <CardDescription className="text-muted-foreground">
+            Review and approve user task submissions
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="pending">
@@ -144,10 +180,22 @@ export function AdminTasksVerification({ submissions }: { submissions: TaskSubmi
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="pending" className="space-y-3">
+            <TabsContent value="pending" className="space-y-4">
+              {pendingSubmissions.length > 0 && (
+                <div className="flex justify-end">
+                  <Button
+                    onClick={() => setShowApproveAllDialog(true)}
+                    className="bg-green-600 hover:bg-green-700 text-white gap-2">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Approve All Pending
+                  </Button>
+                </div>
+              )}
+
               {pendingSubmissions.map((submission) => (
                 <SubmissionCard key={submission.id} submission={submission} />
               ))}
+
               {pendingSubmissions.length === 0 && (
                 <p className="text-center text-muted-foreground py-8">No pending submissions</p>
               )}
@@ -186,7 +234,9 @@ export function AdminTasksVerification({ submissions }: { submissions: TaskSubmi
               <div className="space-y-2">
                 <h4 className="font-semibold text-foreground">Task</h4>
                 <p className="text-sm text-foreground">{selectedSubmission.tasks.title}</p>
-                <p className="text-xs text-muted-foreground">{selectedSubmission.tasks.description}</p>
+                <p className="text-xs text-muted-foreground">
+                  {selectedSubmission.tasks.description}
+                </p>
                 <div className="flex items-center gap-2 mt-2">
                   <Badge variant="outline">{selectedSubmission.tasks.platform}</Badge>
                   <Badge variant="outline">{selectedSubmission.tasks.task_type}</Badge>
@@ -202,7 +252,9 @@ export function AdminTasksVerification({ submissions }: { submissions: TaskSubmi
                 <p className="text-sm text-foreground">{selectedSubmission.users.username}</p>
                 <p className="text-xs text-muted-foreground">{selectedSubmission.users.email}</p>
                 {selectedSubmission.fraud_score > 0 && (
-                  <Badge variant={selectedSubmission.fraud_score > 50 ? "destructive" : "secondary"} className="mt-2">
+                  <Badge
+                    variant={selectedSubmission.fraud_score > 50 ? "destructive" : "secondary"}
+                    className="mt-2">
                     Fraud Score: {selectedSubmission.fraud_score}
                   </Badge>
                 )}
@@ -216,17 +268,17 @@ export function AdminTasksVerification({ submissions }: { submissions: TaskSubmi
                     href={selectedSubmission.proof_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-primary hover:underline text-sm"
-                  >
+                    className="flex items-center gap-2 text-primary hover:underline text-sm">
                     <ExternalLink className="w-4 h-4" />
                     View Proof Link
                   </a>
                 )}
-                {selectedSubmission.proof_data && Object.keys(selectedSubmission.proof_data).length > 0 && (
-                  <pre className="bg-muted/30 p-3 rounded-lg text-xs overflow-auto">
-                    {JSON.stringify(selectedSubmission.proof_data, null, 2)}
-                  </pre>
-                )}
+                {selectedSubmission.proof_data &&
+                  Object.keys(selectedSubmission.proof_data).length > 0 && (
+                    <pre className="bg-muted/30 p-3 rounded-lg text-xs overflow-auto">
+                      {JSON.stringify(selectedSubmission.proof_data, null, 2)}
+                    </pre>
+                  )}
               </div>
 
               {/* Actions */}
@@ -235,17 +287,17 @@ export function AdminTasksVerification({ submissions }: { submissions: TaskSubmi
                   <Button
                     onClick={() => handleVerify(selectedSubmission.id, true)}
                     disabled={isProcessing}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white gap-2"
-                  >
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white gap-2">
                     <CheckCircle2 className="w-4 h-4" />
                     Approve Submission
                   </Button>
                   <Button
-                    onClick={() => handleVerify(selectedSubmission.id, false, "Does not meet requirements")}
+                    onClick={() =>
+                      handleVerify(selectedSubmission.id, false, "Does not meet requirements")
+                    }
                     disabled={isProcessing}
                     variant="destructive"
-                    className="flex-1 gap-2"
-                  >
+                    className="flex-1 gap-2">
                     <XCircle className="w-4 h-4" />
                     Reject Submission
                   </Button>
@@ -255,6 +307,38 @@ export function AdminTasksVerification({ submissions }: { submissions: TaskSubmi
           )}
         </DialogContent>
       </Dialog>
+      <Dialog open={showApproveAllDialog} onOpenChange={setShowApproveAllDialog}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-foreground">
+              <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              Confirm Bulk Approval
+            </DialogTitle>
+          </DialogHeader>
+
+          <p className="text-sm text-muted-foreground">
+            Hope you have verified all submissions before approval.
+            <br />
+            This action will approve <strong>all pending submissions</strong> and cannot be undone.
+          </p>
+
+          <div className="flex gap-3 justify-end mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowApproveAllDialog(false)}
+              disabled={isProcessing}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleApproveAllPending}
+              disabled={isProcessing}
+              className="bg-green-600 hover:bg-green-700 text-white gap-2">
+              <CheckCircle2 className="w-4 h-4" />
+              Yes, Approve All
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
-  )
+  );
 }

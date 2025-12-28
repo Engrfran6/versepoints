@@ -27,8 +27,6 @@ import {
   Gift,
 } from "lucide-react";
 import {MINING_CONSTANTS} from "@/lib/constants";
-import {formatNumberShort} from "@/lib/utils";
-import {ThemeToggle} from "@/components/theme-toggle";
 
 const HeroCrystal = dynamic(
   () => import("@/components/3d/hero-crystal").then((mod) => ({default: mod.HeroCrystal})),
@@ -63,6 +61,8 @@ const NFTGrid3D = dynamic(
     ssr: false,
   }
 );
+
+const BackgroundVideo = dynamic(() => import("@/components/BgVideo"), {ssr: false});
 
 // Animated counter component
 function AnimatedCounter({value, duration = 2000}: {value: number; duration?: number}) {
@@ -587,15 +587,9 @@ export default function HomePage() {
         id="whitepaper"
         className="relative py-24 md:py-32 px-4 overflow-hidden min-h-screen flex items-center">
         {/* Video Background */}
-        <div className="absolute inset-0 z-0">
-          <video autoPlay loop muted playsInline className="w-full h-full object-cover">
-            <source
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/6bdd8c01-81a2-4190-9ff8-fdd50e8eae95-y6zHywbsjLf6vmtdFHaKszOW6rWX1v.MP4"
-              type="video/mp4"
-            />
-          </video>
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
-        </div>
+        <Suspense fallback={null}>
+          <BackgroundVideo />
+        </Suspense>
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-12 md:mb-16">

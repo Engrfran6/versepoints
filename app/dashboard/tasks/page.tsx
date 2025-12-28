@@ -1,12 +1,13 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { TasksContent } from "./tasks-content";
+import {redirect} from "next/navigation";
+import {createClient} from "@/lib/supabase/server";
+import {TasksContent} from "./tasks-content";
+import {supabaseAdmin} from "@/lib/supabase/admin";
 
 export default async function TasksPage() {
   const supabase = await createClient();
 
   const {
-    data: { user },
+    data: {user},
     error,
   } = await supabase.auth.getUser();
 
@@ -15,14 +16,14 @@ export default async function TasksPage() {
   }
 
   // Get all active tasks
-  const { data: tasks } = await supabase
+  const {data: tasks} = await supabaseAdmin
     .from("tasks")
     .select("*")
     .eq("is_active", true)
-    .order("points_reward", { ascending: false });
+    .order("points_reward", {ascending: false});
 
   // Get user's completed tasks
-  const { data: userTasks } = await supabase
+  const {data: userTasks} = await supabase
     .from("task_submissions")
     .select("*")
     .eq("user_id", user.id);

@@ -41,7 +41,7 @@ export default async function AdminTasksPage() {
       </div>
 
       <Tabs defaultValue="manage">
-        <TabsList className="grid grid-cols-2">
+        <TabsList className="grid grid-cols-2 bg-blend-exclusion">
           <TabsTrigger value="manage">Manage Tasks</TabsTrigger>
           <TabsTrigger value="verify">Verify Submissions</TabsTrigger>
         </TabsList>

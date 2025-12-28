@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
-import {CheckSquare, ExternalLink, CheckCircle2, Clock, Gift} from "lucide-react";
+import {CheckSquare, ExternalLink, CheckCircle2, Clock, Gift, Pause} from "lucide-react";
 import {cn, extractYouTubeVideoId} from "@/lib/utils";
 import {useRouter} from "next/navigation";
 import {toast} from "sonner";
@@ -40,6 +40,7 @@ interface Task {
   action_url: string | null;
   is_active: boolean;
   verification_type: string;
+  status: string;
 }
 
 interface UserTask {
@@ -64,62 +65,8 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
     taskId: string;
     videoId: string;
   } | null>(null);
-
-  // const handleStartTask = (task: Task) => {
-  //   if (
-  //     task.task_type === "special" &&
-  //     task.title.toLowerCase().includes("mining")
-  //   ) {
-  //     router.push("/dashboard");
-  //     toast.info(
-  //       `You will earn ${task.points_reward} when you mine for the first time`
-  //     );
-  //     return;
-  //   }
-
-  //   if (task.task_type === "referral") {
-  //     router.push("/dashboard/referrals");
-  //     toast.info("Share your referral link to complete this task");
-  //     return;
-  //   }
-
-  //   if (
-  //     task.title.toLowerCase().includes("profile") ||
-  //     task.title.toLowerCase().includes("complete")
-  //   ) {
-  //     router.push("/dashboard/settings");
-  //     toast.info("Complete your profile to earn points");
-  //     return;
-  //   }
-
-  //   // ✅ YOUTUBE TASK
-  //   if (task.action_url && task.title.toLowerCase().includes("watch")) {
-  //     const videoId = extractYouTubeVideoId(task.action_url);
-
-  //     if (!videoId) {
-  //       toast.error("Invalid YouTube link");
-  //       return;
-  //     }
-
-  //     if (completedTaskIds.has(task.id)) {
-  //       toast.info("You already completed this task");
-  //       return;
-  //     }
-
-  //     setActiveYouTubeTask({
-  //       taskId: task.id,
-  //       videoId,
-  //     });
-
-  //     return;
-  //   }
-
-  //   // Other tasks
-  //   if (task.action_url) {
-  //     window.open(task.action_url, "_blank");
-  //     setTimeout(() => setSelectedTask(task), 1000);
-  //   }
-  // };
+  const [youtubeProgress, setYoutubeProgress] = useState(0);
+  const [confirmExitOpen, setConfirmExitOpen] = useState(false);
 
   const openExternalAndCollectProof = (task: Task) => {
     if (!task.action_url) {
@@ -232,6 +179,31 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
     }
   };
 
+  const submitYouTubeTask = async (taskId: string) => {
+    try {
+      const response = await fetch("/api/tasks/submit", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          taskId,
+          proofUrl: `https://www.youtube.com/watch?v=${activeYouTubeTask?.videoId}`,
+          verificationType: "youtube",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to submit YouTube task");
+      }
+
+      toast.success("YouTube task completed!");
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message || "Submission failed");
+    }
+  };
+
   const getTaskIcon = (type: string) => {
     switch (type) {
       case "social":
@@ -253,10 +225,39 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
     return userTask.status;
   };
 
-  const noOfPendingTask = userTasks?.map((ut) => ut.status === "pending").length;
+  const noOfPendingTask = userTasks?.filter((ut) => ut.status === "pending");
+  const noOfVerifiedTask = userTasks?.filter((ut) => ut.status === "verified");
+
+  function StatusButton({
+    icon: Icon,
+    label,
+    color,
+  }: {
+    icon: React.ElementType;
+    label: string;
+    color: "green" | "yellow" | "red";
+  }) {
+    const styles = {
+      green: "bg-green-500/10 border-green-500/30 text-green-500",
+      yellow: "bg-yellow-500/10 border-yellow-500/30 text-yellow-500",
+      red: "bg-red-500/10 border-red-500/30 text-red-500",
+    };
+
+    return (
+      <Button disabled variant="outline" className={cn("gap-2", styles[color])}>
+        <Icon className="h-4 w-4" />
+        {label}
+      </Button>
+    );
+  }
 
   return (
-    <div className="relative p-4 md:p-8 min-h-screen">
+    // <div className="relative p-4 md:p-8 min-h-screen">
+    <div
+      className={cn(
+        "relative p-4 md:p-8 min-h-screen transition-all duration-300",
+        activeYouTubeTask && "blur-xl pointer-events-none select-none"
+      )}>
       {/* 3D Background */}
       <Suspense fallback={null}>
         <FloatingParticles count={1000} color="#22c55e" className="opacity-20" />
@@ -297,13 +298,17 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
         </Card>
 
         <Card className="col-span-2 bg-card/90 backdrop-blur-sm border-border">
-          <CardContent className="p-4 text-center grid grid-cols-2">
+          <CardContent className="p-4 text-center grid grid-cols-3">
             <div>
-              <p className="text-2xl font-bold text-green-500">{completedTaskIds.size}</p>
+              <p className="text-2xl font-bold text-blue-400">{completedTaskIds.size}</p>
               <p className="text-xs text-muted-foreground">Completed Tasks</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-red-500">{noOfPendingTask}</p>
+              <p className="text-2xl font-bold text-green-400">{noOfVerifiedTask?.length ?? 0}</p>
+              <p className="text-xs text-muted-foreground">Approved Tasks</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-red-400">{noOfPendingTask?.length ?? 0}</p>
               <p className="text-xs text-muted-foreground">Pending Tasks</p>
             </div>
           </CardContent>
@@ -314,7 +319,8 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
       <div className="relative z-10 space-y-4">
         {tasks?.map((task) => {
           const status = getTaskStatus(task.id);
-          const isCompleted = status === "verified" || status === "completed";
+          const isCompleted = status === "verified";
+          const isPaused = task.status === "paused";
           const isPending = status === "pending";
           const isSpecialTask =
             task.task_type === "referral" ||
@@ -325,52 +331,65 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
             <Card
               key={task.id}
               className={cn(
-                "bg-card/90 backdrop-blur-sm border-border transition-all",
-                isCompleted && "opacity-60 bg-green-500/5 border-green-500/20"
+                "group relative border bg-indigo-500/10 backdrop-blur-sm transition-all duration-200",
+                "hover:shadow-md hover:-translate-y-0.5",
+                {
+                  "opacity-60 border-green-500/20 bg-green-500/5": isCompleted,
+                  "opacity-60 border-red-500/20 bg-red-500/5": isPaused,
+                  "opacity-80 border-yellow-500/20 bg-yellow-500/5": isPending,
+                }
               )}>
               <CardContent className="p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4">
-                    <div className="text-3xl">{getTaskIcon(task.task_type)}</div>
-                    <div>
-                      <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <div className="flex items-start justify-between gap-6">
+                  {/* LEFT */}
+                  <div className="flex gap-4">
+                    <div
+                      className={cn(
+                        "flex h-12 w-12 items-center justify-center rounded-lg text-2xl",
+                        "bg-muted text-foreground/80",
+                        {
+                          "bg-green-500/10 text-green-500": isCompleted,
+                          "bg-red-500/10 text-red-500": isPaused,
+                          "bg-yellow-500/10 text-yellow-500": isPending,
+                        }
+                      )}>
+                      {getTaskIcon(task.task_type)}
+                    </div>
+
+                    <div className="space-y-1">
+                      <h3 className="flex items-center gap-2 font-semibold leading-tight">
                         {task.title}
-                        {isCompleted && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                        {isCompleted && <CheckCircle2 className="h-4 w-4 text-green-500" />}
                       </h3>
-                      <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
-                      <div className="flex items-center gap-3 mt-3">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                          <Gift className="w-3 h-3" />+{task.points_reward} VP
+
+                      <p className="text-sm text-muted-foreground max-w-md">{task.description}</p>
+
+                      <div className="flex flex-wrap items-center gap-2 pt-2">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                          <Gift className="h-3 w-3" />+{task.points_reward} VP
                         </span>
-                        <span className="text-xs text-muted-foreground capitalize">
+
+                        <span className="text-xs capitalize text-muted-foreground">
                           {task.task_type}
                         </span>
                       </div>
                     </div>
                   </div>
-                  <div>
+
+                  {/* RIGHT */}
+                  <div className="flex shrink-0 items-center">
                     {isCompleted ? (
-                      <Button
-                        disabled
-                        variant="outline"
-                        className="gap-2 bg-green-500/10 border-green-500/30">
-                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                        Completed
-                      </Button>
+                      <StatusButton icon={CheckCircle2} label="Completed" color="green" />
                     ) : isPending ? (
-                      <Button
-                        disabled
-                        variant="outline"
-                        className="gap-2 bg-yellow-500/10 border-yellow-500/30">
-                        <Clock className="w-4 h-4 text-yellow-500" />
-                        Pending
-                      </Button>
+                      <StatusButton icon={Clock} label="Pending" color="yellow" />
+                    ) : isPaused ? (
+                      <StatusButton icon={Pause} label="Paused" color="red" />
                     ) : (
                       <Button
                         onClick={() => handleStartTask(task)}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
+                        className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
                         {isSpecialTask ? "Go" : "Start"}
-                        <ExternalLink className="w-4 h-4" />
+                        <ExternalLink className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
@@ -448,8 +467,33 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
       </Dialog>
 
       {activeYouTubeTask && (
-        <Dialog open onOpenChange={() => setActiveYouTubeTask(null)}>
-          <DialogContent className="max-w-4xl bg-card border-border">
+        <Dialog
+          open
+          onOpenChange={(open) => {
+            // User is trying to close the dialog
+            if (!open && youtubeProgress < 90) {
+              setConfirmExitOpen(true);
+              return;
+            }
+
+            // Safe to close (completed)
+            setActiveYouTubeTask(null);
+            setYoutubeProgress(0);
+          }}>
+          <DialogContent
+            className="max-w-4xl bg-card border-border"
+            onPointerDownOutside={(e) => {
+              if (youtubeProgress < 90) {
+                e.preventDefault();
+                setConfirmExitOpen(true);
+              }
+            }}
+            onEscapeKeyDown={(e) => {
+              if (youtubeProgress < 90) {
+                e.preventDefault();
+                setConfirmExitOpen(true);
+              }
+            }}>
             <DialogHeader>
               <DialogTitle>Watch Video to Complete Task</DialogTitle>
               <DialogDescription>Watch at least 90% of the video to earn points</DialogDescription>
@@ -459,8 +503,11 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
               videoId={activeYouTubeTask.videoId}
               taskId={activeYouTubeTask.taskId}
               requiredWatchPercentage={90}
-              onComplete={(data) => {
+              onProgress={(p) => setYoutubeProgress(p)}
+              onComplete={() => {
                 setActiveYouTubeTask(null);
+                setYoutubeProgress(0);
+                submitYouTubeTask(activeYouTubeTask.taskId);
                 toast.success("Task completed successfully");
                 router.refresh();
               }}
@@ -468,6 +515,37 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
           </DialogContent>
         </Dialog>
       )}
+
+      <Dialog open={confirmExitOpen} onOpenChange={setConfirmExitOpen}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Leave task early?</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              You haven’t completed this task yet.
+              <br />
+              If you exit now, you will earn <strong>0 points</strong> for this task.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex gap-2 mt-4">
+            <Button className="flex-1" onClick={() => setConfirmExitOpen(false)}>
+              Continue Watching
+            </Button>
+
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={() => {
+                setConfirmExitOpen(false);
+                setActiveYouTubeTask(null);
+                setYoutubeProgress(0);
+                toast.info("You exited early — no points awarded");
+              }}>
+              Exit Task
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

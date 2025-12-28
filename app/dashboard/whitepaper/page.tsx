@@ -1,19 +1,17 @@
+"use client";
+
 import {Button} from "@/components/ui/button";
 import {ArrowRight} from "lucide-react";
-
+import dynamic from "next/dynamic";
+import {Suspense} from "react";
+const BackgroundVideo = dynamic(() => import("@/components/BgVideo"), {ssr: false});
 export default function WhitepaperPage() {
   return (
     <section className="relative py-10 md:py-4 px-4 overflow-hidden flex items-center">
       {/* Video Background */}
-      <div className="absolute inset-0 z-0">
-        <video autoPlay loop muted playsInline className="w-full h-full object-cover">
-          <source
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/6bdd8c01-81a2-4190-9ff8-fdd50e8eae95-y6zHywbsjLf6vmtdFHaKszOW6rWX1v.MP4"
-            type="video/mp4"
-          />
-        </video>
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
-      </div>
+      <Suspense fallback={null}>
+        <BackgroundVideo />
+      </Suspense>
 
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-12 md:mb-16">
