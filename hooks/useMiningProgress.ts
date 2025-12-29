@@ -7,7 +7,8 @@ const DAY_SECONDS = 24 * 60 * 60; // 86400
 export function useMiningProgress(
   committedBalance: number,
   pendingPoints: number,
-  miningStartedAt?: string | null
+  miningStartedAt?: string | null,
+  isMiningEnabled: boolean = true
 ) {
   const [visualPoints, setVisualPoints] = useState(committedBalance);
   const [isMiningNow, setIsMiningNow] = useState(false);
@@ -20,7 +21,20 @@ export function useMiningProgress(
   }, [committedBalance]);
 
   useEffect(() => {
-    // ❌ No mining session
+    // 🚫 Mining disabled at user level
+    if (!isMiningEnabled) {
+      setVisualPoints(baseBalanceRef.current);
+      setIsMiningNow(false);
+
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+
+      return;
+    }
+
+    // 🚫 No mining session
     if (!miningStartedAt) {
       setVisualPoints(baseBalanceRef.current);
       setIsMiningNow(false);
@@ -33,24 +47,22 @@ export function useMiningProgress(
       const now = Date.now();
       const elapsedSeconds = (now - startTime) / 1000;
 
-      // ⏱️ Clamp progress
       const progress = Math.min(Math.max(elapsedSeconds / DAY_SECONDS, 0), 1);
 
-      // 💰 Accumulate
-      setVisualPoints(baseBalanceRef.current + pendingPoints * progress);
+      // 💡 pendingPoints ONLY count if mining is enabled
+      const effectivePending = isMiningEnabled ? pendingPoints : 0;
 
-      // 🔒 Mining state is ONLY time-based
+      setVisualPoints(baseBalanceRef.current + effectivePending * progress);
+
       setIsMiningNow(progress < 1);
 
-      // 🧹 Cleanup at exactly 24h
       if (progress >= 1 && intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
     };
 
-    tick(); // immediate sync
-
+    tick();
     intervalRef.current = setInterval(tick, 1000);
 
     return () => {
@@ -59,7 +71,7 @@ export function useMiningProgress(
         intervalRef.current = null;
       }
     };
-  }, [pendingPoints, miningStartedAt]);
+  }, [pendingPoints, miningStartedAt, isMiningEnabled]);
 
   return {visualPoints, isMiningNow};
 }

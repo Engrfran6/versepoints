@@ -40,18 +40,21 @@ interface DashboardContentProps {
 
 export function DashboardContent({user: initialUser, referralCount, rank}: DashboardContentProps) {
   const [user, setUser] = useState(initialUser);
-  const {visualPoints, isMiningNow} = useMiningProgress(
+
+  const {isMiningNow} = useMiningProgress(
     user.points_balance,
     MINING_CONSTANTS.POINTS_PER_MINE ?? 0,
-    user.last_mining_at
+    user.last_mining_at,
+    user.is_mining
   );
+
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
-    // Show welcome message for new users (joined in last 5 minutes)
+    // Show welcome message for new users (joined in last 60 minutes)
     const joinedAt = new Date(user.created_at).getTime();
-    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-    if (joinedAt > fiveMinutesAgo && user.mining_count === 0) {
+    const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+    if (joinedAt > twentyFourHoursAgo && user.mining_count === 0) {
       setShowWelcome(true);
       const timer = setTimeout(() => setShowWelcome(false), 10000);
       return () => clearTimeout(timer);
@@ -164,30 +167,6 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
     }
   };
 
-  const [displayPoints, setDisplayPoints] = useState(visualPoints);
-
-  useEffect(() => {
-    const diff = visualPoints - displayPoints;
-    const steps = 30;
-    const increment = diff / steps;
-    let current = displayPoints;
-    let step = 0;
-
-    const interval = setInterval(() => {
-      step++;
-      current += increment;
-
-      if (step >= steps) {
-        setDisplayPoints(visualPoints);
-        clearInterval(interval);
-      } else {
-        setDisplayPoints(current);
-      }
-    }, 25);
-
-    return () => clearInterval(interval);
-  }, [visualPoints]);
-
   return (
     <div className="relative p-4 md:p-8 min-h-screen">
       <Suspense fallback={null}>
@@ -236,7 +215,7 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
           <Card
             className={cn(
               "relative border-border shadow-2xl overflow-hidden transition-all duration-700",
-              isMiningNow ? "bg-[#083905]" : "bg-[#070b11]"
+              isMiningNow ? "bg-[#655304]" : "bg-[#132239]"
             )}>
             {/* BASE GRADIENT */}
             {isNewUser && (
@@ -294,6 +273,7 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
                   <PointsDisplay
                     userPoints={user.points_balance}
                     userLastMine={user.last_mining_at}
+                    userIsMining={user.is_mining!}
                     animate
                   />
                 </div>

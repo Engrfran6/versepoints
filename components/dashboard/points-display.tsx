@@ -12,6 +12,7 @@ interface PointsDisplayProps {
   animate?: boolean;
   userPoints: number;
   userLastMine: string | null;
+  userIsMining: boolean;
 }
 
 export function PointsDisplay({
@@ -19,11 +20,13 @@ export function PointsDisplay({
   userLastMine,
   className,
   showIcon = true,
+  userIsMining = false,
 }: PointsDisplayProps) {
   const {visualPoints, isMiningNow} = useMiningProgress(
     userPoints,
     MINING_CONSTANTS.POINTS_PER_MINE ?? 0,
-    userLastMine
+    userLastMine,
+    userIsMining
   );
 
   const [displayPoints, setDisplayPoints] = useState(visualPoints);
@@ -74,7 +77,7 @@ export function PointsDisplay({
           <Coins
             className={cn(
               "w-6 h-6 transition-colors",
-              isMiningNow ? "text-cyan-300" : "text-purple-400"
+              isMiningNow ? "text-yellow-300 animate-spin" : "text-purple-400"
             )}
           />
         </div>

@@ -46,6 +46,7 @@ export function MiningButton({lastMiningAt, currentStreak = 0, onMine}: MiningBu
   const [showParticles, setShowParticles] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
+
   const {visualPoints, isMiningNow} = useMiningProgress(
     0,
     MINING_CONSTANTS.POINTS_PER_MINE ?? 0,
@@ -64,7 +65,6 @@ export function MiningButton({lastMiningAt, currentStreak = 0, onMine}: MiningBu
   };
 
   const streakMultiplier = getStreakMultiplier(currentStreak);
-  const effectivePoints = Math.floor(MINING_CONSTANTS.POINTS_PER_MINE * streakMultiplier);
 
   const calculateTimeLeft = useCallback(() => {
     if (!lastMiningAt) {

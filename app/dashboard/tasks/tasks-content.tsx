@@ -19,6 +19,9 @@ import {useRouter} from "next/navigation";
 import {toast} from "sonner";
 import {YouTubeTaskPlayer} from "@/components/tasks/youtube-task-player";
 import {TaskType} from "@/app/admin/tasks/task-table";
+import {TaskCard} from "./motion-card";
+import {AnimatePresence} from "framer-motion";
+import {TaskCardSkeleton} from "./task-card-skeleton";
 
 const FloatingParticles = dynamic(
   () => import("@/components/3d/floating-particles").then((mod) => mod.FloatingParticles),
@@ -256,13 +259,12 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
     <div
       className={cn(
         "relative p-4 md:p-8 min-h-screen transition-all duration-300",
-        activeYouTubeTask && "blur-xl pointer-events-none select-none"
+        activeYouTubeTask && "blur-sm pointer-events-none select-none"
       )}>
       {/* 3D Background */}
       <Suspense fallback={null}>
         <FloatingParticles count={1000} color="#22c55e" className="opacity-20" />
       </Suspense>
-
       {/* Header with 3D Checkmark */}
       <div className="relative z-10 mb-8 flex flex-col md:flex-row items-center gap-6">
         <Suspense fallback={<div className="w-32 h-32 bg-muted/20 rounded-lg animate-pulse" />}>
@@ -278,7 +280,6 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
           <p className="text-muted-foreground mt-1">Complete tasks to earn bonus VersePoints</p>
         </div>
       </div>
-
       {/* Stats */}
       <div className="relative z-10 grid grid-cols-2 gap-4 mb-8">
         <Card className="bg-card/90 backdrop-blur-sm border-border">
@@ -314,101 +315,42 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
           </CardContent>
         </Card>
       </div>
-
       {/* Tasks List */}
-      <div className="relative z-10 space-y-4">
-        {tasks?.map((task) => {
+
+      {tasks.length === 0 && (
+        <div className="space-y-4">
+          {Array.from({length: 6}).map((_, i) => (
+            <TaskCardSkeleton key={i} />
+          ))}
+        </div>
+      )}
+
+      <AnimatePresence mode="popLayout">
+        {tasks.map((task) => {
           const status = getTaskStatus(task.id);
           const isCompleted = status === "verified";
-          const isPaused = task.status === "paused";
           const isPending = status === "pending";
+          const isPaused = task.status === "paused" && !isCompleted && !isPending;
+
           const isSpecialTask =
             task.task_type === "referral" ||
             task.title.toLowerCase().includes("profile") ||
             task.title.toLowerCase().includes("complete");
 
           return (
-            <Card
+            <TaskCard
               key={task.id}
-              className={cn(
-                "group relative border bg-indigo-500/10 backdrop-blur-sm transition-all duration-200",
-                "hover:shadow-md hover:-translate-y-0.5",
-                {
-                  "opacity-60 border-green-500/20 bg-green-500/5": isCompleted,
-                  "opacity-60 border-red-500/20 bg-red-500/5": isPaused,
-                  "opacity-80 border-yellow-500/20 bg-yellow-500/5": isPending,
-                }
-              )}>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between gap-6">
-                  {/* LEFT */}
-                  <div className="flex gap-4">
-                    <div
-                      className={cn(
-                        "flex h-12 w-12 items-center justify-center rounded-lg text-2xl",
-                        "bg-muted text-foreground/80",
-                        {
-                          "bg-green-500/10 text-green-500": isCompleted,
-                          "bg-red-500/10 text-red-500": isPaused,
-                          "bg-yellow-500/10 text-yellow-500": isPending,
-                        }
-                      )}>
-                      {getTaskIcon(task.task_type)}
-                    </div>
-
-                    <div className="space-y-1">
-                      <h3 className="flex items-center gap-2 font-semibold leading-tight">
-                        {task.title}
-                        {isCompleted && <CheckCircle2 className="h-4 w-4 text-green-500" />}
-                      </h3>
-
-                      <p className="text-sm text-muted-foreground max-w-md">{task.description}</p>
-
-                      <div className="flex flex-wrap items-center gap-2 pt-2">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                          <Gift className="h-3 w-3" />+{task.points_reward} VP
-                        </span>
-
-                        <span className="text-xs capitalize text-muted-foreground">
-                          {task.task_type}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* RIGHT */}
-                  <div className="flex shrink-0 items-center">
-                    {isCompleted ? (
-                      <StatusButton icon={CheckCircle2} label="Completed" color="green" />
-                    ) : isPending ? (
-                      <StatusButton icon={Clock} label="Pending" color="yellow" />
-                    ) : isPaused ? (
-                      <StatusButton icon={Pause} label="Paused" color="red" />
-                    ) : (
-                      <Button
-                        onClick={() => handleStartTask(task)}
-                        className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
-                        {isSpecialTask ? "Go" : "Start"}
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              task={task}
+              isCompleted={isCompleted}
+              isPending={isPending}
+              isPaused={isPaused}
+              isSpecialTask={isSpecialTask}
+              handleStartTask={handleStartTask}
+              getTaskIcon={getTaskIcon}
+            />
           );
         })}
-
-        {(!tasks || tasks.length === 0) && (
-          <Card className="bg-card/90 backdrop-blur-sm border-border">
-            <CardContent className="p-12 text-center">
-              <CheckSquare className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
-              <p className="text-muted-foreground">No tasks available</p>
-              <p className="text-sm text-muted-foreground">Check back later for new tasks!</p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      </AnimatePresence>
 
       {/* Info Card */}
       <Card className="relative z-10 bg-primary/5 backdrop-blur-sm border-primary/20 mt-8">
@@ -425,7 +367,6 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
           <p>• Points are awarded after admin verification</p>
         </CardContent>
       </Card>
-
       <Dialog open={!!selectedTask} onOpenChange={() => setSelectedTask(null)}>
         <DialogContent className="bg-card border-border">
           <DialogHeader>
@@ -465,7 +406,6 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
           </div>
         </DialogContent>
       </Dialog>
-
       {activeYouTubeTask && (
         <Dialog
           open
@@ -515,7 +455,6 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
           </DialogContent>
         </Dialog>
       )}
-
       <Dialog open={confirmExitOpen} onOpenChange={setConfirmExitOpen}>
         <DialogContent className="bg-card border-border max-w-md">
           <DialogHeader>
