@@ -11,8 +11,8 @@ import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
-import {signUpSchema, type SignUpInput} from "@/lib/validations/auth";
-import {Pickaxe, Eye, EyeOff, CheckCircle2, XCircle} from "lucide-react";
+import {passwordRules, signUpSchema, type SignUpInput} from "@/lib/validations/auth";
+import {Eye, EyeOff, CheckCircle2, XCircle} from "lucide-react";
 import {getErrorMessage, mapAuthError} from "@/lib/utils";
 
 const FloatingParticles = dynamic(
@@ -49,11 +49,18 @@ function SignUpForm() {
     }
   }, [refCode]);
 
+  const specialChar = /[!@#$%^&*_]/;
+
   const passwordRequirements = [
-    {test: (p: string) => p.length >= 8, label: "At least 8 characters"},
-    {test: (p: string) => /[A-Z]/.test(p), label: "One uppercase letter"},
-    {test: (p: string) => /[a-z]/.test(p), label: "One lowercase letter"},
-    {test: (p: string) => /[0-9]/.test(p), label: "One number"},
+    {test: (p: string) => p.length >= passwordRules.minLength, label: "At least 8 characters"},
+    {test: (p: string) => passwordRules.upper.test(p), label: "One uppercase letter"},
+    {test: (p: string) => passwordRules.lower.test(p), label: "One lowercase letter"},
+    {test: (p: string) => passwordRules.number.test(p), label: "One number"},
+    {
+      test: (p: string) => specialChar.test(p),
+      label: "Special character ! @ # $ % ^ & * _  - (optional)",
+      optional: true,
+    },
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,16 +79,21 @@ function SignUpForm() {
 
     const result = signUpSchema.safeParse(formData);
     if (!result.success) {
-      const fieldErrors: Partial<Record<keyof SignUpInput, string>> = {};
-      result.error.errors.forEach((err) => {
-        if (err.path[0]) {
-          fieldErrors[err.path[0] as keyof SignUpInput] = err.message;
-        }
+      const fieldErrors = result.error.flatten().fieldErrors;
+
+      setErrors({
+        email: fieldErrors.email?.[0],
+        username: fieldErrors.username?.[0],
+        password: fieldErrors.password?.[0],
+        confirmPassword: fieldErrors.confirmPassword?.[0],
+        referralCode: fieldErrors.referralCode?.[0],
       });
-      setErrors(fieldErrors);
+
       setIsLoading(false);
       return;
     }
+
+    const data = result.data;
 
     try {
       const supabase = createClient();
@@ -102,12 +114,12 @@ function SignUpForm() {
       }
 
       const {error} = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
+        email: data.email,
+        password: data.password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
           data: {
-            username: formData.username,
+            username: data.username,
             referred_by: referrerId,
           },
         },
@@ -239,23 +251,32 @@ function SignUpForm() {
                         </button>
                       </div>
                       <div className="space-y-1 mt-2">
-                        {passwordRequirements.map((req) => (
-                          <div key={req.label} className="flex items-center gap-2 text-xs">
-                            {req.test(formData.password) ? (
-                              <CheckCircle2 className="w-3 h-3 text-green-500" />
-                            ) : (
-                              <XCircle className="w-3 h-3 text-muted-foreground" />
-                            )}
-                            <span
-                              className={
-                                req.test(formData.password)
-                                  ? "text-green-500"
-                                  : "text-muted-foreground"
-                              }>
-                              {req.label}
-                            </span>
-                          </div>
-                        ))}
+                        {passwordRequirements.map((req) => {
+                          const passed = req.test(formData.password);
+
+                          return (
+                            <div key={req.label} className="flex items-center gap-2 text-xs">
+                              {passed ? (
+                                <CheckCircle2 className="w-3 h-3 text-green-500" />
+                              ) : req.optional ? (
+                                <CheckCircle2 className="w-3 h-3 text-muted-foreground" />
+                              ) : (
+                                <XCircle className="w-3 h-3 text-muted-foreground" />
+                              )}
+
+                              <span
+                                className={
+                                  passed
+                                    ? "text-green-500"
+                                    : req.optional
+                                    ? "text-muted-foreground"
+                                    : "text-muted-foreground"
+                                }>
+                                {req.label}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
 

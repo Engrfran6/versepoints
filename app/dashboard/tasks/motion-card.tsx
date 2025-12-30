@@ -17,7 +17,7 @@ type TaskCardProps = {
   getTaskIcon: (type: string) => React.ReactNode;
 };
 
-const MotionCard = motion(Card);
+const MotionCard = motion.create(Card);
 
 export function TaskCard({
   task,

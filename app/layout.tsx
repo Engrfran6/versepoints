@@ -6,6 +6,7 @@ import {SplashScreen} from "@/components/splash-screen";
 import "./globals.css";
 import {Toaster} from "sonner";
 import {ThemeProviders} from "./theme-provider";
+import {QueryProviders} from "./QueryProvider";
 
 const _geist = Geist({subsets: ["latin"]});
 const _geistMono = Geist_Mono({subsets: ["latin"]});
@@ -36,7 +37,7 @@ export default function RootLayout({
       <body className="font-sans antialiased min-h-screen">
         <ThemeProviders>
           <SplashScreen />
-          {children}
+          <QueryProviders>{children}</QueryProviders>
           <Analytics />
           <Toaster position="top-right" richColors closeButton expand />
         </ThemeProviders>

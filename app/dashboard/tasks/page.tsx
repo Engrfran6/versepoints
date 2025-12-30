@@ -1,7 +1,7 @@
+// app/tasks/page.tsx (SERVER COMPONENT)
 import {redirect} from "next/navigation";
 import {createClient} from "@/lib/supabase/server";
 import {TasksContent} from "./tasks-content";
-import {supabaseAdmin} from "@/lib/supabase/admin";
 
 export default async function TasksPage() {
   const supabase = await createClient();
@@ -15,18 +15,6 @@ export default async function TasksPage() {
     redirect("/auth/login");
   }
 
-  // Get all active tasks
-  const {data: tasks} = await supabaseAdmin
-    .from("tasks")
-    .select("*")
-    .eq("is_active", true)
-    .order("points_reward", {ascending: false});
-
-  // Get user's completed tasks
-  const {data: userTasks} = await supabase
-    .from("task_submissions")
-    .select("*")
-    .eq("user_id", user.id);
-
-  return <TasksContent tasks={tasks || []} userTasks={userTasks || []} />;
+  // ✅ Pass ONLY userId (safe)
+  return <TasksContent userId={user.id} />;
 }
