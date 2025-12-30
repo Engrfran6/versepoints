@@ -56,10 +56,10 @@ export function TaskCard({
       />
 
       <CardContent className="p-5 sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex gap-3 flex-row items-start justify-between">
           {/* LEFT */}
           <div className="flex gap-4">
-            <div
+            {/* <div
               className={cn(
                 "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-xl",
                 "bg-muted text-foreground/80",
@@ -70,7 +70,7 @@ export function TaskCard({
                 }
               )}>
               {getTaskIcon(task.task_type)}
-            </div>
+            </div> */}
 
             <div className="space-y-1">
               <h3 className="flex items-center gap-2 font-semibold leading-tight">
@@ -103,6 +103,7 @@ export function TaskCard({
             ) : (
               <Button
                 onClick={() => handleStartTask(task)}
+                size="sm"
                 className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
                 {isSpecialTask ? "Go" : "Start"}
                 <ExternalLink className="h-4 w-4" />

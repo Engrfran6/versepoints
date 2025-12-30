@@ -255,236 +255,246 @@ export function TasksContent({tasks, userTasks}: TasksContentProps) {
   }
 
   return (
-    // <div className="relative p-4 md:p-8 min-h-screen">
-    <div
-      className={cn(
-        "relative p-4 md:p-8 min-h-screen transition-all duration-300",
-        activeYouTubeTask && "blur-sm pointer-events-none select-none"
-      )}>
-      {/* 3D Background */}
-      <Suspense fallback={null}>
-        <FloatingParticles count={1000} color="#22c55e" className="opacity-20" />
-      </Suspense>
-      {/* Header with 3D Checkmark */}
-      <div className="relative z-10 mb-8 flex flex-col md:flex-row items-center gap-6">
-        <Suspense fallback={<div className="w-32 h-32 bg-muted/20 rounded-lg animate-pulse" />}>
-          <div className="w-32 h-32 md:w-40 md:h-40">
-            <TaskCheckmark3D />
-          </div>
-        </Suspense>
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
-            <CheckSquare className="w-8 h-8 text-primary" />
-            Tasks
-          </h1>
-          <p className="text-muted-foreground mt-1">Complete tasks to earn bonus VersePoints</p>
-        </div>
-      </div>
-      {/* Stats */}
-      <div className="relative z-10 grid grid-cols-2 gap-4 mb-8">
-        <Card className="bg-card/90 backdrop-blur-sm border-border">
-          <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-foreground">{tasks?.length || 0}</p>
-            <p className="text-xs text-muted-foreground">Available</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/90 backdrop-blur-sm border-border">
-          <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-primary">
-              {tasks?.reduce((sum, t) => sum + t.points_reward, 0) || 0}
-            </p>
-            <p className="text-xs text-muted-foreground">Total VP</p>
-          </CardContent>
-        </Card>
-
-        <Card className="col-span-2 bg-card/90 backdrop-blur-sm border-border">
-          <CardContent className="p-4 text-center grid grid-cols-3">
-            <div>
-              <p className="text-2xl font-bold text-blue-400">{completedTaskIds.size}</p>
-              <p className="text-xs text-muted-foreground">Completed Tasks</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-green-400">{noOfVerifiedTask?.length ?? 0}</p>
-              <p className="text-xs text-muted-foreground">Approved Tasks</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-red-400">{noOfPendingTask?.length ?? 0}</p>
-              <p className="text-xs text-muted-foreground">Pending Tasks</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      {/* Tasks List */}
-
-      {tasks.length === 0 && (
-        <div className="space-y-4">
+    <div>
+      {tasks.length === 0 ? (
+        <div className="space-y-4 px-4 pt-16">
           {Array.from({length: 6}).map((_, i) => (
             <TaskCardSkeleton key={i} />
           ))}
         </div>
-      )}
-
-      <AnimatePresence mode="popLayout">
-        {tasks.map((task) => {
-          const status = getTaskStatus(task.id);
-          const isCompleted = status === "verified";
-          const isPending = status === "pending";
-          const isPaused = task.status === "paused" && !isCompleted && !isPending;
-
-          const isSpecialTask =
-            task.task_type === "referral" ||
-            task.title.toLowerCase().includes("profile") ||
-            task.title.toLowerCase().includes("complete");
-
-          return (
-            <TaskCard
-              key={task.id}
-              task={task}
-              isCompleted={isCompleted}
-              isPending={isPending}
-              isPaused={isPaused}
-              isSpecialTask={isSpecialTask}
-              handleStartTask={handleStartTask}
-              getTaskIcon={getTaskIcon}
-            />
-          );
-        })}
-      </AnimatePresence>
-
-      {/* Info Card */}
-      <Card className="relative z-10 bg-primary/5 backdrop-blur-sm border-primary/20 mt-8">
-        <CardHeader>
-          <CardTitle className="text-foreground text-lg">How Tasks Work</CardTitle>
-          <CardDescription className="text-muted-foreground">
-            Complete tasks to earn bonus VersePoints
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>• Click "Start" to open the task link</p>
-          <p>• Complete the action (follow, subscribe, join, etc.)</p>
-          <p>• Submit proof (screenshot or profile link)</p>
-          <p>• Points are awarded after admin verification</p>
-        </CardContent>
-      </Card>
-      <Dialog open={!!selectedTask} onOpenChange={() => setSelectedTask(null)}>
-        <DialogContent className="bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="text-foreground">Submit Task Completion</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              Provide proof that you completed: {selectedTask?.title}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="proof" className="text-foreground">
-                Proof URL or Screenshot Link
-              </Label>
-              <Input
-                id="proof"
-                placeholder="https://twitter.com/yourprofile or imgur.com/screenshot"
-                value={proofUrl}
-                onChange={(e) => setProofUrl(e.target.value)}
-                className="bg-background border-border text-foreground"
-              />
-              <p className="text-xs text-muted-foreground">
-                Provide a link to your profile, screenshot (uploaded to imgur.com), or any proof of
-                completion
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={handleSubmitProof}
-                disabled={isSubmitting || !proofUrl.trim()}
-                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground">
-                {isSubmitting ? "Submitting..." : "Submit for Verification"}
-              </Button>
-              <Button onClick={() => setSelectedTask(null)} variant="outline" className="flex-1">
-                Cancel
-              </Button>
+      ) : (
+        <div
+          className={cn(
+            "relative p-4 md:p-8 min-h-screen transition-all duration-300",
+            activeYouTubeTask && "blur-sm pointer-events-none select-none"
+          )}>
+          {/* 3D Background */}
+          <Suspense fallback={null}>
+            <FloatingParticles count={1000} color="#22c55e" className="opacity-20" />
+          </Suspense>
+          {/* Header with 3D Checkmark */}
+          <div className="relative z-10 mb-8 flex flex-col md:flex-row items-center gap-6">
+            <Suspense fallback={<div className="w-32 h-32 bg-muted/20 rounded-lg animate-pulse" />}>
+              <div className="w-32 h-32 md:w-40 md:h-40">
+                <TaskCheckmark3D />
+              </div>
+            </Suspense>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
+                <CheckSquare className="w-8 h-8 text-primary" />
+                Tasks
+              </h1>
+              <p className="text-muted-foreground mt-1">Complete tasks to earn bonus VersePoints</p>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
-      {activeYouTubeTask && (
-        <Dialog
-          open
-          onOpenChange={(open) => {
-            // User is trying to close the dialog
-            if (!open && youtubeProgress < 90) {
-              setConfirmExitOpen(true);
-              return;
-            }
+          {/* Stats */}
+          <div className="relative z-10 grid grid-cols-2 gap-4 mb-8">
+            <Card className="bg-card/90 backdrop-blur-sm border-border">
+              <CardContent className="p-4 text-center">
+                <p className="text-2xl font-bold text-foreground">{tasks?.length || 0}</p>
+                <p className="text-xs text-muted-foreground">Available</p>
+              </CardContent>
+            </Card>
 
-            // Safe to close (completed)
-            setActiveYouTubeTask(null);
-            setYoutubeProgress(0);
-          }}>
-          <DialogContent
-            className="max-w-4xl bg-card border-border"
-            onPointerDownOutside={(e) => {
-              if (youtubeProgress < 90) {
-                e.preventDefault();
-                setConfirmExitOpen(true);
-              }
-            }}
-            onEscapeKeyDown={(e) => {
-              if (youtubeProgress < 90) {
-                e.preventDefault();
-                setConfirmExitOpen(true);
-              }
-            }}>
-            <DialogHeader>
-              <DialogTitle>Watch Video to Complete Task</DialogTitle>
-              <DialogDescription>Watch at least 90% of the video to earn points</DialogDescription>
-            </DialogHeader>
+            <Card className="bg-card/90 backdrop-blur-sm border-border">
+              <CardContent className="p-4 text-center">
+                <p className="text-2xl font-bold text-primary">
+                  {tasks?.reduce((sum, t) => sum + t.points_reward, 0) || 0}
+                </p>
+                <p className="text-xs text-muted-foreground">Total VP</p>
+              </CardContent>
+            </Card>
 
-            <YouTubeTaskPlayer
-              videoId={activeYouTubeTask.videoId}
-              taskId={activeYouTubeTask.taskId}
-              requiredWatchPercentage={90}
-              onProgress={(p) => setYoutubeProgress(p)}
-              onComplete={() => {
+            <Card className="col-span-2 bg-card/90 backdrop-blur-sm border-border">
+              <CardContent className="p-4 text-center grid grid-cols-3">
+                <div>
+                  <p className="text-2xl font-bold text-blue-400">{completedTaskIds.size}</p>
+                  <p className="text-xs text-muted-foreground">Completed Tasks</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-green-400">
+                    {noOfVerifiedTask?.length ?? 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Approved Tasks</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-red-400">{noOfPendingTask?.length ?? 0}</p>
+                  <p className="text-xs text-muted-foreground">Pending Tasks</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          {/* Tasks List */}
+
+          <AnimatePresence mode="popLayout">
+            <div className="space-y-4">
+              {tasks.map((task) => {
+                const status = getTaskStatus(task.id);
+                const isCompleted = status === "verified";
+                const isPending = status === "pending";
+                const isPaused = task.status === "paused" && !isCompleted && !isPending;
+
+                const isSpecialTask =
+                  task.task_type === "referral" ||
+                  task.title.toLowerCase().includes("profile") ||
+                  task.title.toLowerCase().includes("complete");
+
+                return (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    isCompleted={isCompleted}
+                    isPending={isPending}
+                    isPaused={isPaused}
+                    isSpecialTask={isSpecialTask}
+                    handleStartTask={handleStartTask}
+                    getTaskIcon={getTaskIcon}
+                  />
+                );
+              })}
+            </div>
+          </AnimatePresence>
+
+          {/* Info Card */}
+          <Card className="relative z-10 bg-primary/5 backdrop-blur-sm border-primary/20 mt-8">
+            <CardHeader>
+              <CardTitle className="text-foreground text-lg">How Tasks Work</CardTitle>
+              <CardDescription className="text-muted-foreground">
+                Complete tasks to earn bonus VersePoints
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <p>• Click "Start" to open the task link</p>
+              <p>• Complete the action (follow, subscribe, join, etc.)</p>
+              <p>• Submit proof (screenshot or profile link)</p>
+              <p>• Points are awarded after admin verification</p>
+            </CardContent>
+          </Card>
+          <Dialog open={!!selectedTask} onOpenChange={() => setSelectedTask(null)}>
+            <DialogContent className="bg-card border-border">
+              <DialogHeader>
+                <DialogTitle className="text-foreground">Submit Task Completion</DialogTitle>
+                <DialogDescription className="text-muted-foreground">
+                  Provide proof that you completed: {selectedTask?.title}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="proof" className="text-foreground">
+                    Proof URL or Screenshot Link
+                  </Label>
+                  <Input
+                    id="proof"
+                    placeholder="https://twitter.com/yourprofile or imgur.com/screenshot"
+                    value={proofUrl}
+                    onChange={(e) => setProofUrl(e.target.value)}
+                    className="bg-background border-border text-foreground"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Provide a link to your profile, screenshot (uploaded to imgur.com), or any proof
+                    of completion
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleSubmitProof}
+                    disabled={isSubmitting || !proofUrl.trim()}
+                    className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground">
+                    {isSubmitting ? "Submitting..." : "Submit for Verification"}
+                  </Button>
+                  <Button
+                    onClick={() => setSelectedTask(null)}
+                    variant="outline"
+                    className="flex-1">
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          {activeYouTubeTask && (
+            <Dialog
+              open
+              onOpenChange={(open) => {
+                // User is trying to close the dialog
+                if (!open && youtubeProgress < 90) {
+                  setConfirmExitOpen(true);
+                  return;
+                }
+
+                // Safe to close (completed)
                 setActiveYouTubeTask(null);
                 setYoutubeProgress(0);
-                submitYouTubeTask(activeYouTubeTask.taskId);
-                toast.success("Task completed successfully");
-                router.refresh();
-              }}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
-      <Dialog open={confirmExitOpen} onOpenChange={setConfirmExitOpen}>
-        <DialogContent className="bg-card border-border max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-foreground">Leave task early?</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              You haven’t completed this task yet.
-              <br />
-              If you exit now, you will earn <strong>0 points</strong> for this task.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex gap-2 mt-4">
-            <Button className="flex-1" onClick={() => setConfirmExitOpen(false)}>
-              Continue Watching
-            </Button>
-
-            <Button
-              variant="destructive"
-              className="flex-1"
-              onClick={() => {
-                setConfirmExitOpen(false);
-                setActiveYouTubeTask(null);
-                setYoutubeProgress(0);
-                toast.info("You exited early — no points awarded");
               }}>
-              Exit Task
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+              <DialogContent
+                className="max-w-4xl bg-card border-border"
+                onPointerDownOutside={(e) => {
+                  if (youtubeProgress < 90) {
+                    e.preventDefault();
+                    setConfirmExitOpen(true);
+                  }
+                }}
+                onEscapeKeyDown={(e) => {
+                  if (youtubeProgress < 90) {
+                    e.preventDefault();
+                    setConfirmExitOpen(true);
+                  }
+                }}>
+                <DialogHeader>
+                  <DialogTitle>Watch Video to Complete Task</DialogTitle>
+                  <DialogDescription>
+                    Watch at least 90% of the video to earn points
+                  </DialogDescription>
+                </DialogHeader>
+
+                <YouTubeTaskPlayer
+                  videoId={activeYouTubeTask.videoId}
+                  taskId={activeYouTubeTask.taskId}
+                  requiredWatchPercentage={90}
+                  onProgress={(p) => setYoutubeProgress(p)}
+                  onComplete={() => {
+                    setActiveYouTubeTask(null);
+                    setYoutubeProgress(0);
+                    submitYouTubeTask(activeYouTubeTask.taskId);
+                    toast.success("Task completed successfully");
+                    router.refresh();
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
+          )}
+          <Dialog open={confirmExitOpen} onOpenChange={setConfirmExitOpen}>
+            <DialogContent className="bg-card border-border max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-foreground">Leave task early?</DialogTitle>
+                <DialogDescription className="text-muted-foreground">
+                  You haven’t completed this task yet.
+                  <br />
+                  If you exit now, you will earn <strong>0 points</strong> for this task.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="flex gap-2 mt-4">
+                <Button className="flex-1" onClick={() => setConfirmExitOpen(false)}>
+                  Continue Watching
+                </Button>
+
+                <Button
+                  variant="destructive"
+                  className="flex-1"
+                  onClick={() => {
+                    setConfirmExitOpen(false);
+                    setActiveYouTubeTask(null);
+                    setYoutubeProgress(0);
+                    toast.info("You exited early — no points awarded");
+                  }}>
+                  Exit Task
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      )}
     </div>
   );
 }
