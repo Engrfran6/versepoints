@@ -125,8 +125,6 @@ function SignUpForm() {
         },
       });
 
-      console.log("checking reg errrors=======>", error);
-
       if (error) throw error;
 
       router.push("/auth/sign-up-success");
