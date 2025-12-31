@@ -22,26 +22,19 @@ export default function ResetPasswordPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const guard = async () => {
-      const supabase = createClient();
-      const {data} = await supabase.auth.getSession();
+    const supabase = createClient();
 
-      const session = data.session;
+    const {
+      data: {subscription},
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) return;
 
-      // ❌ No session → block
-      if (!session) {
-        router.replace("/auth/login");
-        return;
-      }
-
-      // ❌ Logged-in user trying to access reset page
       if (!session.user.recovery_sent_at) {
         router.replace("/dashboard");
-        return;
       }
-    };
+    });
 
-    guard();
+    return () => subscription.unsubscribe();
   }, [router]);
 
   /* ---------------- Submit Handler ------------------- */
