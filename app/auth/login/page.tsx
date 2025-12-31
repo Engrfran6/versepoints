@@ -111,13 +111,8 @@ export default function LoginPage() {
     const supabase = createClient();
 
     try {
-      const redirectBase =
-        process.env.NODE_ENV === "development"
-          ? process.env.NEXT_PUBLIC_SITE_URL
-          : "https://verseestate.com";
-
       await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${redirectBase}/auth/callback?next=/auth/reset-password`,
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL_PROD}/auth/callback?next=/auth/reset-password`,
       });
 
       setResetEmailSent(true);
