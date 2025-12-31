@@ -65,9 +65,30 @@ export const mapLoginAuthError = (message: string) => {
 };
 
 export const mapAuthError = (message: string) => {
-  if (message.includes("User already registered"))
-    return "An account with this email already exists.";
-  if (message.includes("Password should be"))
+  const msg = message.toLowerCase();
+
+  if (
+    msg.includes("user already registered") ||
+    msg.includes("already exists") ||
+    msg.includes("duplicate")
+  ) {
+    return "We couldn’t create your account with these details.";
+  }
+  if (msg.includes("database error")) {
+    return "We couldn’t create your account. If you already have one, try signing in.";
+  }
+
+  if (msg.includes("password")) {
     return "Password does not meet security requirements.";
+  }
+
+  if (msg.includes("invalid email")) {
+    return "Please enter a valid email address.";
+  }
+
+  if (msg.includes("rate limit")) {
+    return "Too many attempts. Please wait a moment and try again.";
+  }
+
   return "Sign up failed. Please try again.";
 };
