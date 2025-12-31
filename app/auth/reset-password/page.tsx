@@ -8,6 +8,7 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import Link from "next/link";
 import {useRouter} from "next/navigation";
 import {ArrowLeft, Eye, EyeOff, CheckCircle2, XCircle} from "lucide-react";
+import {passwordRequirements} from "@/lib/validations/auth";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -43,20 +44,16 @@ export default function ResetPasswordPage() {
     guard();
   }, [router]);
 
-  /* ---------------- Password Rules ------------------- */
-  const passwordRules = [
-    {label: "At least 8 characters", valid: password.length >= 8},
-    {label: "One uppercase letter", valid: /[A-Z]/.test(password)},
-    {label: "One lowercase letter", valid: /[a-z]/.test(password)},
-    {label: "One number", valid: /[0-9]/.test(password)},
-  ];
-
   /* ---------------- Submit Handler ------------------- */
   const handleReset = async () => {
     setError(null);
 
-    if (!passwordRules.every((r) => r.valid)) {
-      setError("Password does not meet requirements");
+    const failedRequirement = passwordRequirements.find(
+      (req) => !req.test(password) && !req.optional
+    );
+
+    if (failedRequirement) {
+      setError(`Password must ${failedRequirement.label.toLowerCase()}`);
       return;
     }
 
@@ -71,19 +68,15 @@ export default function ResetPasswordPage() {
     const {error} = await supabase.auth.updateUser({password});
 
     if (error) {
-      setError(error.message);
+      setError("Unable to update password. Please try again.");
       setLoading(false);
       return;
     }
 
     setSuccess(true);
-
     await supabase.auth.signOut();
 
-    // Redirect after success
-    setTimeout(() => {
-      router.replace("/auth/login");
-    }, 2000);
+    setTimeout(() => router.replace("/auth/login"), 2000);
   };
 
   /* ---------------- Success Screen ------------------- */
@@ -150,18 +143,32 @@ export default function ResetPasswordPage() {
 
             {/* Password rules */}
             <div className="space-y-1 text-xs">
-              {passwordRules.map((rule) => (
-                <div key={rule.label} className="flex items-center gap-2">
-                  {rule.valid ? (
-                    <CheckCircle2 className="h-3 w-3 text-green-500" />
-                  ) : (
-                    <XCircle className="h-3 w-3 text-muted-foreground" />
-                  )}
-                  <span className={rule.valid ? "text-green-500" : "text-muted-foreground"}>
-                    {rule.label}
-                  </span>
-                </div>
-              ))}
+              {passwordRequirements.map((req) => {
+                const passed = req.test(password);
+
+                return (
+                  <div key={req.label} className="flex items-center gap-2 text-xs">
+                    {passed ? (
+                      <CheckCircle2 className="w-3 h-3 text-green-500" />
+                    ) : req.optional ? (
+                      <CheckCircle2 className="w-3 h-3 text-muted-foreground" />
+                    ) : (
+                      <XCircle className="w-3 h-3 text-muted-foreground" />
+                    )}
+
+                    <span
+                      className={
+                        passed
+                          ? "text-green-500"
+                          : req.optional
+                          ? "text-muted-foreground"
+                          : "text-muted-foreground"
+                      }>
+                      {req.label}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
 
             {error && <p className="text-sm text-destructive text-center">{error}</p>}

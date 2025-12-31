@@ -11,7 +11,7 @@ import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
-import {passwordRules, signUpSchema, type SignUpInput} from "@/lib/validations/auth";
+import {passwordRequirements, signUpSchema, type SignUpInput} from "@/lib/validations/auth";
 import {Eye, EyeOff, CheckCircle2, XCircle} from "lucide-react";
 import {getErrorMessage, mapAuthError} from "@/lib/utils";
 
@@ -48,20 +48,6 @@ function SignUpForm() {
       setFormData((prev) => ({...prev, referralCode: refCode}));
     }
   }, [refCode]);
-
-  const specialChar = /[!@#$%^&*_]/;
-
-  const passwordRequirements = [
-    {test: (p: string) => p.length >= passwordRules.minLength, label: "At least 8 characters"},
-    {test: (p: string) => passwordRules.upper.test(p), label: "One uppercase letter"},
-    {test: (p: string) => passwordRules.lower.test(p), label: "One lowercase letter"},
-    {test: (p: string) => passwordRules.number.test(p), label: "One number"},
-    {
-      test: (p: string) => specialChar.test(p),
-      label: "Special character ! @ # $ % ^ & * _  - (optional)",
-      optional: true,
-    },
-  ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {name, value} = e.target;
