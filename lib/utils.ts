@@ -46,6 +46,16 @@ export function formatNumberShort(num: number): string {
   }
 }
 
+export function formatNumberShort2(num: number): string {
+  if (num >= 1_000_000) {
+    return `${(num / 1_000_000).toFixed(num % 1_000_000 === 0 ? 0 : 1)}M`;
+  } else if (num >= 100_000) {
+    return `${(num / 100_000).toFixed(num % 100_000 === 0 ? 0 : 1)}k`;
+  } else {
+    return num.toString();
+  }
+}
+
 export const getErrorMessage = (err: unknown, fallback = "Something went wrong") => {
   if (err instanceof Error) return err.message;
   if (typeof err === "string") return err;

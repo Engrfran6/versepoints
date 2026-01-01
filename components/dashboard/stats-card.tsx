@@ -1,19 +1,19 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
-import type { LucideIcon } from "lucide-react"
+import {Card, CardContent} from "@/components/ui/card";
+import {cn} from "@/lib/utils";
+import type {LucideIcon} from "lucide-react";
 
 interface StatsCardProps {
-  title: string
-  value: string | number
-  icon: LucideIcon
+  title: string;
+  value: string | number;
+  icon: LucideIcon;
   trend?: {
-    value: number
-    isPositive: boolean
-  }
-  className?: string
+    value: number;
+    isPositive: boolean;
+  };
+  className?: string;
 }
 
-export function StatsCard({ title, value, icon: Icon, trend, className }: StatsCardProps) {
+export function StatsCard({title, value, icon: Icon, trend, className}: StatsCardProps) {
   return (
     <Card className={cn("bg-card border-border", className)}>
       <CardContent className="p-6">
@@ -22,7 +22,11 @@ export function StatsCard({ title, value, icon: Icon, trend, className }: StatsC
             <p className="text-sm text-muted-foreground">{title}</p>
             <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
             {trend && (
-              <p className={cn("text-xs mt-1", trend.isPositive ? "text-green-500" : "text-red-500")}>
+              <p
+                className={cn(
+                  "text-xs mt-1",
+                  trend.isPositive ? "text-green-500" : "text-red-500"
+                )}>
                 {trend.isPositive ? "+" : ""}
                 {trend.value}%
               </p>
@@ -34,5 +38,5 @@ export function StatsCard({ title, value, icon: Icon, trend, className }: StatsC
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

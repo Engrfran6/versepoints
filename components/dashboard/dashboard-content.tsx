@@ -1,6 +1,6 @@
 "use client";
 
-import {cn} from "@/lib/utils";
+import {cn, formatNumberShort} from "@/lib/utils";
 
 import {useState, useCallback, Suspense, useEffect, useMemo} from "react";
 import dynamic from "next/dynamic";
@@ -36,10 +36,23 @@ interface DashboardContentProps {
   user: User;
   referralCount: number;
   rank: number;
+  referralStatus: {
+    has_referral: boolean;
+    referral_signup_paid: boolean;
+    referral_mining_paid: boolean;
+  };
 }
 
-export function DashboardContent({user: initialUser, referralCount, rank}: DashboardContentProps) {
+export function DashboardContent({
+  user: initialUser,
+  referralCount,
+  rank,
+  referralStatus,
+}: DashboardContentProps) {
   const [user, setUser] = useState(initialUser);
+
+  const REFERRAL_BANNER_KEY = "referral_banner_last_dismissed";
+  const REFERRAL_BANNER_DELAY = 5 * 60 * 1000; // 5 minutes
 
   const {isMiningNow} = useMiningProgress(
     user.points_balance,
@@ -49,6 +62,10 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
   );
 
   const [showWelcome, setShowWelcome] = useState(false);
+
+  const showReferralStatus =
+    referralStatus.has_referral &&
+    (!referralStatus.referral_signup_paid || !referralStatus.referral_mining_paid);
 
   useEffect(() => {
     // Show welcome message for new users (joined in last 60 minutes)
@@ -134,7 +151,7 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
     return now - lastVisit > twentyFourHours;
   })();
 
-  const {points_balance: newUserPoint, created_at: newUserCreatedAt} = user;
+  const {created_at: newUserCreatedAt} = user;
   const DAY = 24 * 60 * 60 * 1000;
 
   const isNewUser =
@@ -167,11 +184,68 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
     }
   };
 
+  const [showReferralBanner, setShowReferralBanner] = useState(false);
+
+  useEffect(() => {
+    if (!showReferralStatus) {
+      setShowReferralBanner(false);
+      return;
+    }
+
+    const lastDismissed = localStorage.getItem(REFERRAL_BANNER_KEY);
+
+    // First time → show immediately
+    if (!lastDismissed) {
+      setShowReferralBanner(true);
+      return;
+    }
+
+    const elapsed = Date.now() - Number(lastDismissed);
+
+    // Re-show after delay
+    if (elapsed > REFERRAL_BANNER_DELAY) {
+      setShowReferralBanner(true);
+    }
+  }, [showReferralStatus]);
+
+  const dismissReferralBanner = () => {
+    localStorage.setItem(REFERRAL_BANNER_KEY, Date.now().toString());
+    setShowReferralBanner(false);
+  };
+
   return (
     <div className="relative p-4 md:p-8 min-h-screen">
       <Suspense fallback={null}>
         <FloatingParticles className="opacity-30" count={1500} />
       </Suspense>
+
+      {showReferralBanner && (
+        <Card className="bg-primary/10 border-primary/30 mt-8 mb-6 shadow-lg hover:border-primary/50 transition-colors">
+          <CardContent className="flex items-start gap-3 p-4 w-full">
+            <Gift className="w-6 h-6 text-primary mt-1" />
+
+            <div className="space-y-1 flex-1">
+              <p className="font-semibold text-foreground">Referral Rewards</p>
+
+              {!referralStatus.referral_signup_paid && (
+                <p className="text-sm text-muted-foreground">
+                  🎉 Your signup referral bonus is being processed.
+                </p>
+              )}
+
+              {!referralStatus.referral_mining_paid && (
+                <p className="text-sm text-muted-foreground">
+                  ⛏️ Mine once to unlock your referral mining bonus.
+                </p>
+              )}
+            </div>
+
+            <Button size="sm" variant="ghost" className="text-xs" onClick={dismissReferralBanner}>
+              Dismiss
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {showWelcome && (
         <div>
@@ -335,7 +409,7 @@ export function DashboardContent({user: initialUser, referralCount, rank}: Dashb
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatsCard
               title="Total Mined"
-              value={user.total_mined.toLocaleString()}
+              value={formatNumberShort(user.total_mined)}
               icon={Pickaxe}
               className="hover:scale-105 transition-transform duration-300 bg-card/90 backdrop-blur-sm"
             />

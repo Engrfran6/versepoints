@@ -1,49 +1,48 @@
-"use client"
+"use client";
 
-import { Suspense } from "react"
-import dynamic from "next/dynamic"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ReferralLink } from "@/components/dashboard/referral-link"
-import { Users, UserCheck, Coins, TrendingUp } from "lucide-react"
+import {Suspense} from "react";
+import dynamic from "next/dynamic";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {ReferralLink} from "@/components/dashboard/referral-link";
+import {Users, UserCheck, Coins, TrendingUp} from "lucide-react";
 
 const FloatingParticles = dynamic(
   () => import("@/components/3d/floating-particles").then((mod) => mod.FloatingParticles),
-  { ssr: false },
-)
+  {ssr: false}
+);
 const ReferralNetwork3D = dynamic(
   () => import("@/components/3d/referral-network-3d").then((mod) => mod.ReferralNetwork3D),
-  { ssr: false },
-)
+  {ssr: false}
+);
 
 interface ReferredUser {
-  username: string
-  mining_count: number
+  username: string;
+  mining_count: number;
 }
-
 interface Referral {
-  id: string
-  status: string
-  created_at: string
-  referred: ReferredUser | null
+  id: string;
+  status: string;
+  created_at: string;
+  referred: ReferredUser[]; // ✅ always array
 }
 
 interface Earning {
-  id: string
-  earning_type: string
-  points_earned: number
-  created_at: string
+  id: string;
+  earning_type: string;
+  points_earned: number;
+  created_at: string;
 }
 
 interface ReferralsContentProps {
-  userData: { referral_code: string; total_referral_earnings: number } | null
-  referrals: Referral[]
-  earnings: Earning[]
+  userData: {referral_code: string; total_referral_earnings: number} | null;
+  referrals: Referral[];
+  earnings: Earning[];
 }
 
-export function ReferralsContent({ userData, referrals, earnings }: ReferralsContentProps) {
-  const totalReferrals = referrals?.length || 0
-  const activeReferrals = referrals?.filter((r) => r.status === "active").length || 0
-  const totalEarnings = userData?.total_referral_earnings || 0
+export function ReferralsContent({userData, referrals, earnings}: ReferralsContentProps) {
+  const totalReferrals = referrals?.length || 0;
+  const activeReferrals = referrals?.filter((r) => r.status === "active").length || 0;
+  const totalEarnings = userData?.total_referral_earnings || 0;
 
   return (
     <div className="relative p-4 md:p-8 min-h-screen">
@@ -131,30 +130,37 @@ export function ReferralsContent({ userData, referrals, earnings }: ReferralsCon
         <Card className="bg-card/90 backdrop-blur-sm border-border">
           <CardHeader>
             <CardTitle className="text-foreground">Your Referrals</CardTitle>
-            <CardDescription className="text-muted-foreground">Users who signed up with your link</CardDescription>
+            <CardDescription className="text-muted-foreground">
+              Users who signed up with your link
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {referrals && referrals.length > 0 ? (
               <div className="space-y-3">
                 {referrals.map((referral) => {
-                  const referred = referral.referred as ReferredUser | null
+                  const referred = referral.referred; // Access first element safely
                   return (
-                    <div key={referral.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div
+                      key={referral.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                       <div>
-                        <p className="font-medium text-foreground">{referred?.username || "Unknown"}</p>
-                        <p className="text-xs text-muted-foreground">{referred?.mining_count || 0} mining sessions</p>
+                        <p className="font-medium text-foreground">
+                          {referred?.username || "Unknown"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {referred?.mining_count || 0} mining sessions
+                        </p>
                       </div>
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
                           referral.status === "active"
                             ? "bg-green-500/10 text-green-500"
                             : "bg-yellow-500/10 text-yellow-500"
-                        }`}
-                      >
+                        }`}>
                         {referral.status}
                       </span>
                     </div>
-                  )
+                  );
                 })}
               </div>
             ) : (
@@ -171,15 +177,21 @@ export function ReferralsContent({ userData, referrals, earnings }: ReferralsCon
         <Card className="bg-card/90 backdrop-blur-sm border-border">
           <CardHeader>
             <CardTitle className="text-foreground">Recent Earnings</CardTitle>
-            <CardDescription className="text-muted-foreground">Points earned from referrals</CardDescription>
+            <CardDescription className="text-muted-foreground">
+              Points earned from referrals
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {earnings && earnings.length > 0 ? (
               <div className="space-y-3">
                 {earnings.map((earning) => (
-                  <div key={earning.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                  <div
+                    key={earning.id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                     <div>
-                      <p className="font-medium text-foreground capitalize">{earning.earning_type} bonus</p>
+                      <p className="font-medium text-foreground capitalize">
+                        {earning.earning_type} bonus
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(earning.created_at).toLocaleDateString()}
                       </p>
@@ -211,14 +223,18 @@ export function ReferralsContent({ userData, referrals, earnings }: ReferralsCon
                 <span className="text-xl font-bold text-primary">1</span>
               </div>
               <h3 className="font-medium text-foreground mb-1">Share Your Link</h3>
-              <p className="text-sm text-muted-foreground">Send your unique referral link to friends</p>
+              <p className="text-sm text-muted-foreground">
+                Send your unique referral link to friends
+              </p>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
                 <span className="text-xl font-bold text-primary">2</span>
               </div>
               <h3 className="font-medium text-foreground mb-1">They Sign Up & Mine</h3>
-              <p className="text-sm text-muted-foreground">Earn +10 VP when they complete first mining</p>
+              <p className="text-sm text-muted-foreground">
+                Earn +10 VP when they complete first mining
+              </p>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
@@ -231,5 +247,5 @@ export function ReferralsContent({ userData, referrals, earnings }: ReferralsCon
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
