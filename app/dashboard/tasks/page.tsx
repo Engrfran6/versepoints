@@ -15,6 +15,5 @@ export default async function TasksPage() {
     redirect("/auth/login");
   }
 
-  // ✅ Pass ONLY userId (safe)
   return <TasksContent userId={user.id} />;
 }

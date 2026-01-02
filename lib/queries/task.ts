@@ -1,6 +1,6 @@
 import {createClient} from "../supabase/client";
 
-const supabase = await createClient();
+const supabase = createClient();
 
 export async function fetchTasks() {
   const {data, error} = await supabase

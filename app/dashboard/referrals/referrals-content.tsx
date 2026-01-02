@@ -23,7 +23,7 @@ interface Referral {
   id: string;
   status: string;
   created_at: string;
-  referred: ReferredUser[]; // ✅ always array
+  referred: ReferredUser[] | null;
 }
 
 interface Earning {
@@ -33,8 +33,13 @@ interface Earning {
   created_at: string;
 }
 
+interface UserData {
+  referral_code: string;
+  total_referral_earnings: number;
+}
+
 interface ReferralsContentProps {
-  userData: {referral_code: string; total_referral_earnings: number} | null;
+  userData: UserData | null;
   referrals: Referral[];
   earnings: Earning[];
 }
@@ -138,17 +143,18 @@ export function ReferralsContent({userData, referrals, earnings}: ReferralsConte
             {referrals && referrals.length > 0 ? (
               <div className="space-y-3">
                 {referrals.map((referral) => {
-                  const referred = referral.referred; // Access first element safely
+                  const referred = referral.referred?.[0];
+
                   return (
                     <div
                       key={referral.id}
                       className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                       <div>
                         <p className="font-medium text-foreground">
-                          {referred?.username || "Unknown"}
+                          {referred?.username ?? "Unknown"}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {referred?.mining_count || 0} mining sessions
+                          {referred?.mining_count ?? 0} mining sessions
                         </p>
                       </div>
                       <span

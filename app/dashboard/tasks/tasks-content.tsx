@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
-import {CheckSquare, ExternalLink, CheckCircle2, Clock, Gift, Pause} from "lucide-react";
+import {CheckSquare} from "lucide-react";
 import {cn, extractYouTubeVideoId} from "@/lib/utils";
 import {useRouter} from "next/navigation";
 import {toast} from "sonner";
@@ -21,7 +21,7 @@ import {YouTubeTaskPlayer} from "@/components/tasks/youtube-task-player";
 import {TaskType} from "@/app/admin/tasks/task-table";
 import {TaskCard} from "./motion-card";
 import {AnimatePresence} from "framer-motion";
-import {TaskCardSkeleton} from "./task-card-skeleton";
+import {TaskCardSkeleton} from "../../../components/skeleton/task-card-skeleton";
 import {useTasks, useUserTasks} from "@/lib/hooks/useTask";
 import {useQueryClient} from "@tanstack/react-query";
 

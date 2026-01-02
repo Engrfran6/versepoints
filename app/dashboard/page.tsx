@@ -25,27 +25,5 @@ export default async function DashboardPage() {
     redirect("/admin");
   }
 
-  // Get referral count
-  const {count: referralCount} = await supabase
-    .from("referrals")
-    .select("*", {count: "exact", head: true})
-    .eq("referrer_id", user.id);
-
-  // Get user rank
-  const {data: leaderboard} = await supabase
-    .from("leaderboard_view")
-    .select("rank")
-    .eq("id", user.id)
-    .single();
-
-  const {data: referralStatus} = await supabase.rpc("get_referral_status");
-
-  return (
-    <DashboardContent
-      user={userData}
-      referralCount={referralCount || 0}
-      rank={leaderboard?.rank || 0}
-      referralStatus={referralStatus}
-    />
-  );
+  return <DashboardContent user={userData} />;
 }

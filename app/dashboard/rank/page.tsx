@@ -15,40 +15,5 @@ export default async function RankPage() {
     redirect("/auth/login");
   }
 
-  // Get user data with rank
-  const {data: userData} = await supabase
-    .from("users")
-    .select("*, user_ranks(*)")
-    .eq("id", user.id)
-    .single();
-
-  // Get rank configurations
-  const {data: rankConfigs} = await supabase
-    .from("rank_config")
-    .select("*")
-    .order("points_threshold", {ascending: true});
-
-  // Get rank history
-  const {data: rankHistory} = await supabase
-    .from("rank_rewards_log")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("awarded_at", {ascending: false})
-    .limit(5);
-
-  const currentRank = (userData?.user_current_rank || "rookie") as RankName;
-  const totalPoints = userData?.total_mined || 0;
-  const userReferrals = userData?.total_referred || 0;
-  const userPoints = userData?.points_balance || 0;
-
-  return (
-    <RankPageContent
-      currentRank={currentRank}
-      totalPoints={totalPoints}
-      rankConfigs={rankConfigs || []}
-      rankHistory={rankHistory || []}
-      userReferrals={userReferrals}
-      userPoints={userPoints}
-    />
-  );
+  return <RankPageContent userId={user.id} />;
 }
