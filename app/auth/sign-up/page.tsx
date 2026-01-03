@@ -3,7 +3,7 @@
 import type React from "react";
 import {Suspense, useEffect, useState} from "react";
 import dynamic from "next/dynamic";
-import {createClient} from "@/lib/supabase/client";
+import {supabase} from "@/lib/supabase/client";
 import {Button} from "@/components/ui/button";
 import Image from "next/image";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
@@ -14,6 +14,7 @@ import {useRouter, useSearchParams} from "next/navigation";
 import {passwordRequirements, signUpSchema, type SignUpInput} from "@/lib/validations/auth";
 import {Eye, EyeOff, CheckCircle2, XCircle} from "lucide-react";
 import {getErrorMessage, mapAuthError} from "@/lib/utils";
+import {Spinner} from "@/components/ui/spinner";
 
 const FloatingParticles = dynamic(
   () => import("@/components/3d/floating-particles").then((mod) => mod.FloatingParticles),
@@ -25,6 +26,21 @@ const SignupPortal3D = dynamic(
     ssr: false,
   }
 );
+
+function getPasswordStrength(password: string) {
+  let score = 0;
+
+  if (password.length >= 8) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[a-z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^a-zA-Z0-9]/.test(password)) score++;
+
+  if (score <= 2) return {level: 1, label: "Weak"};
+  if (score === 3) return {level: 2, label: "Fair"};
+  if (score === 4) return {level: 3, label: "Good"};
+  return {level: 4, label: "Strong"};
+}
 
 function SignUpForm() {
   const [formData, setFormData] = useState<SignUpInput>({
@@ -41,6 +57,8 @@ function SignUpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const refCode = searchParams.get("ref");
+
+  const passwordStrength = getPasswordStrength(formData.password);
 
   // Set referral code from URL if present
   useEffect(() => {
@@ -82,8 +100,6 @@ function SignUpForm() {
     const data = result.data;
 
     try {
-      const supabase = createClient();
-
       let referrerId: string | null = null;
 
       if (formData.referralCode) {
@@ -110,6 +126,8 @@ function SignUpForm() {
           },
         },
       });
+
+      console.log("error from supabase=====>", error);
 
       if (error) throw error;
 
@@ -175,6 +193,7 @@ function SignUpForm() {
                         id="email"
                         name="email"
                         type="email"
+                        disabled={isLoading}
                         placeholder="you@example.com"
                         required
                         value={formData.email}
@@ -195,6 +214,7 @@ function SignUpForm() {
                         id="username"
                         name="username"
                         type="text"
+                        disabled={isLoading}
                         placeholder="miner123"
                         required
                         value={formData.username}
@@ -218,6 +238,7 @@ function SignUpForm() {
                           id="password"
                           name="password"
                           type={showPassword ? "text" : "password"}
+                          disabled={isLoading}
                           required
                           value={formData.password}
                           onChange={handleChange}
@@ -236,6 +257,47 @@ function SignUpForm() {
                           )}
                         </button>
                       </div>
+                      <div className="mt-2 space-y-1">
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4].map((bar) => {
+                            const active = passwordStrength.level >= bar;
+
+                            return (
+                              <div
+                                key={bar}
+                                className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
+                                  !active
+                                    ? "bg-muted"
+                                    : bar === 1
+                                    ? "bg-red-500"
+                                    : bar === 2
+                                    ? "bg-orange-500"
+                                    : bar === 3
+                                    ? "bg-yellow-500"
+                                    : "bg-green-500"
+                                }`}
+                              />
+                            );
+                          })}
+                        </div>
+
+                        <p className="text-xs text-muted-foreground">
+                          Strength:{" "}
+                          <span
+                            className={
+                              passwordStrength.level === 1
+                                ? "text-red-500"
+                                : passwordStrength.level === 2
+                                ? "text-orange-500"
+                                : passwordStrength.level === 3
+                                ? "text-yellow-500"
+                                : "text-green-500"
+                            }>
+                            {passwordStrength.label}
+                          </span>
+                        </p>
+                      </div>
+
                       <div className="space-y-1 mt-2">
                         {passwordRequirements.map((req) => {
                           const passed = req.test(formData.password);
@@ -276,6 +338,7 @@ function SignUpForm() {
                           id="confirmPassword"
                           name="confirmPassword"
                           type={showPassword ? "text" : "password"}
+                          disabled={isLoading}
                           required
                           value={formData.confirmPassword}
                           onChange={handleChange}
@@ -324,7 +387,13 @@ function SignUpForm() {
                       type="submit"
                       className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-2"
                       disabled={isLoading}>
-                      {isLoading ? "Creating account..." : "Create Account"}
+                      {isLoading ? (
+                        <>
+                          <Spinner className="size-5" /> Creating account...
+                        </>
+                      ) : (
+                        "Create Account"
+                      )}
                     </Button>
                   </div>
 

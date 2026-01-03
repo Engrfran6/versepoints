@@ -1,7 +1,6 @@
 "use client";
 
-import {createClient} from "@/lib/supabase/client";
-const supabase = createClient();
+import {supabase} from "@/lib/supabase/client";
 
 export async function fetchReferralCount(userId: string) {
   const {count, error} = await supabase

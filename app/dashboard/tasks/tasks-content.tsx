@@ -66,7 +66,6 @@ export function TasksContent({userId}: TasksContentProps) {
   const queryClient = useQueryClient();
 
   const {data: tasks = [], isLoading: tasksLoading} = useTasks();
-
   const {data: userTasks = [], isLoading: userTasksLoading} = useUserTasks(userId);
 
   if (tasksLoading || userTasksLoading) {
@@ -79,7 +78,7 @@ export function TasksContent({userId}: TasksContentProps) {
     );
   }
 
-  const completedTaskIds = new Set(userTasks?.map((ut) => ut.task_id) || []);
+  const completedTaskIds = new Set(userTasks?.map((ut: any) => ut.task_id) || []);
 
   const openExternalAndCollectProof = (task: Task) => {
     if (!task.action_url) {
@@ -235,13 +234,13 @@ export function TasksContent({userId}: TasksContentProps) {
   };
 
   const getTaskStatus = (taskId: string) => {
-    const userTask = userTasks?.find((ut) => ut.task_id === taskId);
+    const userTask = userTasks?.find((ut: any) => ut.task_id === taskId);
     if (!userTask) return null;
     return userTask.status;
   };
 
-  const noOfPendingTask = userTasks?.filter((ut) => ut.status === "pending");
-  const noOfVerifiedTask = userTasks?.filter((ut) => ut.status === "verified");
+  const noOfPendingTask = userTasks?.filter((ut: any) => ut.status === "pending");
+  const noOfVerifiedTask = userTasks?.filter((ut: any) => ut.status === "verified");
 
   function StatusButton({
     icon: Icon,
@@ -296,16 +295,16 @@ export function TasksContent({userId}: TasksContentProps) {
         <Card className="bg-card/90 backdrop-blur-sm border-border">
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold text-foreground">{tasks?.length || 0}</p>
-            <p className="text-xs text-muted-foreground">Available</p>
+            <p className="text-xs text-muted-foreground">Available Task</p>
           </CardContent>
         </Card>
 
         <Card className="bg-card/90 backdrop-blur-sm border-border">
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold text-primary">
-              {tasks?.reduce((sum, t) => sum + t.points_reward, 0) || 0}
+              {tasks?.reduce((sum: any, t: any) => sum + t.points_reward, 0) || 0}
             </p>
-            <p className="text-xs text-muted-foreground">Total VP</p>
+            <p className="text-xs text-muted-foreground">Total Task VP</p>
           </CardContent>
         </Card>
 
@@ -330,7 +329,7 @@ export function TasksContent({userId}: TasksContentProps) {
 
       <AnimatePresence mode="popLayout">
         <div className="space-y-4">
-          {tasks.map((task) => {
+          {tasks.map((task: Task) => {
             const status = getTaskStatus(task.id);
             const isCompleted = status === "verified";
             const isPending = status === "pending";

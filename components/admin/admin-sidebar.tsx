@@ -20,7 +20,7 @@ import {
   Zap,
 } from "lucide-react";
 import {Button} from "@/components/ui/button";
-import {createClient} from "@/lib/supabase/client";
+import {supabase} from "@/lib/supabase/client";
 import {Menu} from "lucide-react";
 import {Sheet, SheetContent, SheetTrigger} from "@/components/ui/sheet";
 import {useState} from "react";
@@ -45,7 +45,6 @@ export function AdminSidebar() {
   ];
 
   const handleLogout = async () => {
-    const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/");
   };

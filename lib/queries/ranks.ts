@@ -1,6 +1,5 @@
 // lib/queries/rank.ts
-import {createClient} from "@/lib/supabase/client";
-const supabase = createClient();
+import {supabase} from "@/lib/supabase/client";
 
 export async function fetchRankUser(userId: string) {
   const {data, error} = await supabase

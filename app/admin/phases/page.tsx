@@ -1,54 +1,56 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Rocket, Play, Check, Lock, AlertTriangle } from "lucide-react"
-import type { PlatformPhase } from "@/lib/types/phase2"
-import { cn } from "@/lib/utils"
-import { createClient } from "@/lib/supabase/client"
+import {useState, useEffect} from "react";
+import {useRouter} from "next/navigation";
+import {Card, CardContent, CardHeader, CardTitle, CardDescription} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import {Badge} from "@/components/ui/badge";
+import {Rocket, Play, Check, Lock, AlertTriangle} from "lucide-react";
+import type {PlatformPhase} from "@/lib/types/phase2";
+import {cn} from "@/lib/utils";
+import {supabase} from "@/lib/supabase/client";
 
 export default function AdminPhasesPage() {
-  const router = useRouter()
-  const [phases, setPhases] = useState<PlatformPhase[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [activatingPhase, setActivatingPhase] = useState<number | null>(null)
+  const router = useRouter();
+  const [phases, setPhases] = useState<PlatformPhase[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activatingPhase, setActivatingPhase] = useState<number | null>(null);
 
   useEffect(() => {
-    loadPhases()
-  }, [])
+    loadPhases();
+  }, []);
 
   const loadPhases = async () => {
-    const supabase = createClient()
-    const { data } = await supabase.from("platform_phases").select("*").order("phase_number", { ascending: true })
+    const {data} = await supabase
+      .from("platform_phases")
+      .select("*")
+      .order("phase_number", {ascending: true});
 
-    setPhases(data || [])
-    setIsLoading(false)
-  }
+    setPhases(data || []);
+    setIsLoading(false);
+  };
 
   const activatePhase = async (phaseNumber: number) => {
-    setActivatingPhase(phaseNumber)
+    setActivatingPhase(phaseNumber);
 
     try {
       const response = await fetch("/api/admin/phases/activate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phaseNumber }),
-      })
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({phaseNumber}),
+      });
 
       if (response.ok) {
-        await loadPhases()
-        router.refresh()
+        await loadPhases();
+        router.refresh();
       }
     } finally {
-      setActivatingPhase(null)
+      setActivatingPhase(null);
     }
-  }
+  };
 
-  const currentPhase = phases.find((p) => p.is_active)
-  const completedCount = phases.filter((p) => p.is_completed).length
+  const currentPhase = phases.find((p) => p.is_active);
+  const completedCount = phases.filter((p) => p.is_completed).length;
 
   if (isLoading) {
     return (
@@ -58,7 +60,7 @@ export default function AdminPhasesPage() {
           <div className="h-4 bg-muted rounded w-1/2"></div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -79,7 +81,8 @@ export default function AdminPhasesPage() {
             <div>
               <p className="text-sm text-muted-foreground mb-1">Current Active Phase</p>
               <h2 className="text-2xl font-bold text-foreground">
-                Phase {currentPhase?.phase_number || 1}: {currentPhase?.phase_name || "Genesis Launch"}
+                Phase {currentPhase?.phase_number || 1}:{" "}
+                {currentPhase?.phase_name || "Genesis Launch"}
               </h2>
               <p className="text-sm text-muted-foreground mt-1">{currentPhase?.description}</p>
             </div>
@@ -96,7 +99,8 @@ export default function AdminPhasesPage() {
         <CardContent className="p-4 flex items-center gap-3">
           <AlertTriangle className="w-5 h-5 text-destructive" />
           <p className="text-sm text-destructive">
-            Phase activation is irreversible. Ensure all prerequisites are met before advancing to the next phase.
+            Phase activation is irreversible. Ensure all prerequisites are met before advancing to
+            the next phase.
           </p>
         </CardContent>
       </Card>
@@ -112,8 +116,8 @@ export default function AdminPhasesPage() {
         <CardContent>
           <div className="space-y-4">
             {phases.map((phase, index) => {
-              const isNext = currentPhase && phase.phase_number === currentPhase.phase_number + 1
-              const canActivate = isNext && !phase.is_active && !phase.is_completed
+              const isNext = currentPhase && phase.phase_number === currentPhase.phase_number + 1;
+              const canActivate = isNext && !phase.is_active && !phase.is_completed;
 
               return (
                 <div
@@ -123,12 +127,11 @@ export default function AdminPhasesPage() {
                     phase.is_completed
                       ? "bg-green-500/10 border-green-500/30"
                       : phase.is_active
-                        ? "bg-primary/10 border-primary/30"
-                        : isNext
-                          ? "bg-accent/10 border-accent/30"
-                          : "bg-muted/50 border-border",
-                  )}
-                >
+                      ? "bg-primary/10 border-primary/30"
+                      : isNext
+                      ? "bg-accent/10 border-accent/30"
+                      : "bg-muted/50 border-border"
+                  )}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div
@@ -137,10 +140,9 @@ export default function AdminPhasesPage() {
                           phase.is_completed
                             ? "bg-green-500 text-white"
                             : phase.is_active
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted text-muted-foreground",
-                        )}
-                      >
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground"
+                        )}>
                         {phase.is_completed ? <Check className="w-5 h-5" /> : phase.phase_number}
                       </div>
                       <div>
@@ -151,11 +153,14 @@ export default function AdminPhasesPage() {
                               phase.is_completed
                                 ? "bg-green-500/20 text-green-400"
                                 : phase.is_active
-                                  ? "bg-primary/20 text-primary"
-                                  : "bg-muted text-muted-foreground",
-                            )}
-                          >
-                            {phase.is_completed ? "Completed" : phase.is_active ? "Active" : "Locked"}
+                                ? "bg-primary/20 text-primary"
+                                : "bg-muted text-muted-foreground"
+                            )}>
+                            {phase.is_completed
+                              ? "Completed"
+                              : phase.is_active
+                              ? "Active"
+                              : "Locked"}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">{phase.description}</p>
@@ -163,8 +168,7 @@ export default function AdminPhasesPage() {
                           {(phase.features_unlocked as string[]).slice(0, 4).map((feature, i) => (
                             <span
                               key={i}
-                              className="px-2 py-0.5 rounded-full text-[10px] bg-muted text-muted-foreground"
-                            >
+                              className="px-2 py-0.5 rounded-full text-[10px] bg-muted text-muted-foreground">
                               {feature.replace(/_/g, " ")}
                             </span>
                           ))}
@@ -176,8 +180,7 @@ export default function AdminPhasesPage() {
                         <Button
                           onClick={() => activatePhase(phase.phase_number)}
                           disabled={activatingPhase === phase.phase_number}
-                          className="gap-2"
-                        >
+                          className="gap-2">
                           {activatingPhase === phase.phase_number ? (
                             "Activating..."
                           ) : (
@@ -188,18 +191,20 @@ export default function AdminPhasesPage() {
                           )}
                         </Button>
                       )}
-                      {phase.is_active && <Badge className="bg-primary text-primary-foreground">Current</Badge>}
+                      {phase.is_active && (
+                        <Badge className="bg-primary text-primary-foreground">Current</Badge>
+                      )}
                       {!phase.is_active && !phase.is_completed && !isNext && (
                         <Lock className="w-5 h-5 text-muted-foreground" />
                       )}
                     </div>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

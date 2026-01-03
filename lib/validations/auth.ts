@@ -2,15 +2,18 @@ import {z} from "zod";
 
 const passwordRules = {
   minLength: 8,
+  maxLength: 20,
   upper: /[A-Z]/,
   lower: /[a-z]/,
   number: /[0-9]/,
 };
 
-const specialChar = /[!@#$%^&*_]/;
-
 export const passwordRequirements = [
   {test: (p: string) => p.length >= passwordRules.minLength, label: "At least 8 characters"},
+  // {
+  //   test: (p: string) => p.length <= passwordRules.maxLength,
+  //   label: "Password must be less than 20 characters",
+  // },
   {
     test: (p: string) => passwordRules.upper.test(p),
     label: "contain at least one uppercase letter",
@@ -21,8 +24,8 @@ export const passwordRequirements = [
   },
   {test: (p: string) => passwordRules.number.test(p), label: "contain at least one number"},
   {
-    test: (p: string) => specialChar.test(p),
-    label: "Optional special character ! @ # $ % ^ & * _",
+    test: (p: string) => /[^a-zA-Z0-9]/.test(p),
+    label: "Special characters allowed (recommended)",
     optional: true,
   },
 ];

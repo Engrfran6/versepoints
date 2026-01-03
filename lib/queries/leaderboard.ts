@@ -1,8 +1,6 @@
 "use client";
 
-import {createClient} from "@/lib/supabase/client";
-
-const supabase = createClient();
+import {supabase} from "@/lib/supabase/client";
 
 /** Fetch top leaderboard entries */
 export async function fetchLeaderboard(limit = 100) {

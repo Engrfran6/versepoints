@@ -1,7 +1,7 @@
 "use client";
 
 import {useEffect, useState} from "react";
-import {createClient} from "@/lib/supabase/client";
+import {supabase} from "@/lib/supabase/client";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
@@ -22,8 +22,6 @@ export default function ResetPasswordPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const supabase = createClient();
-
     const {
       data: {subscription},
     } = supabase.auth.onAuthStateChange((event, session) => {
@@ -57,7 +55,6 @@ export default function ResetPasswordPage() {
 
     setLoading(true);
 
-    const supabase = createClient();
     const {error} = await supabase.auth.updateUser({password});
 
     if (error) {

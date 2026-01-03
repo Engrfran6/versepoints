@@ -1,54 +1,52 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Settings, User, Shield, Bell, LogOut } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
-import { useRouter } from "next/navigation"
-import type { User as UserType } from "@/lib/types/database"
+import {useState} from "react";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {Settings, User, Shield, Bell, LogOut} from "lucide-react";
+import {supabase} from "@/lib/supabase/client";
+import {useRouter} from "next/navigation";
+import type {User as UserType} from "@/lib/types/database";
 
 interface SettingsContentProps {
-  user: UserType
-  email: string
+  user: UserType;
+  email: string;
 }
 
-export function SettingsContent({ user, email }: SettingsContentProps) {
-  const [username, setUsername] = useState(user.username)
-  const [isLoading, setIsLoading] = useState(false)
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
-  const router = useRouter()
+export function SettingsContent({user, email}: SettingsContentProps) {
+  const [username, setUsername] = useState(user.username);
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{type: "success" | "error"; text: string} | null>(null);
+  const router = useRouter();
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setMessage(null)
+    e.preventDefault();
+    setIsLoading(true);
+    setMessage(null);
 
     try {
-      const supabase = createClient()
-      const { error } = await supabase.from("users").update({ username }).eq("id", user.id)
+      const {error} = await supabase.from("users").update({username}).eq("id", user.id);
 
-      if (error) throw error
-      setMessage({ type: "success", text: "Profile updated successfully" })
+      if (error) throw error;
+      setMessage({type: "success", text: "Profile updated successfully"});
     } catch (error) {
       setMessage({
         type: "error",
         text: error instanceof Error ? error.message : "Failed to update profile",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push("/")
-  }
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   return (
     <div className="p-4 md:p-8">
@@ -69,7 +67,9 @@ export function SettingsContent({ user, email }: SettingsContentProps) {
               <User className="w-5 h-5 text-primary" />
               Profile
             </CardTitle>
-            <CardDescription className="text-muted-foreground">Update your profile information</CardDescription>
+            <CardDescription className="text-muted-foreground">
+              Update your profile information
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleUpdateProfile} className="space-y-4">
@@ -107,15 +107,17 @@ export function SettingsContent({ user, email }: SettingsContentProps) {
                 />
               </div>
               {message && (
-                <p className={`text-sm ${message.type === "success" ? "text-green-500" : "text-destructive"}`}>
+                <p
+                  className={`text-sm ${
+                    message.type === "success" ? "text-green-500" : "text-destructive"
+                  }`}>
                   {message.text}
                 </p>
               )}
               <Button
                 type="submit"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                disabled={isLoading}
-              >
+                disabled={isLoading}>
                 {isLoading ? "Saving..." : "Save Changes"}
               </Button>
             </form>
@@ -129,7 +131,9 @@ export function SettingsContent({ user, email }: SettingsContentProps) {
               <Shield className="w-5 h-5 text-primary" />
               Security
             </CardTitle>
-            <CardDescription className="text-muted-foreground">Manage your account security</CardDescription>
+            <CardDescription className="text-muted-foreground">
+              Manage your account security
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
@@ -158,7 +162,9 @@ export function SettingsContent({ user, email }: SettingsContentProps) {
               <Bell className="w-5 h-5 text-primary" />
               Notifications
             </CardTitle>
-            <CardDescription className="text-muted-foreground">Manage notification preferences</CardDescription>
+            <CardDescription className="text-muted-foreground">
+              Manage notification preferences
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
@@ -192,7 +198,9 @@ export function SettingsContent({ user, email }: SettingsContentProps) {
             <div className="flex items-center justify-between pt-4 border-t border-border">
               <div>
                 <p className="font-medium text-destructive">Delete Account</p>
-                <p className="text-sm text-muted-foreground">Permanently delete your account and data</p>
+                <p className="text-sm text-muted-foreground">
+                  Permanently delete your account and data
+                </p>
               </div>
               <Button variant="destructive" disabled>
                 Delete
@@ -202,5 +210,5 @@ export function SettingsContent({ user, email }: SettingsContentProps) {
         </Card>
       </div>
     </div>
-  )
+  );
 }

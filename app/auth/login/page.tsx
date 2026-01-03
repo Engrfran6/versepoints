@@ -4,7 +4,7 @@ import type React from "react";
 import {Suspense} from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import {createClient} from "@/lib/supabase/client";
+import {supabase} from "@/lib/supabase/client";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
@@ -16,6 +16,8 @@ import {forgotPasswordSchema, loginSchema} from "@/lib/validations/auth";
 import {Eye, EyeOff} from "lucide-react";
 import {toast} from "sonner";
 import {getErrorMessage, mapLoginAuthError} from "@/lib/utils";
+import {Spinner} from "@/components/ui/spinner";
+import {HouseIcon} from "@phosphor-icons/react";
 
 const LoginTransition = dynamic(
   () => import("@/components/3d/login-transition").then((mod) => mod.LoginTransition),
@@ -61,8 +63,6 @@ export default function LoginPage() {
     }
 
     try {
-      const supabase = createClient();
-
       const {data, error} = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -108,8 +108,6 @@ export default function LoginPage() {
       return;
     }
 
-    const supabase = createClient();
-
     try {
       await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL_PROD}/auth/callback?next=/auth/reset-password`,
@@ -124,17 +122,22 @@ export default function LoginPage() {
     }
   };
 
-  // const handleGoogleSignIn = async () => {
-  //   setIsOAuthLoading(true);
-  //   try {
-  //     const res = await fetch("/api/auth/google");
-  //     const {url} = await res.json();
-  //     window.location.href = url;
-  //   } catch {
-  //     setError("Google sign-in failed");
-  //     setIsOAuthLoading(false);
-  //   }
-  // };
+  const handleGoogleSignIn = async () => {
+    setIsOAuthLoading(true);
+
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+        },
+      });
+    } catch {
+      setError("Google sign-in failed");
+    } finally {
+      setIsOAuthLoading(false);
+    }
+  };
 
   if (isTransitioning) {
     return (
@@ -247,7 +250,13 @@ export default function LoginPage() {
                         type="submit"
                         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-2"
                         disabled={isLoggingIn}>
-                        {isLoggingIn ? "Signing in..." : "Sign In"}
+                        {isLoggingIn ? (
+                          <>
+                            <Spinner className="size-5" /> Signing in...
+                          </>
+                        ) : (
+                          "Sign In"
+                        )}
                       </Button>
                     </div>
                   </form>
@@ -267,7 +276,7 @@ export default function LoginPage() {
                   {resetEmailSent && (
                     <p className="text-xs text-green-500 text-center">Password reset email sent</p>
                   )}
-                  {/* <div className="relative my-4">
+                  <div className="relative my-4">
                     <div className="absolute inset-0 flex items-center">
                       <span className="w-full border-t border-border" />
                     </div>
@@ -281,9 +290,15 @@ export default function LoginPage() {
                     onClick={handleGoogleSignIn}
                     disabled={isOAuthLoading}
                     className="w-full flex items-center gap-2 justify-center">
-                    <Facebook className="w-5 h-5" />
+                    <Image
+                      src="/google-color.svg"
+                      width={500}
+                      height={500}
+                      alt="google logo"
+                      className="size-5"
+                    />
                     Sign in with Google
-                  </Button> */}
+                  </Button>
                 </div>
 
                 <div className="mt-6 text-center text-sm text-muted-foreground">

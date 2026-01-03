@@ -2,7 +2,7 @@
 
 import {useRouter, useSearchParams} from "next/navigation";
 import {useEffect} from "react";
-import {createClient} from "@/lib/supabase/client";
+import {supabase} from "@/lib/supabase/client";
 import dynamic from "next/dynamic";
 
 const LoginTransition = dynamic(
@@ -17,7 +17,6 @@ export default function AuthTransitionClient() {
   const to = params.get("to");
 
   useEffect(() => {
-    const supabase = createClient();
     supabase.auth.getSession().then(({data}) => {
       if (!data.session) router.replace("/auth/login");
     });

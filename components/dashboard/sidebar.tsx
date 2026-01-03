@@ -18,7 +18,7 @@ import {
   FileText,
 } from "lucide-react";
 import {Button} from "@/components/ui/button";
-import {createClient} from "@/lib/supabase/client";
+import {supabase} from "@/lib/supabase/client";
 import {useRouter} from "next/navigation";
 
 interface SidebarProps {
@@ -44,7 +44,6 @@ export function Sidebar({isAdmin = false}: SidebarProps) {
   const adminNavItems = [{href: "/admin", icon: Shield, label: "Admin Panel"}];
 
   const handleLogout = async () => {
-    const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/");
   };

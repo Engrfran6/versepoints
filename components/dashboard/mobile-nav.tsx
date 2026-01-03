@@ -18,7 +18,7 @@ import {
   Rocket,
 } from "lucide-react";
 import {Button} from "@/components/ui/button";
-import {createClient} from "@/lib/supabase/client";
+import {supabase} from "@/lib/supabase/client";
 import {useState} from "react";
 import {Sheet, SheetContent, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
 import {DialogHeader} from "../ui/dialog";
@@ -44,7 +44,6 @@ export function MobileNav() {
   ];
 
   const handleLogout = async () => {
-    const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/auth/login");
   };

@@ -24,6 +24,10 @@ export async function updateSession(request: NextRequest) {
           );
         },
       },
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
     }
   );
 
@@ -41,9 +45,10 @@ export async function updateSession(request: NextRequest) {
     "/auth/callback",
     "/auth/reset-password",
   ];
-  const isPublicRoute = publicRoutes.some(
-    (route) => request.nextUrl.pathname === route || request.nextUrl.pathname.startsWith("/api/")
-  );
+
+  const isApiRoute = request.nextUrl.pathname.startsWith("/api/");
+  const isPublicRoute =
+    isApiRoute || publicRoutes.some((route) => request.nextUrl.pathname === route);
 
   // Admin routes
   const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
