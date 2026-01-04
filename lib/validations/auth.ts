@@ -16,11 +16,11 @@ export const passwordRequirements = [
   // },
   {
     test: (p: string) => passwordRules.upper.test(p),
-    label: "contain at least one uppercase letter",
+    label: "At least one uppercase letter",
   },
   {
     test: (p: string) => passwordRules.lower.test(p),
-    label: "contain at least one lowercase letter",
+    label: "At least one lowercase letter",
   },
   {test: (p: string) => passwordRules.number.test(p), label: "contain at least one number"},
   {
@@ -33,6 +33,7 @@ export const passwordRequirements = [
 export const passwordSchema = z
   .string()
   .min(passwordRules.minLength, "Password must be at least 8 characters")
+  .max(20, "Password must be less than 20 character")
   .regex(passwordRules.upper, "Must contain an uppercase letter")
   .regex(passwordRules.lower, "Must contain a lowercase letter")
   .regex(passwordRules.number, "Must contain a number");
