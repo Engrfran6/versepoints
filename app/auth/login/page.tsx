@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import {Suspense} from "react";
+import {Suspense, useEffect} from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import {supabase} from "@/lib/supabase/client";
@@ -17,7 +17,6 @@ import {Eye, EyeOff} from "lucide-react";
 import {toast} from "sonner";
 import {getErrorMessage, mapLoginAuthError} from "@/lib/utils";
 import {Spinner} from "@/components/ui/spinner";
-import {HouseIcon} from "@phosphor-icons/react";
 
 const LoginTransition = dynamic(
   () => import("@/components/3d/login-transition").then((mod) => mod.LoginTransition),
@@ -45,6 +44,7 @@ export default function LoginPage() {
   const [isOAuthLoading, setIsOAuthLoading] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
 
@@ -93,13 +93,8 @@ export default function LoginPage() {
 
   const handleForgotPassword = async () => {
     setIsResetting(true);
-    setError(null);
 
-    if (!email) {
-      toast.error("Enter your email first");
-      setIsResetting(false);
-      return;
-    }
+    setError(null);
 
     const result = forgotPasswordSchema.safeParse({email});
     if (!result.success) {
@@ -114,9 +109,9 @@ export default function LoginPage() {
       });
 
       setResetEmailSent(true);
-      toast.success("If an account exists for this email, a reset link has been sent.");
-    } catch {
-      toast.success("If an account exists for this email, a reset link has been sent.");
+      setResendCountdown(RESEND_COOLDOWN);
+    } catch (error) {
+      ("");
     } finally {
       setIsResetting(false);
     }
@@ -129,7 +124,7 @@ export default function LoginPage() {
       await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL_PROD}/auth/callback`,
         },
       });
     } catch {
@@ -154,8 +149,26 @@ export default function LoginPage() {
     );
   }
 
+  const RESEND_COOLDOWN = 300; // 5 minutes
+
+  const [resendCountdown, setResendCountdown] = useState<number | null>(null);
+  useEffect(() => {
+    if (resendCountdown === null) return;
+
+    if (resendCountdown <= 0) {
+      setResendCountdown(null);
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setResendCountdown((prev) => (prev !== null ? prev - 1 : null));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [resendCountdown]);
+
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-6 bg-background">
+    <div className="relative flex min-h-screen items-center justify-center px-2 py-4 bg-background">
       {/* 3D Background */}
       <Suspense fallback={null}>
         <div className="fixed inset-0 z-0">
@@ -177,7 +190,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <div className="flex flex-col gap-6">
             {/* Logo */}
-            <Link href="/" className="flex items-center justify-center gap-2 mb-4">
+            <Link href="/" className="flex items-center justify-center gap-2">
               <Image
                 src="/logo.jpg"
                 width={40}
@@ -190,21 +203,18 @@ export default function LoginPage() {
 
             <Card className="bg-card/90 backdrop-blur-sm border-border">
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl text-foreground">Welcome Back</CardTitle>
+                <CardTitle className="text-2xl text-foreground">
+                  {isForgotPassword ? "Reset Password" : "Welcome Back"}
+                </CardTitle>
                 <CardDescription className="text-muted-foreground">
-                  Sign in to continue mining
+                  {isForgotPassword
+                    ? "Enter your email and we’ll send a reset link"
+                    : "Continue earning with VersePoints"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col gap-4">
-                  <form
-                    onSubmit={handleLogin}
-                    noValidate
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                      }
-                    }}>
+                  <form onSubmit={handleLogin} noValidate>
                     <div className="flex flex-col gap-4">
                       <div className="grid gap-2">
                         <Label htmlFor="email" className="text-foreground">
@@ -215,100 +225,163 @@ export default function LoginPage() {
                           type="email"
                           placeholder="you@example.com"
                           required
+                          // disabled={isLoggingIn || isOAuthLoading || resetEmailSent}
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           className="bg-input border-border text-foreground"
                         />
                       </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="password" className="text-foreground">
-                          Password
-                        </Label>
-                        <div className="relative">
-                          <Input
-                            id="password"
-                            type={showPassword ? "text" : "password"}
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="bg-input border-border text-foreground pr-10"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                            {showPassword ? (
-                              <EyeOff className="w-4 h-4" />
-                            ) : (
-                              <Eye className="w-4 h-4" />
-                            )}
-                          </button>
+                      {!isForgotPassword && (
+                        <div className="grid gap-2">
+                          <Label htmlFor="password" className="text-foreground">
+                            Password
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              id="password"
+                              type={showPassword ? "text" : "password"}
+                              required
+                              // disabled={isLoggingIn || isOAuthLoading || resetEmailSent}
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              className="bg-input border-border text-foreground pr-10"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              aria-label={showPassword ? "Hide password" : "Show password"}
+                              aria-pressed={showPassword}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                              {showPassword ? (
+                                <EyeOff className="w-4 h-4" />
+                              ) : (
+                                <Eye className="w-4 h-4" />
+                              )}
+                            </button>
+                          </div>
                         </div>
-                      </div>
+                      )}
                       {error && <p className="text-sm text-destructive text-center">{error}</p>}
-                      <Button
-                        type="submit"
-                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-2"
-                        disabled={isLoggingIn}>
-                        {isLoggingIn ? (
-                          <>
-                            <Spinner className="size-5" /> Signing in...
-                          </>
-                        ) : (
-                          "Sign In"
-                        )}
-                      </Button>
+                      {!isForgotPassword ? (
+                        <Button
+                          type="submit"
+                          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-2"
+                          disabled={isLoggingIn || !email || !password}>
+                          {isLoggingIn ? (
+                            <>
+                              <Spinner className="size-5" /> Signing in...
+                            </>
+                          ) : (
+                            "Sign In"
+                          )}
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleForgotPassword();
+                              setIsForgotPassword(true);
+                            }}
+                            disabled={isResetting || resendCountdown !== null || !email}
+                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-2">
+                            {isResetting ? (
+                              <>
+                                <Spinner className="size-5" /> Processing...
+                              </>
+                            ) : (
+                              "Send reset link"
+                            )}
+                          </Button>
+
+                          {resetEmailSent && (
+                            <div className="space-y-2">
+                              <p className="text-xs text-green-500 text-center">
+                                If an account exists for this email, a reset link has been sent.
+                              </p>
+                              <p className="text-xs text-center">
+                                Check your inbox — delivery may take a few minutes.
+                              </p>
+                            </div>
+                          )}
+                          {resendCountdown !== null && (
+                            <p className="text-xs text-muted-foreground text-center">
+                              You can resend the link in{" "}
+                              <span className="font-medium text-foreground">
+                                {Math.floor(resendCountdown / 60)
+                                  .toString()
+                                  .padStart(2, "0")}
+                                :{(resendCountdown % 60).toString().padStart(2, "0")}
+                              </span>
+                            </p>
+                          )}
+                        </>
+                      )}
                     </div>
                   </form>
 
-                  <div className="flex justify-end text-sm">
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleForgotPassword();
-                      }}
-                      disabled={isResetting}
-                      className="text-primary hover:underline">
-                      Forgot password?
-                    </button>
-                  </div>
-                  {resetEmailSent && (
-                    <p className="text-xs text-green-500 text-center">Password reset email sent</p>
+                  {!isForgotPassword && (
+                    <div className="flex justify-end text-sm">
+                      <button
+                        onClick={() => setIsForgotPassword(true)}
+                        disabled={isResetting}
+                        className="text-primary hover:underline underline-offset-4">
+                        Forgot password?
+                      </button>
+                    </div>
                   )}
-                  <div className="relative my-4">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t border-border" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleGoogleSignIn}
-                    disabled={isOAuthLoading}
-                    className="w-full flex items-center gap-2 justify-center">
-                    <Image
-                      src="/google-color.svg"
-                      width={500}
-                      height={500}
-                      alt="google logo"
-                      className="size-5"
-                    />
-                    Sign in with Google
-                  </Button>
+
+                  {!isForgotPassword && (
+                    <>
+                      <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t border-border" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                          <span className="bg-card px-2 text-muted-foreground">
+                            Or continue with
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleGoogleSignIn}
+                        disabled={isOAuthLoading}
+                        className="w-full flex items-center gap-2 justify-center">
+                        <Image
+                          src="/google-color.svg"
+                          width={500}
+                          height={500}
+                          alt="google logo"
+                          className="size-5"
+                        />
+                        Sign in with Google
+                      </Button>
+                    </>
+                  )}
                 </div>
 
-                <div className="mt-6 text-center text-sm text-muted-foreground">
-                  Don&apos;t have an account?{" "}
-                  <Link
-                    href="/auth/sign-up"
-                    className="text-primary hover:underline underline-offset-4">
-                    Sign up
-                  </Link>
-                </div>
+                {isForgotPassword && (
+                  <div className="mt-6 text-center text-sm text-muted-foreground">
+                    <button
+                      onClick={() => setIsForgotPassword(false)}
+                      className="text-primary hover:underline underline-offset-4">
+                      Go back
+                    </button>
+                  </div>
+                )}
+                {!isForgotPassword && (
+                  <div className="mt-6 text-center text-sm text-muted-foreground">
+                    Don&apos;t have an account?{" "}
+                    <Link
+                      href="/auth/sign-up"
+                      className="text-primary hover:underline underline-offset-4">
+                      Sign up
+                    </Link>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

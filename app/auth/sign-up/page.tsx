@@ -57,6 +57,8 @@ function SignUpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const refCode = searchParams.get("ref");
+  const [isOAuthLoading, setIsOAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const passwordStrength = getPasswordStrength(formData.password);
 
@@ -68,9 +70,17 @@ function SignUpForm() {
   }, [refCode]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const {name, value} = e.target;
-    setFormData((prev) => ({...prev, [name]: value}));
-    if (errors[name as keyof SignUpInput]) {
+    const {name, value} = e.target as {
+      name: keyof SignUpInput;
+      value: string;
+    };
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "username" ? value.trim() : value,
+    }));
+
+    if (errors[name]) {
       setErrors((prev) => ({...prev, [name]: undefined}));
     }
   };
@@ -127,8 +137,6 @@ function SignUpForm() {
         },
       });
 
-      console.log("error from supabase=====>", error);
-
       if (error) throw error;
 
       router.push("/auth/sign-up-success");
@@ -140,8 +148,25 @@ function SignUpForm() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setIsOAuthLoading(true);
+
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL_PROD}/auth/callback`,
+        },
+      });
+    } catch {
+      setAuthError("Google sign-in failed! try again later");
+    } finally {
+      setIsOAuthLoading(false);
+    }
+  };
+
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center p-6 bg-background overflow-hidden">
+    <div className="relative flex min-h-screen w-full items-center justify-center px-2 py-4 bg-background overflow-hidden">
       {/* 3D Background */}
       <Suspense fallback={null}>
         <div className="fixed inset-0 z-0">
@@ -163,7 +188,7 @@ function SignUpForm() {
         <div className="w-full max-w-md">
           <div className="flex flex-col gap-6">
             {/* Logo */}
-            <Link href="/" className="flex items-center justify-center gap-2 mb-4">
+            <Link href="/" className="flex items-center justify-center gap-2">
               <Image
                 src="/logo.jpg"
                 width={40}
@@ -298,12 +323,14 @@ function SignUpForm() {
                         </p>
                       </div>
 
-                      <div className="space-y-1 mt-2">
+                      <div className="grid items-center grid-cols-2 gap-0.5">
                         {passwordRequirements.map((req) => {
                           const passed = req.test(formData.password);
 
                           return (
-                            <div key={req.label} className="flex items-center gap-2 text-xs">
+                            <div
+                              key={req.label}
+                              className="flex items-center gap-2 text-[10px] last:col-span-2">
                               {passed ? (
                                 <CheckCircle2 className="w-3 h-3 text-green-500" />
                               ) : req.optional ? (
@@ -386,7 +413,9 @@ function SignUpForm() {
                     <Button
                       type="submit"
                       className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-2"
-                      disabled={isLoading}>
+                      disabled={
+                        isLoading || !formData.email || !formData.password || !formData.username
+                      }>
                       {isLoading ? (
                         <>
                           <Spinner className="size-5" /> Creating account...
@@ -395,6 +424,32 @@ function SignUpForm() {
                         "Create Account"
                       )}
                     </Button>
+
+                    <div className="relative my-4">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-border" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleGoogleSignIn}
+                      disabled={isOAuthLoading}
+                      className="w-full flex items-center gap-2 justify-center">
+                      <Image
+                        src="/google-color.svg"
+                        width={500}
+                        height={500}
+                        alt="google logo"
+                        className="size-5"
+                      />
+                      Sign up with Google
+                    </Button>
+
+                    <p>{authError}</p>
                   </div>
 
                   <div className="mt-6 text-center text-sm text-muted-foreground">

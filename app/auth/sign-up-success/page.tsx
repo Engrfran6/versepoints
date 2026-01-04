@@ -6,13 +6,11 @@ import Image from "next/image";
 
 export default function SignUpSuccessPage() {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-6 bg-background">
+    <div className="flex min-h-screen w-full items-center justify-center px-2 bg-background">
       <div className="w-full max-w-md">
         <div className="flex flex-col gap-6">
           {/* Brand */}
-          <Link href="/" className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-2xl font-bold text-foreground">VersePoints</span>
-            <span className="text-sm text-muted-foreground">by</span>
+          <Link href="/" className="flex items-center justify-center gap-x-2">
             <Image
               src="/logo.jpg"
               width={36}
@@ -20,6 +18,7 @@ export default function SignUpSuccessPage() {
               alt="VerseEstate Logo"
               className="rounded-lg"
             />
+            <span className="text-2xl font-bold text-foreground">VersePoints</span>
           </Link>
 
           <Card className="bg-card border-border">
@@ -52,15 +51,15 @@ export default function SignUpSuccessPage() {
                     <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </Link>
-                <Link href="/" className="block">
+                {/* <Link href="/" className="block">
                   <Button variant="outline" className="w-full">
                     Back to Home
                   </Button>
-                </Link>
-                Optional future enhancement:
-                <Button variant="ghost" size="sm" className="w-full text-muted-foreground">
+                </Link> */}
+
+                {/* <Button variant="ghost" size="sm" className="w-full text-muted-foreground">
                   Resend verification email
-                </Button>
+                </Button> */}
               </div>
             </CardContent>
           </Card>

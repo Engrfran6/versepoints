@@ -157,6 +157,7 @@ export function DashboardContent({user: initialUser}: DashboardContentProps) {
             prev.longest_streak || 0,
             data.streak || (prev.current_streak || 0) + 1
           ),
+          is_mining: data.is_mining,
         }));
         return {...data, streak: data.streak, multiplier: data.multiplier};
       }
