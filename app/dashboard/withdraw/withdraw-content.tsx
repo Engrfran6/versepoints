@@ -1,56 +1,59 @@
-"use client"
+"use client";
 
-import { Suspense, useState } from "react"
-import dynamic from "next/dynamic"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Wallet, Lock, Rocket, Bell, Coins } from "lucide-react"
-import { toast } from "sonner"
+import {Suspense, useState} from "react";
+import dynamic from "next/dynamic";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {Wallet, Lock, Rocket, Bell, Coins} from "lucide-react";
+import {toast} from "sonner";
 
 const FloatingParticles = dynamic(
   () => import("@/components/3d/floating-particles").then((mod) => mod.FloatingParticles),
-  { ssr: false },
-)
-const Vault3D = dynamic(() => import("@/components/3d/vault-3d").then((mod) => mod.Vault3D), { ssr: false })
+  {ssr: false}
+);
+const Vault3D = dynamic(() => import("@/components/3d/vault-3d").then((mod) => mod.Vault3D), {
+  ssr: false,
+});
 
 interface WithdrawContentProps {
-  pointsBalance: number
+  pointsBalance: number;
+  userEmail: string;
 }
 
-export function WithdrawContent({ pointsBalance }: WithdrawContentProps) {
-  const [email, setEmail] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export function WithdrawContent({pointsBalance, userEmail}: WithdrawContentProps) {
+  const [email, setEmail] = useState(userEmail);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleNotifyMe = async () => {
     if (!email || !email.includes("@")) {
-      toast.error("Please enter a valid email address")
-      return
+      toast.error("Please enter a valid email address");
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
       const response = await fetch("/api/withdrawal/notify", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      })
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({email}),
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to subscribe")
+        throw new Error(data.error || "Failed to subscribe");
       }
 
-      toast.success("You'll be notified when withdrawals are available!")
-      setEmail("")
+      toast.success("You'll be notified when withdrawals are available!");
+      setEmail("");
     } catch (error: any) {
-      toast.error(error.message)
+      toast.error(error.message);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="relative p-4 md:p-8 min-h-screen">
@@ -74,7 +77,9 @@ export function WithdrawContent({ pointsBalance }: WithdrawContentProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Available Balance</p>
-              <p className="text-4xl font-bold text-foreground mt-1">{pointsBalance.toLocaleString()}</p>
+              <p className="text-4xl font-bold text-foreground mt-1">
+                {pointsBalance.toLocaleString()}
+              </p>
               <p className="text-sm text-primary mt-1">VersePoints</p>
             </div>
             <div className="p-4 rounded-xl bg-primary/10">
@@ -101,8 +106,8 @@ export function WithdrawContent({ pointsBalance }: WithdrawContentProps) {
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-3">Withdrawals Coming Soon</h2>
               <p className="text-muted-foreground max-w-md mb-8">
-                We&apos;re working on blockchain integration to allow you to convert your VersePoints to tokens. Stay
-                tuned for updates!
+                We&apos;re working on blockchain integration to allow you to convert your
+                VersePoints to tokens. Stay tuned for updates!
               </p>
               <Button disabled className="gap-2">
                 <Lock className="w-4 h-4" />
@@ -181,7 +186,9 @@ export function WithdrawContent({ pointsBalance }: WithdrawContentProps) {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">Get Notified</h3>
-                  <p className="text-sm text-muted-foreground">We&apos;ll email you when withdrawals are available</p>
+                  <p className="text-sm text-muted-foreground">
+                    We&apos;ll email you when withdrawals are available
+                  </p>
                 </div>
               </div>
               <div className="space-y-2">
@@ -201,13 +208,12 @@ export function WithdrawContent({ pointsBalance }: WithdrawContentProps) {
             <Button
               onClick={handleNotifyMe}
               disabled={isSubmitting || !email}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground w-full md:w-auto"
-            >
+              className="bg-primary hover:bg-primary/90 text-primary-foreground w-full md:w-auto">
               {isSubmitting ? "Subscribing..." : "Notify Me"}
             </Button>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

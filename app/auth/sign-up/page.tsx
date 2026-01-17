@@ -152,10 +152,25 @@ function SignUpForm() {
     setIsOAuthLoading(true);
 
     try {
+      let referrerId: string | null = null;
+
+      if (formData.referralCode) {
+        const {data: referrer, error: refError} = await supabase
+          .from("users")
+          .select("id")
+          .eq("referral_code", formData.referralCode.toUpperCase())
+          .single();
+
+        // Optional: silently ignore invalid referral codes
+        if (!refError && referrer) {
+          referrerId = referrer.id;
+        }
+      }
+
       await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL_PROD}/auth/callback`,
+          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL_PROD}/auth/callback?ref=${referrerId}`,
         },
       });
     } catch {

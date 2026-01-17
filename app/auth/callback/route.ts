@@ -15,13 +15,23 @@ export async function GET(request: Request) {
   const safeNext = next.startsWith("/") ? next : "/dashboard";
   const origin = request.headers.get("origin") || url.origin;
 
+  const referrerId = url.searchParams.get("ref");
+
   const supabase = await createClient();
 
   try {
     // ✅ OAuth flow (Google)
     if (code) {
-      const {error} = await supabase.auth.exchangeCodeForSession(code);
+      const {data, error} = await supabase.auth.exchangeCodeForSession(code);
       if (error) throw error;
+
+      if (referrerId && data.session?.user?.id) {
+        await supabase
+          .from("users")
+          .update({referred_by: referrerId})
+          .is("referred_by", null) // 🔒 only if not already set
+          .eq("id", data.session.user.id);
+      }
     }
 
     // ✅ Magic link / signup flow
@@ -30,7 +40,7 @@ export async function GET(request: Request) {
       if (error) throw error;
     }
   } catch (err) {
-    console.error("Auth callback error:", err);
+    // console.error("Auth callback error:", err);
     return NextResponse.redirect(`${origin}/auth/error`);
   }
 

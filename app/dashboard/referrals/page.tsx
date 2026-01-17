@@ -2,6 +2,7 @@
 import {redirect} from "next/navigation";
 import {createClient} from "@/lib/supabase/server";
 import {ReferralsContent} from "./referrals-content";
+import {supabaseAdmin} from "@/lib/supabase/admin";
 
 export default async function ReferralsPage() {
   const supabase = await createClient();
@@ -28,7 +29,7 @@ export default async function ReferralsPage() {
   }
 
   // Fetch referrals — server-side client respects RLS
-  const {data: referrals, error: referralsError} = await supabase
+  const {data: referrals, error: referralsError} = await supabaseAdmin
     .from("referrals")
     .select(
       `

@@ -1,30 +1,30 @@
-"use client"
+"use client";
 
-import { useRef } from "react"
-import { Canvas, useFrame } from "@react-three/fiber"
-import { Sphere, Ring, Text, MeshDistortMaterial } from "@react-three/drei"
-import * as THREE from "three"
+import {useRef} from "react";
+import {Canvas, useFrame} from "@react-three/fiber";
+import {Sphere, Ring, Text, MeshDistortMaterial} from "@react-three/drei";
+import * as THREE from "three";
 
 function ProgressOrb({
   phaseNumber,
   phaseName,
   progress,
 }: {
-  phaseNumber: number
-  phaseName: string
-  progress: number
+  phaseNumber: number;
+  phaseName: string;
+  progress: number;
 }) {
-  const orbRef = useRef<THREE.Mesh>(null)
-  const ringRef = useRef<THREE.Mesh>(null)
+  const orbRef = useRef<THREE.Mesh>(null);
+  const ringRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
     if (orbRef.current) {
-      orbRef.current.rotation.y = state.clock.getElapsedTime() * 0.3
+      orbRef.current.rotation.y = state.clock.getElapsedTime() * 0.3;
     }
     if (ringRef.current) {
-      ringRef.current.rotation.z = state.clock.getElapsedTime() * 0.5
+      ringRef.current.rotation.z = state.clock.getElapsedTime() * 0.5;
     }
-  })
+  });
 
   // Color based on phase number
   const colors = [
@@ -40,14 +40,20 @@ function ProgressOrb({
     "#22c55e",
     "#14b8a6",
     "#06b6d4",
-  ]
-  const color = colors[(phaseNumber - 1) % colors.length]
+  ];
+  const color = colors[(phaseNumber - 1) % colors.length];
 
   return (
     <group>
       {/* Main orb */}
       <Sphere ref={orbRef} args={[1, 32, 32]}>
-        <MeshDistortMaterial color={color} metalness={0.5} roughness={0.2} distort={0.2} speed={2} />
+        <MeshDistortMaterial
+          color={color}
+          metalness={0.5}
+          roughness={0.2}
+          distort={0.5}
+          speed={2}
+        />
       </Sphere>
 
       {/* Progress ring */}
@@ -56,12 +62,18 @@ function ProgressOrb({
       </Ring>
 
       {/* Phase number */}
-      <Text position={[0, 0, 1.1]} fontSize={0.5} color="white" anchorX="center" anchorY="middle">
+      <Text position={[0, 0, 1]} fontSize={0.5} color="white" anchorX="center" anchorY="middle">
         {phaseNumber}
       </Text>
 
       {/* Phase name */}
-      <Text position={[0, -1.8, 0]} fontSize={0.2} color="white" anchorX="center" anchorY="middle" maxWidth={3}>
+      <Text
+        position={[0, -1.5, 0]}
+        fontSize={0.5}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+        maxWidth={8}>
         {phaseName}
       </Text>
 
@@ -77,24 +89,29 @@ function ProgressOrb({
         </mesh>
       </group>
     </group>
-  )
+  );
 }
 
 interface PhaseProgressOrbProps {
-  phaseNumber: number
-  phaseName: string
-  progress?: number
-  className?: string
+  phaseNumber: number;
+  phaseName: string;
+  progress?: number;
+  className?: string;
 }
 
-export function PhaseProgressOrb({ phaseNumber, phaseName, progress = 0, className = "" }: PhaseProgressOrbProps) {
+export function PhaseProgressOrb({
+  phaseNumber,
+  phaseName,
+  progress = 0,
+  className = "",
+}: PhaseProgressOrbProps) {
   return (
-    <div className={`w-48 h-56 ${className}`}>
-      <Canvas camera={{ position: [0, 0, 4], fov: 50 }}>
+    <div className={`w-full h-full ${className}`}>
+      <Canvas camera={{position: [0, 0, 4], fov: 50}}>
         <ambientLight intensity={0.4} />
         <pointLight position={[5, 5, 5]} intensity={1} />
         <ProgressOrb phaseNumber={phaseNumber} phaseName={phaseName} progress={progress} />
       </Canvas>
     </div>
-  )
+  );
 }
