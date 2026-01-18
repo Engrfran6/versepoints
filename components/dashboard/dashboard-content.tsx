@@ -19,6 +19,8 @@ import {Button} from "../ui/button";
 import {toast} from "sonner";
 import {useLeaderBoardRank, useReferralCount, useReferralStatus} from "@/lib/hooks/useReferral";
 import {DashboardSkeleton} from "@/components/skeleton/DashboardSkeleton";
+import {useQueryClient} from "@tanstack/react-query";
+import {useUser} from "@/lib/hooks/useUser";
 
 const FloatingParticles = dynamic(
   () => import("@/components/3d/floating-particles").then((mod) => mod.FloatingParticles),
@@ -32,28 +34,29 @@ const MiningRigScene = dynamic(
 );
 
 interface DashboardContentProps {
-  user: User;
-  // referralCount: number;
-  // rank: number;
-  // referralStatus: {
-  //   has_referral: boolean;
-  //   referral_signup_paid: boolean;
-  //   referral_mining_paid: boolean;
-  // };
+  userId: string;
 }
 
-export function DashboardContent({user: initialUser}: DashboardContentProps) {
-  const [user, setUser] = useState(initialUser);
+export function DashboardContent({userId}: DashboardContentProps) {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showReferralBanner, setShowReferralBanner] = useState(false);
 
-  const {data: referralCount = 0, isLoading: tasksLoading} = useReferralCount(user.id);
+  const {data: user, isLoading: userLoading} = useUser(userId);
 
-  const {data: rank = 0, isLoading: rankLoading} = useLeaderBoardRank(user.id);
+  const {data: referralCount = 0, isLoading: tasksLoading} = useReferralCount(userId);
 
-  const {data: referralStatus = [], isLoading: referralStatusLoading} = useReferralStatus();
+  const {data: rank = 0, isLoading: rankLoading} = useLeaderBoardRank(userId);
 
-  const isLoading = tasksLoading || rankLoading || referralStatusLoading;
+  const {
+    data: referralStatus = {
+      has_referral: false,
+      referral_signup_paid: true,
+      referral_mining_paid: true,
+    },
+    isLoading: referralStatusLoading,
+  } = useReferralStatus();
+
+  const isLoading = userLoading || tasksLoading || rankLoading || referralStatusLoading;
 
   const REFERRAL_BANNER_KEY = "referral_banner_last_dismissed";
   const REFERRAL_BANNER_DELAY = 5 * 60 * 1000; // 5 minutes
@@ -90,15 +93,17 @@ export function DashboardContent({user: initialUser}: DashboardContentProps) {
   };
 
   useEffect(() => {
-    // Show welcome message for new users (joined in last 60 minutes)
+    if (!user) return;
+
     const joinedAt = new Date(user.created_at).getTime();
     const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+
     if (joinedAt > twentyFourHoursAgo && user.mining_count === 0) {
       setShowWelcome(true);
       const timer = setTimeout(() => setShowWelcome(false), 10000);
       return () => clearTimeout(timer);
     }
-  }, [user.created_at, user.mining_count]);
+  }, [user]);
 
   const getStreakMultiplier = (streak: number): number => {
     const thresholds = Object.entries(MINING_CONSTANTS.STREAK_BONUS_MULTIPLIERS)
@@ -112,10 +117,10 @@ export function DashboardContent({user: initialUser}: DashboardContentProps) {
   };
 
   const {isMiningNow} = useMiningProgress(
-    user.points_balance,
+    user?.points_balance ?? 0,
     MINING_CONSTANTS.POINTS_PER_MINE ?? 0,
-    user.last_mining_at,
-    user.is_mining
+    user?.last_mining_at ?? null,
+    user?.is_mining ?? false
   );
 
   const getNextStreakMilestone = (streak: number): {days: number; multiplier: number} | null => {
@@ -129,8 +134,10 @@ export function DashboardContent({user: initialUser}: DashboardContentProps) {
     return null;
   };
 
-  const currentMultiplier = getStreakMultiplier(user.current_streak || 0);
-  const nextMilestone = getNextStreakMilestone(user.current_streak || 0);
+  const currentMultiplier = getStreakMultiplier(user?.current_streak ?? 0);
+  const nextMilestone = getNextStreakMilestone(user?.current_streak ?? 0);
+
+  const queryClient = useQueryClient();
 
   const handleMine = useCallback(async () => {
     try {
@@ -146,20 +153,21 @@ export function DashboardContent({user: initialUser}: DashboardContentProps) {
       const data = await response.json();
 
       if (data.success) {
-        setUser((prev) => ({
-          ...prev,
-          points_balance: prev.points_balance,
-          total_mined: prev.total_mined + (data.points || MINING_CONSTANTS.POINTS_PER_MINE),
-          mining_count: prev.mining_count + 1,
-          last_mining_at: new Date().toISOString(),
-          current_streak: data.streak || (prev.current_streak || 0) + 1,
-          longest_streak: Math.max(
-            prev.longest_streak || 0,
-            data.streak || (prev.current_streak || 0) + 1
-          ),
-          is_mining: data.is_mining,
-        }));
-        return {...data, streak: data.streak, multiplier: data.multiplier};
+        await queryClient.invalidateQueries({queryKey: ["user", userId]});
+        // setUser((prev) => ({
+        //   ...prev,
+        //   points_balance: prev.points_balance,
+        //   total_mined: prev.total_mined + (data.points || MINING_CONSTANTS.POINTS_PER_MINE),
+        //   mining_count: prev.mining_count + 1,
+        //   last_mining_at: new Date().toISOString(),
+        //   current_streak: data.streak || (prev.current_streak || 0) + 1,
+        //   longest_streak: Math.max(
+        //     prev.longest_streak || 0,
+        //     data.streak || (prev.current_streak || 0) + 1
+        //   ),
+        //   is_mining: data.is_mining,
+        // }));
+        // return {...data, streak: data.streak, multiplier: data.multiplier};
       }
 
       return data;
@@ -168,10 +176,10 @@ export function DashboardContent({user: initialUser}: DashboardContentProps) {
     } finally {
       setTimeout(() => isMiningNow, 2000);
     }
-  }, []);
+  }, [userId, queryClient, isMiningNow]);
 
   const isWelcomeBack = (() => {
-    const lastMinedAt = user.last_mining_at;
+    const lastMinedAt = user?.last_mining_at ?? null;
     if (!lastMinedAt) return false;
 
     const lastVisit = new Date(lastMinedAt).getTime();
@@ -181,15 +189,15 @@ export function DashboardContent({user: initialUser}: DashboardContentProps) {
     return now - lastVisit > twentyFourHours;
   })();
 
-  const {created_at: newUserCreatedAt} = user;
   const DAY = 24 * 60 * 60 * 1000;
 
   const isNewUser =
-    !user.welcome_bonus_claimed &&
-    Date.now() - new Date(newUserCreatedAt).getTime() < DAY &&
-    user.mining_count === 0;
+    user?.welcome_bonus_claimed &&
+    Date.now() - new Date(user?.created_at ?? null).getTime() < DAY &&
+    user?.mining_count === 0;
 
   const [pending, setPending] = useState(false);
+
   const handleCLaimWelcome = async () => {
     if (!isNewUser) return;
     setPending(true);
@@ -199,11 +207,13 @@ export function DashboardContent({user: initialUser}: DashboardContentProps) {
       const data = await res.json();
 
       if (data.success) {
-        setUser((prev) => ({
-          ...prev,
-          points_balance: data.newBalance,
-          welcome_bonus_claimed: true,
-        }));
+        // setUser((prev) => ({
+        //   ...prev,
+        //   points_balance: data.newBalance,
+        //   welcome_bonus_claimed: true,
+        // }));
+
+        await queryClient.invalidateQueries({queryKey: ["user", userId]});
 
         toast.success(`+${data.pointsAwarded} VP added`);
       }
@@ -216,7 +226,7 @@ export function DashboardContent({user: initialUser}: DashboardContentProps) {
 
   return (
     <div className="relative p-4 md:p-8 min-h-screen">
-      {isLoading ? (
+      {isLoading || !user ? (
         <DashboardSkeleton />
       ) : (
         <>

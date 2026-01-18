@@ -15,5 +15,5 @@ export default async function TasksPage() {
     redirect("/auth/login");
   }
 
-  return <TasksContent userId={user.id} />;
+  return <TasksContent userId={user?.id} />;
 }
