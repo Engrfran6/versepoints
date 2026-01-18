@@ -111,26 +111,27 @@ export function TasksContent({userId}: TasksContentProps) {
       toast.info("Complete your profile to earn points");
     },
 
-    "watch youtube video": (task) => {
-      if (!task.action_url) {
-        toast.error("Missing YouTube link");
-        return;
-      }
+    // "watch youtube video": (task) => {
+    //   if (!task.action_url) {
+    //     toast.error("Missing YouTube link");
+    //     return;
+    //   }
 
-      const videoId = extractYouTubeVideoId(task.action_url);
+    //   const videoId = extractYouTubeVideoId(task.action_url);
 
-      if (!videoId) {
-        toast.error("Invalid YouTube link");
-        return;
-      }
+    //   if (!videoId) {
+    //     toast.error("Invalid YouTube link");
+    //     return;
+    //   }
 
-      setActiveYouTubeTask({
-        taskId: task.id,
-        videoId,
-      });
-    },
+    //   setActiveYouTubeTask({
+    //     taskId: task.id,
+    //     videoId,
+    //   });
+    // },
 
     // 👇 All “open + submit proof” tasks
+    "watch youtube video": openExternalAndCollectProof,
     "follow on social media": openExternalAndCollectProof,
     "join community": openExternalAndCollectProof,
     "share content": openExternalAndCollectProof,
@@ -192,31 +193,31 @@ export function TasksContent({userId}: TasksContentProps) {
     }
   };
 
-  const submitYouTubeTask = async (taskId: string) => {
-    try {
-      const response = await fetch("/api/tasks/submit", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-          taskId,
-          proofUrl: `https://www.youtube.com/watch?v=${activeYouTubeTask?.videoId}`,
-          verificationType: "youtube",
-        }),
-      });
+  // const submitYouTubeTask = async (taskId: string) => {
+  //   try {
+  //     const response = await fetch("/api/tasks/submit", {
+  //       method: "POST",
+  //       headers: {"Content-Type": "application/json"},
+  //       body: JSON.stringify({
+  //         taskId,
+  //         proofUrl: `https://www.youtube.com/watch?v=${activeYouTubeTask?.videoId}`,
+  //         verificationType: "youtube",
+  //       }),
+  //     });
 
-      const data = await response.json();
+  //     const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to submit YouTube task");
-      }
+  //     if (!response.ok) {
+  //       throw new Error(data.error || "Failed to submit YouTube task");
+  //     }
 
-      toast.success("YouTube task completed!");
-      await queryClient.invalidateQueries({queryKey: ["tasks"]});
-      await queryClient.invalidateQueries({queryKey: ["userTasks", userId]});
-    } catch (err: any) {
-      toast.error(err.message || "Submission failed");
-    }
-  };
+  //     toast.success("YouTube task completed!");
+  //     await queryClient.invalidateQueries({queryKey: ["tasks"]});
+  //     await queryClient.invalidateQueries({queryKey: ["userTasks", userId]});
+  //   } catch (err: any) {
+  //     toast.error(err.message || "Submission failed");
+  //   }
+  // };
 
   const getTaskIcon = (type: string) => {
     switch (type) {
@@ -410,7 +411,7 @@ export function TasksContent({userId}: TasksContentProps) {
           </div>
         </DialogContent>
       </Dialog>
-      {activeYouTubeTask && (
+      {/* {activeYouTubeTask && (
         <Dialog
           open
           onOpenChange={(open) => {
@@ -459,8 +460,8 @@ export function TasksContent({userId}: TasksContentProps) {
             />
           </DialogContent>
         </Dialog>
-      )}
-      <Dialog open={confirmExitOpen} onOpenChange={setConfirmExitOpen}>
+      )} */}
+      {/* <Dialog open={confirmExitOpen} onOpenChange={setConfirmExitOpen}>
         <DialogContent className="bg-card border-border max-w-md">
           <DialogHeader>
             <DialogTitle className="text-foreground">Leave task early?</DialogTitle>
@@ -489,7 +490,7 @@ export function TasksContent({userId}: TasksContentProps) {
             </Button>
           </div>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 }
