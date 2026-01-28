@@ -2,6 +2,31 @@ import {createServerClient} from "@supabase/ssr";
 import {NextResponse, type NextRequest} from "next/server";
 
 export async function updateSession(request: NextRequest) {
+  const maintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
+
+  const pathname = request.nextUrl.pathname;
+
+  if (maintenanceMode) {
+    // allow maintenance page itself
+    if (pathname === "/maintenance") {
+      return NextResponse.next();
+    }
+
+    const url = request.nextUrl.clone();
+    url.pathname = "/maintenance";
+
+    const response = NextResponse.redirect(url);
+
+    // FORCE LOGOUT — clear Supabase cookies
+    response.cookies.set("sb-access-token", "", {maxAge: 0});
+    response.cookies.set("sb-refresh-token", "", {maxAge: 0});
+
+    // fallback (covers older setups)
+    response.cookies.set("supabase-auth-token", "", {maxAge: 0});
+
+    return response;
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -20,7 +45,7 @@ export async function updateSession(request: NextRequest) {
             request,
           });
           cookiesToSet.forEach(({name, value, options}) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           );
         },
       },
@@ -28,7 +53,7 @@ export async function updateSession(request: NextRequest) {
         autoRefreshToken: false,
         persistSession: false,
       },
-    }
+    },
   );
 
   const {
